@@ -1,0 +1,322 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "type": "person",
+      "position": { "x": 0, "y": 0 },
+      "data": {
+        "name": "Alexander Knight",
+        "role": "CEO",
+        "phone": "+1 (555) 010-8899",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Alexander"
+      }
+    },
+
+    {
+      "id": "2",
+      "type": "person",
+      "position": { "x": -1800, "y": 300 },
+      "data": {
+        "name": "Sarah Chen",
+        "role": "Regional Director",
+        "phone": "+1 (555) 010-1122",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah"
+      }
+    },
+    {
+      "id": "3",
+      "type": "person",
+      "position": { "x": -1200, "y": 300 },
+      "data": {
+        "name": "Michael Ross",
+        "role": "Regional Director",
+        "phone": "+1 (555) 010-3344",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael"
+      }
+    },
+    {
+      "id": "4",
+      "type": "person",
+      "position": { "x": -600, "y": 300 },
+      "data": {
+        "name": "Elena Rodriguez",
+        "role": "Regional Director",
+        "phone": "+1 (555) 010-5566",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena"
+      }
+    },
+    {
+      "id": "5",
+      "type": "person",
+      "position": { "x": 0, "y": 300 },
+      "data": {
+        "name": "David Park",
+        "role": "Regional Director",
+        "phone": "+1 (555) 010-7788",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=David"
+      }
+    },
+    {
+      "id": "6",
+      "type": "person",
+      "position": { "x": 600, "y": 300 },
+      "data": {
+        "name": "Jessica Wu",
+        "role": "Regional Director",
+        "phone": "+1 (555) 010-9900",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica"
+      }
+    },
+    {
+      "id": "7",
+      "type": "person",
+      "position": { "x": 1200, "y": 300 },
+      "data": {
+        "name": "Marcus Thorne",
+        "role": "Regional Director",
+        "phone": "+1 (555) 010-2233",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus"
+      }
+    },
+    {
+      "id": "8",
+      "type": "person",
+      "position": { "x": 1800, "y": 300 },
+      "data": {
+        "name": "Amara Okafor",
+        "role": "Regional Director",
+        "phone": "+1 (555) 010-4455",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Amara"
+      }
+    },
+
+    {
+      "id": "9",
+      "type": "person",
+      "position": { "x": -1800, "y": 600 },
+      "data": {
+        "name": "Kevin Smith",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-6677",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Kevin"
+      }
+    },
+
+    {
+      "id": "10",
+      "type": "person",
+      "position": { "x": -1500, "y": 600 },
+      "data": {
+        "name": "Linda Gao",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-8899",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Linda"
+      }
+    },
+    {
+      "id": "11",
+      "type": "person",
+      "position": { "x": -1200, "y": 600 },
+      "data": {
+        "name": "Ryan Miller",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-1111",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Ryan"
+      }
+    },
+    {
+      "id": "12",
+      "type": "person",
+      "position": { "x": -900, "y": 600 },
+      "data": {
+        "name": "Sophia Lee",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-2222",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia"
+      }
+    },
+
+    {
+      "id": "13",
+      "type": "person",
+      "position": { "x": -150, "y": 600 },
+      "data": {
+        "name": "Liam Brown",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-3333",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Liam"
+      }
+    },
+    {
+      "id": "14",
+      "type": "person",
+      "position": { "x": 150, "y": 600 },
+      "data": {
+        "name": "Olivia White",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-4444",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Olivia"
+      }
+    },
+
+    {
+      "id": "15",
+      "type": "person",
+      "position": { "x": 150, "y": 900 },
+      "data": {
+        "name": "Ethan Hunt",
+        "role": "Team Lead",
+        "phone": "+1 (555) 010-5555",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Ethan"
+      }
+    },
+    {
+      "id": "16",
+      "type": "person",
+      "position": { "x": 450, "y": 900 },
+      "data": {
+        "name": "Ava Johnson",
+        "role": "Team Lead",
+        "phone": "+1 (555) 010-6666",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Ava"
+      }
+    },
+    {
+      "id": "17",
+      "type": "person",
+      "position": { "x": 750, "y": 900 },
+      "data": {
+        "name": "Noah Davis",
+        "role": "Team Lead",
+        "phone": "+1 (555) 010-7777",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Noah"
+      }
+    },
+    {
+      "id": "18",
+      "type": "person",
+      "position": { "x": 1050, "y": 900 },
+      "data": {
+        "name": "Isabella Garcia",
+        "role": "Team Lead",
+        "phone": "+1 (555) 010-8888",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Isabella"
+      }
+    },
+
+    {
+      "id": "19",
+      "type": "person",
+      "position": { "x": 1200, "y": 600 },
+      "data": {
+        "name": "Mason Martinez",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-9999",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Mason"
+      }
+    },
+
+    {
+      "id": "20",
+      "type": "person",
+      "position": { "x": 1650, "y": 600 },
+      "data": {
+        "name": "Mia Wilson",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-0000",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Mia"
+      }
+    },
+    {
+      "id": "21",
+      "type": "person",
+      "position": { "x": 1950, "y": 600 },
+      "data": {
+        "name": "Lucas Anderson",
+        "role": "Branch Manager",
+        "phone": "+1 (555) 010-1234",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas"
+      }
+    },
+
+    {
+      "id": "22",
+      "type": "person",
+      "position": { "x": -1650, "y": 900 },
+      "data": {
+        "name": "Zoe Taylor",
+        "role": "Associate",
+        "phone": "+1 (555) 010-2345",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Zoe"
+      }
+    },
+    {
+      "id": "23",
+      "type": "person",
+      "position": { "x": -1350, "y": 900 },
+      "data": {
+        "name": "Benjamin Moore",
+        "role": "Associate",
+        "phone": "+1 (555) 010-3456",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Benjamin"
+      }
+    },
+
+    {
+      "id": "24",
+      "type": "person",
+      "position": { "x": 450, "y": 1200 },
+      "data": {
+        "name": "Chloe Jackson",
+        "role": "Specialist",
+        "phone": "+1 (555) 010-4567",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Chloe"
+      }
+    },
+    {
+      "id": "25",
+      "type": "person",
+      "position": { "x": 450, "y": 1500 },
+      "data": {
+        "name": "James Thompson",
+        "role": "Intern",
+        "phone": "+1 (555) 010-5678",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=James"
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e1-2", "source": "1", "target": "2" },
+    { "id": "e1-3", "source": "1", "target": "3" },
+    { "id": "e1-4", "source": "1", "target": "4" },
+    { "id": "e1-5", "source": "1", "target": "5" },
+    { "id": "e1-6", "source": "1", "target": "6" },
+    { "id": "e1-7", "source": "1", "target": "7" },
+    { "id": "e1-8", "source": "1", "target": "8" },
+
+    { "id": "e2-9", "source": "2", "target": "9" },
+
+    { "id": "e3-10", "source": "3", "target": "10" },
+    { "id": "e3-11", "source": "3", "target": "11" },
+    { "id": "e3-12", "source": "3", "target": "12" },
+
+    { "id": "e5-13", "source": "5", "target": "13" },
+    { "id": "e5-14", "source": "5", "target": "14" },
+
+    { "id": "e6-15", "source": "6", "target": "15" },
+    { "id": "e6-16", "source": "6", "target": "16" },
+    { "id": "e6-17", "source": "6", "target": "17" },
+    { "id": "e6-18", "source": "6", "target": "18" },
+
+    { "id": "e7-19", "source": "7", "target": "19" },
+
+    { "id": "e8-20", "source": "8", "target": "20" },
+    { "id": "e8-21", "source": "8", "target": "21" },
+
+    { "id": "e10-22", "source": "10", "target": "22" },
+    { "id": "e10-23", "source": "10", "target": "23" },
+
+    { "id": "e16-24", "source": "16", "target": "24" },
+    { "id": "e24-25", "source": "24", "target": "25" }
+  ]
+}

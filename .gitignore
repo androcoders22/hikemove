@@ -1,0 +1,24 @@
+# Ignore build output directories
+/build
+/dist
+
+# Ignore the .next folder (Next.js build output)
+.next/
+./next/
+
+# Ignore node_modules
+node_modules/
+./node_modules/
+
+# Ignore previous (if needed)
+./previous
+
+# Ignore any other common build artifacts
+*.log
+npm-debug.log*
+yarn
+
+# env
+.env
+.env.local
+.env.development.local

@@ -1,0 +1,120 @@
+{
+  "referralLink": "https://manage.hikemove.com/Home/Registration?sponsor=HM7677514",
+  "stats": [
+    {
+      "id": "package-amount",
+      "label": "Package Amount",
+      "value": 500.0,
+      "type": "currency",
+      "icon": "dollar-sign",
+      "color": "slate"
+    },
+    {
+      "id": "my-sponsor",
+      "label": "My Sponsor",
+      "value": 2,
+      "type": "number",
+      "icon": "user-plus",
+      "color": "emerald"
+    },
+    {
+      "id": "my-team",
+      "label": "My Team",
+      "value": 391,
+      "type": "number",
+      "icon": "users",
+      "color": "rose"
+    },
+    {
+      "id": "sponsor-bonus",
+      "label": "Sponsor Bonus",
+      "value": 77.0,
+      "type": "currency",
+      "icon": "user-plus",
+      "color": "blue"
+    },
+    {
+      "id": "team-level-bonus",
+      "label": "Team Level Bonus",
+      "value": 0.0,
+      "type": "currency",
+      "icon": "user-plus",
+      "color": "green"
+    },
+    {
+      "id": "weekly-profit-bonus",
+      "label": "Weekly Profit Bonus",
+      "value": 125.0,
+      "type": "currency",
+      "icon": "users",
+      "color": "orange"
+    },
+    {
+      "id": "level-profit-bonus",
+      "label": "Level Profit Bonus",
+      "value": 22.75,
+      "type": "currency",
+      "icon": "dollar-sign",
+      "color": "slate"
+    },
+    {
+      "id": "reward-bonus",
+      "label": "Reward Bonus",
+      "value": 0.0,
+      "type": "currency",
+      "icon": "user-plus",
+      "color": "blue"
+    },
+    {
+      "id": "total-bonus",
+      "label": "Total Bonus",
+      "value": 224.75,
+      "type": "currency",
+      "icon": "users",
+      "color": "orange"
+    },
+    {
+      "id": "paid-bonus",
+      "label": "Paid Bonus",
+      "value": 0.0,
+      "type": "currency",
+      "icon": "dollar-sign",
+      "color": "slate"
+    },
+    {
+      "id": "rank",
+      "label": "Rank",
+      "value": "Interns",
+      "type": "text",
+      "icon": "users",
+      "color": "emerald"
+    },
+    {
+      "id": "credit-wallet",
+      "label": "Credit Wallet",
+      "value": 4400.0,
+      "type": "currency",
+      "icon": "wallet",
+      "color": "blue"
+    },
+    {
+      "id": "income-wallet",
+      "label": "Income Wallet",
+      "value": 224.75,
+      "type": "currency",
+      "icon": "wallet",
+      "color": "green"
+    }
+  ],
+  "charts": {
+    "weeklyIncome": [
+      { "day": "Mon", "amount": 10 },
+      { "day": "Tue", "amount": 25 },
+      { "day": "Wed", "amount": 15 },
+      { "day": "Thu", "amount": 40 },
+      { "day": "Fri", "amount": 35 },
+      { "day": "Sat", "amount": 50 },
+      { "day": "Sun", "amount": 45 }
+    ]
+  }
+}
