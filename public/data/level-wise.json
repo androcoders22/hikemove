@@ -1,0 +1,77 @@
+{
+  "nodes": [
+    {
+      "id": "sponsor",
+      "type": "person",
+      "position": { "x": 0, "y": 0 },
+      "data": {
+        "name": "Sponsor Name",
+        "role": "Sponsor",
+        "phone": "+1 (555) 000-0000",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sponsor"
+      }
+    },
+    {
+      "id": "me",
+      "type": "person",
+      "position": { "x": 0, "y": 250 },
+      "data": {
+        "name": "My Account",
+        "role": "Me",
+        "phone": "+1 (555) 111-1111",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+      }
+    },
+    {
+      "id": "child1",
+      "type": "person",
+      "position": { "x": -300, "y": 500 },
+      "data": {
+        "name": "Team Member 1",
+        "role": "Level 1",
+        "phone": "+1 (555) 222-2222",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Team1"
+      }
+    },
+    {
+      "id": "child2",
+      "type": "person",
+      "position": { "x": 300, "y": 500 },
+      "data": {
+        "name": "Team Member 2",
+        "role": "Level 1",
+        "phone": "+1 (555) 333-3333",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Team2"
+      }
+    },
+    {
+      "id": "child3",
+      "type": "person",
+      "position": { "x": -450, "y": 750 },
+      "data": {
+        "name": "Team Member 3",
+        "role": "Level 2",
+        "phone": "+1 (555) 444-4444",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Team3"
+      }
+    },
+    {
+      "id": "child4",
+      "type": "person",
+      "position": { "x": -150, "y": 750 },
+      "data": {
+        "name": "Team Member 4",
+        "role": "Level 2",
+        "phone": "+1 (555) 555-5555",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Team4"
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e-sponsor-me", "source": "sponsor", "target": "me" },
+    { "id": "e-me-child1", "source": "me", "target": "child1" },
+    { "id": "e-me-child2", "source": "me", "target": "child2" },
+    { "id": "e-child1-child3", "source": "child1", "target": "child3" },
+    { "id": "e-child1-child4", "source": "child1", "target": "child4" }
+  ]
+}
