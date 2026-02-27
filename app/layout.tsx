@@ -1,5 +1,5 @@
-import SidebarLayout from "@/components/sidebar-layout";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as HotToaster } from "react-hot-toast";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
@@ -11,16 +11,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" style={{ colorScheme: "light" }}>
       <body>
-        {/* <head>
-          <script src="https://tweakcn.com/live-preview.min.js"></script>
-        </head> */}
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
         >
-          <SidebarLayout>{children}</SidebarLayout>
+          {children}
           <Toaster />
+          <HotToaster position="top-right" />
         </ThemeProvider>
       </body>
     </html>

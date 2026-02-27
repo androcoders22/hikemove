@@ -34,9 +34,9 @@ export default function NotFound() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
-              <Link href="/">
+              <Link href="/login">
                 <Home className="mr-2 h-4 w-4" />
-                Go to Home
+                Go to Login
               </Link>
             </Button>
             <Button variant="outline" onClick={() => window.history.back()}>

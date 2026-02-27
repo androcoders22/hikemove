@@ -12,13 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, Command } from "lucide-react";
+import { Loader2, Command } from "lucide-react";
+import { adminLogin } from "@/lib/api/admin";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({
     email: "",
     password: "",
@@ -35,38 +34,41 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!credentials.email || !credentials.password) {
-      setError("Please fill in all fields");
-      return;
-    }
+    import("react-hot-toast").then((mod) => {
+      const toast = mod.default;
+      if (!credentials.email || !credentials.password) {
+        toast.error("Please fill in all fields");
+        return;
+      }
+    });
 
-    if (
-      credentials.email !== "admin@gmail.com" ||
-      credentials.password !== "123456"
-    ) {
-      setError("Invalid email or password");
-      return;
-    }
+    if (!credentials.email || !credentials.password) return;
 
     try {
       setLoading(true);
-      setError(null);
 
-      // Simulate login for frontend-only auth
-      // In a real app, you'd validate credentials properly
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: "Admin User",
-          email: credentials.email,
-          avatar: "/s-traders-logo.webp",
-        }),
-      );
-      sessionStorage.setItem("token", credentials.password);
+      const res = await adminLogin({
+        email: credentials.email,
+        password: credentials.password,
+      });
 
-      router.push("/tree-view");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      if (res.status === true && res.data?.accessToken) {
+        localStorage.setItem("accessToken", res.data.accessToken);
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            name: "Admin User",
+            email: credentials.email,
+            avatar: "/s-traders-logo.webp",
+          }),
+        );
+        sessionStorage.setItem("token", "123456");
+
+        router.push("/tree-view");
+      }
+    } catch (err: any) {
+      // Global axios interceptor already handles throwing the toast error message
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -88,13 +90,6 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
