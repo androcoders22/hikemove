@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { adminRefresh } from "@/lib/api/admin";
+import { memberRefresh } from "@/lib/api/member";
 
 export default function SidebarLayout({
   children,
@@ -20,10 +21,13 @@ export default function SidebarLayout({
       if (typeof window === "undefined") return;
 
       const token = localStorage.getItem("accessToken");
+      const userType = localStorage.getItem("userType") || "admin";
+      const loginPath =
+        userType === "member" ? "/member-login" : "/admin-login";
 
       if (!token) {
         setIsInitializing(false);
-        router.push("/login");
+        router.push(loginPath);
         return;
       }
 
@@ -34,7 +38,9 @@ export default function SidebarLayout({
           const isExpired = payload.exp * 1000 < Date.now();
 
           if (isExpired) {
-            const res = await adminRefresh();
+            const refreshFn =
+              userType === "member" ? memberRefresh : adminRefresh;
+            const res = await refreshFn();
             if (res.status === true && res.data?.accessToken) {
               localStorage.setItem("accessToken", res.data.accessToken);
             } else {
@@ -45,8 +51,8 @@ export default function SidebarLayout({
       } catch (err) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        sessionStorage.removeItem("token");
-        router.push("/login");
+        localStorage.removeItem("userType");
+        router.push(loginPath);
       } finally {
         setIsInitializing(false);
       }

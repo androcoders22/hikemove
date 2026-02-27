@@ -60,19 +60,42 @@ api.interceptors.response.use(
       } else if (typeof data.message === "string") {
         toast.error(data.message);
       }
-    } else if (error.message && error.response?.status !== 401) {
-      // Avoid generic "Network Error" overriding actual 401 handled by interceptor below
+    } else if (
+      error.message &&
+      error.response?.status !== 401 &&
+      error.response?.status !== 403
+    ) {
       toast.error(error.message);
     }
 
+    const userType =
+      typeof window !== "undefined"
+        ? localStorage.getItem("userType") || "admin"
+        : "admin";
+    const loginPath = userType === "member" ? "/member-login" : "/admin-login";
+
     const originalRequest = error.config;
 
+    // Handle 403 Forbidden — auto logout
+    if (error.response?.status === 403) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
+        localStorage.removeItem("userType");
+        window.location.href = loginPath;
+      }
+      return Promise.reject(error);
+    }
+
     // Avoid infinite loops for login and refresh endpoints
+    const skipUrls = [
+      "/admin/login",
+      "/admin/refresh",
+      "/member/login",
+      "/member/refresh",
+    ];
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (
-        originalRequest.url === "/admin/login" ||
-        originalRequest.url === "/admin/refresh"
-      ) {
+      if (skipUrls.includes(originalRequest.url)) {
         return Promise.reject(error);
       }
 
@@ -93,9 +116,15 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Attempt to refresh the token using the existing access token
+        // Determine refresh endpoint based on user type
+        const refreshUrl =
+          userType === "member"
+            ? `${BASE_URL}/member/refresh`
+            : `${BASE_URL}/admin/refresh`;
+
+        // Use raw axios (not `api`) to avoid interceptor loops
         const res = await axios.post(
-          `${BASE_URL}/admin/refresh`,
+          refreshUrl,
           {},
           {
             headers: {
@@ -119,14 +148,14 @@ api.interceptors.response.use(
         }
       } catch (refreshError) {
         processQueue(refreshError, null);
-        // Clear auth state
+        // Clear all auth state
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
-        sessionStorage.removeItem("token");
+        localStorage.removeItem("userType");
 
-        // Redirect to login
+        // Redirect to correct login
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = loginPath;
         }
         return Promise.reject(refreshError);
       } finally {

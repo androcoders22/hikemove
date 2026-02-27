@@ -10,9 +10,12 @@ import {
 
 export function NavUser() {
   const handleLogout = () => {
-    sessionStorage.removeItem("token");
+    const userType = localStorage.getItem("userType");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
-    window.location.href = "/login";
+    localStorage.removeItem("userType");
+    const loginPath = userType === "member" ? "/member-login" : "/admin-login";
+    window.location.href = loginPath;
   };
 
   return (

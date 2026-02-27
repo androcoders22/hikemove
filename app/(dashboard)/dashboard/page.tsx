@@ -7,7 +7,6 @@ import {
   UserPlus,
   Wallet,
   Copy,
-  TrendingUp,
   Award,
   ArrowUpRight,
 } from "lucide-react";
@@ -78,6 +77,15 @@ export default function DashboardPage() {
     return stat.value;
   };
 
+  const fullReferralLink = `${typeof window !== "undefined" ? window.location.origin : ""}/member-signup/${(() => {
+    try {
+      const userStr = localStorage.getItem("user");
+      return userStr ? JSON.parse(userStr).memberId : "default";
+    } catch (e) {
+      return "default";
+    }
+  })()}`;
+
   return (
     <div className="flex flex-col selection:bg-primary/10 selection:text-primary">
       <PageHeader
@@ -93,14 +101,14 @@ export default function DashboardPage() {
           </span>
           <div className="flex items-center bg-background border border-border px-2 py-0.5 rounded gap-2 min-w-0">
             <span className="text-[11px] font-mono text-foreground truncate select-all">
-              {data.referralLink}
+              {fullReferralLink}
             </span>
             <Button
               size="icon"
               variant="ghost"
               className="h-5 w-5 text-muted-foreground hover:text-primary shrink-0"
               onClick={() => {
-                navigator.clipboard.writeText(data.referralLink);
+                navigator.clipboard.writeText(fullReferralLink);
                 toast.success("Copied to clipboard");
               }}
             >

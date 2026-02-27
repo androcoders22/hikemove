@@ -34,7 +34,7 @@ export default function NotFound() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
-              <Link href="/login">
+              <Link href="/admin-login">
                 <Home className="mr-2 h-4 w-4" />
                 Go to Login
               </Link>
