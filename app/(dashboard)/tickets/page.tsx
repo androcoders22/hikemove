@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
 import {
   Plus,
@@ -40,59 +40,81 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { getTicketsAPI, createTicketAPI } from "@/lib/api/ticket";
 
 interface TicketRow {
-  id: string;
-  type: string;
+  _id: string;
+  problemType: string;
+  subject: string;
   description: string;
-  status: "Open" | "Resolved" | "Closed";
-  date: string;
+  status: "open" | "resolved" | "closed" | string;
+  screenshot?: string;
+  createdAt: string;
 }
 
 export default function TicketSystem() {
-  const [tickets, setTickets] = useState<TicketRow[]>([
-    {
-      id: "TKT-1001",
-      type: "Login Issue",
-      description: "Unable to login using mobile app",
-      status: "Resolved",
-      date: "27/01/2026",
-    },
-    {
-      id: "TKT-1042",
-      type: "Withdrawal Delay",
-      description: "Request #4521 still pending after 48h",
-      status: "Open",
-      date: "28/01/2026",
-    },
-  ]);
+  const [tickets, setTickets] = useState<TicketRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
   const [formData, setFormData] = useState({
-    type: "",
+    problemType: "",
+    subject: "",
     description: "",
-    screenshot: null as File | null,
   });
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const fetchTickets = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getTicketsAPI();
+      if (response.data.status && response.data.data) {
+        setTickets(response.data.data);
+      }
+    } catch (error) {
+      toast.error("Failed to load tickets");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.type || !formData.description) {
+    if (!formData.problemType || !formData.subject || !formData.description) {
       toast.error("Please fill in required fields");
       return;
     }
 
-    const newTicket: TicketRow = {
-      id: `TKT-${Math.floor(1000 + Math.random() * 9000)}`,
-      type: formData.type,
-      description: formData.description,
-      status: "Open",
-      date: format(new Date(), "dd/MM/yyyy"),
-    };
+    try {
+      setIsSubmitting(true);
+      // Constructing JSON data based on your payload structure
+      const payload = {
+        problemType: formData.problemType,
+        description: formData.description,
+        subject: formData.subject,
+        status: "open",
+        screenshot: "", // Include actual screenshot logic here if/when image upload is supported by your backend
+      };
 
-    setTickets([newTicket, ...tickets]);
-    setIsNewTicketOpen(false);
-    setFormData({ type: "", description: "", screenshot: null });
-    toast.success("Support ticket created successfully!");
+      await createTicketAPI(payload);
+
+      toast.success("Support ticket created successfully!");
+      setIsNewTicketOpen(false);
+      setFormData({ problemType: "", subject: "", description: "" });
+      setScreenshot(null);
+      fetchTickets(); // Refresh list after create
+    } catch (error) {
+      toast.error("Failed to submit ticket");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -125,8 +147,8 @@ export default function TicketSystem() {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[450px] rounded-2xl border-border bg-background p-0 overflow-hidden">
-              <DialogHeader className="p-6 bg-muted/30 border-b border-border">
-                <DialogTitle className="text-xl font-black uppercase tracking-tight">
+              <DialogHeader className="p-3 bg-muted/30 border-b border-border">
+                <DialogTitle className="text-lg font-black uppercase tracking-tight">
                   New Support Ticket
                 </DialogTitle>
                 <DialogDescription className="text-xs font-bold text-muted-foreground uppercase opacity-70">
@@ -134,32 +156,47 @@ export default function TicketSystem() {
                 </DialogDescription>
               </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-5">
                 <div className="space-y-2">
                   <Label className="text-[10px] font-black uppercase tracking-widest">
                     Choose Problem Type
                   </Label>
                   <Select
                     onValueChange={(val) =>
-                      setFormData({ ...formData, type: val })
+                      setFormData({ ...formData, problemType: val })
                     }
-                    value={formData.type}
+                    value={formData.problemType}
                   >
-                    <SelectTrigger className="h-11 font-bold">
+                    <SelectTrigger className="h-11 w-full font-bold">
                       <SelectValue placeholder="Select type..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Login Issue">Login Issue</SelectItem>
-                      <SelectItem value="Withdrawal Issue">
-                        Withdrawal Issue
+                      <SelectItem value="topup">Top-up</SelectItem>
+                      <SelectItem value="transfer">Transfer</SelectItem>
+                      <SelectItem value="hashVerification">
+                        Hash Verification
                       </SelectItem>
-                      <SelectItem value="Deposit Issue">
-                        Deposit Issue
-                      </SelectItem>
-                      <SelectItem value="Top-up Issue">Top-up Issue</SelectItem>
-                      <SelectItem value="Others">Others</SelectItem>
+                      <SelectItem value="activation">Activation</SelectItem>
+                      <SelectItem value="coin">Coin</SelectItem>
+                      <SelectItem value="payment">Payment</SelectItem>
+                      <SelectItem value="withdrawal">Withdrawal</SelectItem>
+                      <SelectItem value="others">Others</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest">
+                    Subject
+                  </Label>
+                  <Input
+                    placeholder="Brief subject of the issue"
+                    className="h-11 font-medium text-sm border-border"
+                    value={formData.subject}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subject: e.target.value })
+                    }
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -185,18 +222,13 @@ export default function TicketSystem() {
                       type="file"
                       className="absolute inset-0 opacity-0 cursor-pointer"
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          screenshot: e.target.files?.[0] || null,
-                        })
+                        setScreenshot(e.target.files?.[0] || null)
                       }
                     />
                     <div className="flex flex-col items-center gap-2">
                       <Upload className="h-6 w-6 text-muted-foreground" />
                       <span className="text-[11px] font-bold text-muted-foreground uppercase">
-                        {formData.screenshot
-                          ? formData.screenshot.name
-                          : "Upload screenshot"}
+                        {screenshot ? screenshot.name : "Upload screenshot"}
                       </span>
                     </div>
                   </div>
@@ -204,9 +236,10 @@ export default function TicketSystem() {
 
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className="w-full h-11 font-black uppercase tracking-widest shadow-lg shadow-primary/20"
                 >
-                  Submit Ticket
+                  {isSubmitting ? "Submitting..." : "Submit Ticket"}
                 </Button>
               </form>
             </DialogContent>
@@ -223,7 +256,7 @@ export default function TicketSystem() {
                     Ticket ID
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Problem Type
+                    Subject / Problem Type
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Description
@@ -237,49 +270,72 @@ export default function TicketSystem() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tickets.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="border-border hover:bg-muted/20 transition-colors group"
-                  >
-                    <TableCell className="text-xs font-black text-primary">
-                      {row.id}
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-[10px] font-black uppercase tracking-tight bg-primary/10 text-primary px-2 py-0.5 rounded">
-                        {row.type}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs font-medium text-foreground max-w-[300px] truncate">
-                      {row.description}
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-muted-foreground">
-                      {row.date}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight shadow-sm ${
-                          row.status === "Resolved"
-                            ? "bg-emerald-50 text-emerald-600"
-                            : row.status === "Open"
-                              ? "bg-amber-50 text-amber-600"
-                              : "bg-rose-50 text-rose-600"
-                        }`}
-                      >
-                        {row.status === "Resolved" && (
-                          <CheckCircle2 className="h-3 w-3" />
-                        )}
-                        {row.status === "Open" && (
-                          <Clock className="h-3 w-3 animate-pulse" />
-                        )}
-                        {row.status === "Closed" && (
-                          <AlertCircle className="h-3 w-3" />
-                        )}
-                        {row.status}
-                      </div>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-6 text-muted-foreground"
+                    >
+                      Loading tickets...
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : tickets.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-6 text-muted-foreground"
+                    >
+                      No tickets found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  tickets.map((row) => (
+                    <TableRow
+                      key={row._id}
+                      className="border-border hover:bg-muted/20 transition-colors group"
+                    >
+                      <TableCell className="text-xs font-black text-primary">
+                        {row._id.slice(-6).toUpperCase()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-xs font-black truncate max-w-[200px]">
+                            {row.subject}
+                          </span>
+                          <span className="w-fit text-[10px] font-black uppercase tracking-tight bg-primary/10 text-primary px-2 py-0.5 rounded">
+                            {row.problemType}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs font-medium text-foreground max-w-[300px] truncate">
+                        {row.description}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-muted-foreground">
+                        {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight shadow-sm ${
+                            row.status.toLowerCase() === "resolved" ||
+                            row.status.toLowerCase() === "closed"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : "bg-amber-50 text-amber-600"
+                          }`}
+                        >
+                          {(row.status.toLowerCase() === "resolved" ||
+                            row.status.toLowerCase() === "closed") && (
+                            <CheckCircle2 className="h-3 w-3" />
+                          )}
+                          {row.status.toLowerCase() !== "resolved" &&
+                            row.status.toLowerCase() !== "closed" && (
+                              <Clock className="h-3 w-3 animate-pulse" />
+                            )}
+                          {row.status}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

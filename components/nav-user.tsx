@@ -21,11 +21,7 @@ export function NavUser() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          onClick={handleLogout}
-          className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        >
+        <SidebarMenuButton size="lg" onClick={handleLogout}>
           <div className="h-9 w-9 rounded-full bg-gray-100 flex items-center justify-center">
             <LogOut className="h-4 w-4" />
           </div>

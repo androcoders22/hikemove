@@ -20,8 +20,8 @@ export default function MemberLoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [credentials, setCredentials] = useState({
-    memberId: "",
-    password: "",
+    memberId: "HM0000022",
+    password: "123456",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

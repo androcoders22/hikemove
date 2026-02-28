@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { misPaths } from "@/lib/routes";
 
@@ -44,6 +45,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={misPaths} />
         {/* <NavSecondary items={secondaryRoutes} className="mt-auto" /> */}
       </SidebarContent>
+      <SidebarSeparator className="my-1" />
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
