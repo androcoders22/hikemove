@@ -64,7 +64,7 @@ export default function LoginPage() {
           }),
         );
 
-        router.push("/tree-view");
+        router.push("/admin/dashboard");
       }
     } catch (err: any) {
       // Global axios interceptor already handles throwing the toast error message

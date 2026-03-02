@@ -6,6 +6,17 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { adminRefresh } from "@/lib/api/admin";
 import { memberRefresh } from "@/lib/api/member";
+import { useAuthStore } from "@/lib/store/useAuthStore";
+import { adminPaths, memberPaths } from "@/lib/routes";
+
+const isPathAllowed = (pathname: string, userType: "admin" | "member") => {
+  const allowedPaths = userType === "admin" ? adminPaths : memberPaths;
+  return (
+    allowedPaths.some((group) =>
+      group.items.some((item) => pathname.startsWith(item.url)),
+    ) || pathname === "/edit-profile"
+  ); // Allow edit-profile unconditionally or rely on startsWith
+};
 
 export default function SidebarLayout({
   children,
@@ -15,13 +26,16 @@ export default function SidebarLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [isInitializing, setIsInitializing] = useState(true);
+  const { setUserType } = useAuthStore();
 
   useEffect(() => {
     const initSession = async () => {
       if (typeof window === "undefined") return;
 
       const token = localStorage.getItem("accessToken");
-      const userType = localStorage.getItem("userType") || "admin";
+      const userType =
+        (localStorage.getItem("userType") as "member" | "admin" | null) ||
+        "admin";
       const loginPath =
         userType === "member" ? "/member-login" : "/admin-login";
 
@@ -36,6 +50,8 @@ export default function SidebarLayout({
         if (parts.length === 3) {
           const payload = JSON.parse(atob(parts[1]));
           const isExpired = payload.exp * 1000 < Date.now();
+          console.log(payload.exp * 1000);
+          console.log(Date.now());
 
           if (isExpired) {
             const refreshFn =
@@ -52,9 +68,16 @@ export default function SidebarLayout({
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
         localStorage.removeItem("userType");
+        setUserType(null);
         router.push(loginPath);
+        return;
       } finally {
-        setIsInitializing(false);
+        setUserType(userType as "admin" | "member");
+        if (!isPathAllowed(pathname, userType as "admin" | "member")) {
+          router.push(userType === "admin" ? "/admin/dashboard" : "/dashboard");
+        } else {
+          setIsInitializing(false);
+        }
       }
     };
 

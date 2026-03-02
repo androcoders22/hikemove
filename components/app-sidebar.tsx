@@ -15,16 +15,22 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { misPaths } from "@/lib/routes";
+import { adminPaths, memberPaths } from "@/lib/routes";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { userType } = useAuthStore();
+  const navPaths = userType === "admin" ? adminPaths : memberPaths;
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/tree-view">
+              <a
+                href={userType === "admin" ? "/admin/dashboard" : "/dashboard"}
+              >
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Command className="size-4" />
                 </div>
@@ -42,7 +48,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={misPaths} />
+        <NavMain items={navPaths} />
         {/* <NavSecondary items={secondaryRoutes} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarSeparator className="my-1" />
