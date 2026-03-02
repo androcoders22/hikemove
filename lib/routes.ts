@@ -43,21 +43,6 @@ export const adminPaths: NavGroup[] = [
     ],
   },
   {
-    title: "Transaction History",
-    items: [
-      {
-        title: "Transaction Request List",
-        url: "/admin/transaction-history/request",
-        icon: Briefcase,
-      },
-      {
-        title: "Transaction Approve List",
-        url: "/admin/transaction-history/approve",
-        icon: Briefcase,
-      },
-    ],
-  },
-  {
     title: "Withdrawal History",
     items: [
       {
