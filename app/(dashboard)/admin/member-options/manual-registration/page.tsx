@@ -32,7 +32,6 @@ export default function ManualRegistrationPage() {
         joiningDate: "",
         activationDate: "",
     });
-    const [screenshot, setScreenshot] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isCheckingReferral, setIsCheckingReferral] = useState(false);
 
@@ -43,12 +42,6 @@ export default function ManualRegistrationPage() {
 
     const handleSelectChange = (id: string, value: string) => {
         setFormData(prev => ({ ...prev, [id]: value }));
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setScreenshot(e.target.files[0]);
-        }
     };
 
     // Check referral name when ID changes
@@ -109,7 +102,7 @@ export default function ManualRegistrationPage() {
     };
 
     return (
-        <div className="flex-1 w-full bg-gray-50/30">
+        <div className="flex-1 w-full bg-background/30">
             <PageHeader
                 title="Manual Registration"
                 breadcrumbs={[
@@ -118,7 +111,7 @@ export default function ManualRegistrationPage() {
                 ]}
             />
 
-            <div className="flex-1 p-6 md:p-10">
+            <div className="flex p-6 md:p-10">
                 <Card className="max-w-4xl mx-auto border-none shadow-sm rounded-xl overflow-hidden bg-white">
                     <CardHeader className="border-b bg-gray-50/10 px-8 py-6">
                         <CardTitle className="text-xl font-black text-foreground">
@@ -306,20 +299,7 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Payment Screenshot */}
-                            <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2 pb-6">
-                                <Label htmlFor="screenshot" className="text-sm font-bold text-foreground/80">
-                                    Payment Screenshot
-                                </Label>
-                                <div className="flex items-center gap-3">
-                                    <Input
-                                        id="screenshot"
-                                        type="file"
-                                        onChange={handleFileChange}
-                                        className="h-auto py-1.5 px-3 border-border rounded-md cursor-pointer file:rounded-full file:border-0 file:bg-primary/10 file:text-primary file:font-semibold hover:file:bg-primary/20 transition-all"
-                                    />
-                                </div>
-                            </div>
+
 
                             {/* Submit Button */}
                             <div className="flex justify-end pt-8 border-t border-slate-100">
