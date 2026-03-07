@@ -14,7 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+;import toast from "react-hot-toast";
 import { Wallet, ArrowUpCircle, ArrowDownCircle, Info, ShieldCheck, History } from "lucide-react";
 
 export default function WalletUpdatePage() {
@@ -69,7 +69,7 @@ export default function WalletUpdatePage() {
             />
 
             <div className="flex-0 p-6 w-full pt-0">
-                <Card className="border-border shadow-sm overflow-hidden bg-white border-border pt-0">
+                <Card className="border-border shadow-sm overflow-hidden bg-white pt-0">
                     <CardHeader className="flex flex-row items-center justify-between p-4 px-6 border-b bg-gray-50/30">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg">

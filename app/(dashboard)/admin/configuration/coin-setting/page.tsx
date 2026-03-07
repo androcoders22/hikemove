@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { CircleDollarSign, Save, X } from "lucide-react";
 
 export default function CoinSettingPage() {
@@ -17,19 +17,21 @@ export default function CoinSettingPage() {
         quantity: "10000000",
         lastUpdated: "11/26/2025 1:12:23 AM"
     });
+
     const [isLoading, setIsLoading] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
-        setFormData(prev => ({ ...prev, [id]: value }));
+        setFormData((prev) => ({ ...prev, [id]: value }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
         try {
             // Mock API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             toast.success("Coin settings updated successfully");
         } catch (error) {
             toast.error("Failed to update coin settings");
@@ -60,12 +62,16 @@ export default function CoinSettingPage() {
                             </CardTitle>
                         </div>
                     </CardHeader>
+
                     <CardContent className="p-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
                             <div className="space-y-6">
                                 {/* Name */}
                                 <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] items-center gap-x-12 gap-y-2">
-                                    <Label htmlFor="name" className="text-sm font-bold text-foreground/70 uppercase tracking-widest">
+                                    <Label
+                                        htmlFor="name"
+                                        className="text-sm font-bold text-foreground/70 uppercase tracking-widest"
+                                    >
                                         Name
                                     </Label>
                                     <Input
@@ -79,7 +85,10 @@ export default function CoinSettingPage() {
 
                                 {/* Symbol */}
                                 <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] items-center gap-x-12 gap-y-2">
-                                    <Label htmlFor="symbol" className="text-sm font-bold text-foreground/70 uppercase tracking-widest">
+                                    <Label
+                                        htmlFor="symbol"
+                                        className="text-sm font-bold text-foreground/70 uppercase tracking-widest"
+                                    >
                                         Symbol
                                     </Label>
                                     <Input
@@ -93,7 +102,10 @@ export default function CoinSettingPage() {
 
                                 {/* Current Price */}
                                 <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] items-center gap-x-12 gap-y-2">
-                                    <Label htmlFor="currentPrice" className="text-sm font-bold text-foreground/70 uppercase tracking-widest">
+                                    <Label
+                                        htmlFor="currentPrice"
+                                        className="text-sm font-bold text-foreground/70 uppercase tracking-widest"
+                                    >
                                         Current Price
                                     </Label>
                                     <Input
@@ -107,7 +119,10 @@ export default function CoinSettingPage() {
 
                                 {/* Quantity */}
                                 <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] items-center gap-x-12 gap-y-2">
-                                    <Label htmlFor="quantity" className="text-sm font-bold text-foreground/70 uppercase tracking-widest">
+                                    <Label
+                                        htmlFor="quantity"
+                                        className="text-sm font-bold text-foreground/70 uppercase tracking-widest"
+                                    >
                                         Quantity
                                     </Label>
                                     <Input
@@ -121,7 +136,10 @@ export default function CoinSettingPage() {
 
                                 {/* Last Updated */}
                                 <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] items-center gap-x-12 gap-y-2">
-                                    <Label htmlFor="lastUpdated" className="text-sm font-bold text-foreground/70 uppercase tracking-widest">
+                                    <Label
+                                        htmlFor="lastUpdated"
+                                        className="text-sm font-bold text-foreground/70 uppercase tracking-widest"
+                                    >
                                         Last Updated
                                     </Label>
                                     <div className="h-12 px-4 flex items-center bg-muted/40 border border-border rounded-lg text-muted-foreground font-mono text-sm">
@@ -140,6 +158,7 @@ export default function CoinSettingPage() {
                                     <Save className="h-4 w-4" />
                                     {isLoading ? "Saving..." : "Submit"}
                                 </Button>
+
                                 <Button
                                     type="button"
                                     variant="outline"

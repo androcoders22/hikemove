@@ -22,7 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 interface DownlineRow {
     srNo: number;
@@ -39,7 +39,6 @@ export default function MemberDownlinePage() {
     const [selectType, setSelectType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // Filter states
     const [filters, setFilters] = useState({
         memberId: "",
         memberName: "",
@@ -52,15 +51,18 @@ export default function MemberDownlinePage() {
 
     const handleFetchDownline = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (!downlineId) {
             toast.error("Please enter a Downline Id");
             return;
         }
+
         setIsLoading(true);
+
         try {
             // Placeholder for API call: const res = await getDownlineAPI(downlineId, selectType);
-            await new Promise(resolve => setTimeout(resolve, 800));
-            setDownlineData([]); // This will be set with actual API data
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            setDownlineData([]);
             toast.success("Downline data retrieved");
         } catch (error) {
             toast.error("Failed to fetch data");
@@ -70,7 +72,7 @@ export default function MemberDownlinePage() {
     };
 
     const handleFilterChange = (key: keyof typeof filters, value: string) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
+        setFilters((prev) => ({ ...prev, [key]: value }));
     };
 
     return (
@@ -97,8 +99,10 @@ export default function MemberDownlinePage() {
                     </CardHeader>
 
                     <CardContent className="p-6 space-y-8 text-foreground">
-                        {/* Top Input Row matching image */}
-                        <form onSubmit={handleFetchDownline} className="flex flex-col md:flex-row items-center gap-6 bg-muted/5 p-6 rounded-xl border border-border/50">
+                        <form
+                            onSubmit={handleFetchDownline}
+                            className="flex flex-col md:flex-row items-center gap-6 bg-muted/5 p-6 rounded-xl border border-border/50"
+                        >
                             <div className="text-[11px] font-black uppercase tracking-widest text-foreground/70 whitespace-nowrap">
                                 Your Downline Id
                             </div>
@@ -134,21 +138,26 @@ export default function MemberDownlinePage() {
                             </Button>
                         </form>
 
-                        {/* Filter Row matching image */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 px-1">
                             {Object.keys(filters).map((key) => (
                                 <div key={key} className="relative group">
                                     <Input
-                                        placeholder={key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                                        placeholder={key
+                                            .replace(/([A-Z])/g, " $1")
+                                            .replace(/^./, (str) => str.toUpperCase())}
                                         value={filters[key as keyof typeof filters]}
-                                        onChange={(e) => handleFilterChange(key as keyof typeof filters, e.target.value)}
+                                        onChange={(e) =>
+                                            handleFilterChange(
+                                                key as keyof typeof filters,
+                                                e.target.value
+                                            )
+                                        }
                                         className="h-10 px-3 text-[11px] border-border bg-background/50 focus:bg-white placeholder:text-muted-foreground/40 rounded-lg transition-all"
                                     />
                                 </div>
                             ))}
                         </div>
 
-                        {/* Table */}
                         <div className="border border-border rounded-xl overflow-hidden shadow-sm overflow-x-auto">
                             <div className="min-w-[1000px]">
                                 <Table>
@@ -175,7 +184,10 @@ export default function MemberDownlinePage() {
                                             </TableRow>
                                         ) : (
                                             downlineData.map((row) => (
-                                                <TableRow key={row.srNo} className="hover:bg-muted/20 transition-colors border-b last:border-0 font-medium">
+                                                <TableRow
+                                                    key={row.srNo}
+                                                    className="hover:bg-muted/20 transition-colors border-b last:border-0 font-medium"
+                                                >
                                                     <TableCell className="text-xs font-bold text-muted-foreground py-4 px-4">{row.srNo}</TableCell>
                                                     <TableCell className="text-xs font-bold text-primary py-4 px-4">{row.memberId}</TableCell>
                                                     <TableCell className="text-xs py-4 px-4 text-foreground">{row.memberName}</TableCell>
@@ -197,10 +209,13 @@ export default function MemberDownlinePage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-4 px-4 text-right">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${row.status === "Active"
-                                                            ? "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
-                                                            : "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
-                                                            }`}>
+                                                        <span
+                                                            className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                                                                row.status === "Active"
+                                                                    ? "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
+                                                                    : "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
+                                                            }`}
+                                                        >
                                                             {row.status}
                                                         </span>
                                                     </TableCell>

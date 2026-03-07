@@ -13,7 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { checkMemberIdAPI } from "@/lib/api/member-topup";
 import { memberSignup } from "@/lib/api/member";
 
@@ -37,14 +37,13 @@ export default function ManualRegistrationPage() {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
-        setFormData(prev => ({ ...prev, [id]: value }));
+        setFormData((prev) => ({ ...prev, [id]: value }));
     };
 
     const handleSelectChange = (id: string, value: string) => {
-        setFormData(prev => ({ ...prev, [id]: value }));
+        setFormData((prev) => ({ ...prev, [id]: value }));
     };
 
-    // Check referral name when ID changes
     useEffect(() => {
         if (formData.referralId && formData.referralId.length >= 4) {
             const timer = setTimeout(async () => {
@@ -52,35 +51,60 @@ export default function ManualRegistrationPage() {
                 try {
                     const res = await checkMemberIdAPI(formData.referralId);
                     if (res.data?.status && res.data?.data) {
-                        setFormData(prev => ({ ...prev, referralName: res.data.data.fullName || "User Found" }));
+                        setFormData((prev) => ({
+                            ...prev,
+                            referralName: res.data.data.fullName || "User Found",
+                        }));
                     } else {
-                        setFormData(prev => ({ ...prev, referralName: "Invalid Referral ID" }));
+                        setFormData((prev) => ({
+                            ...prev,
+                            referralName: "Invalid Referral ID",
+                        }));
                     }
                 } catch (error) {
-                    setFormData(prev => ({ ...prev, referralName: "Not Found" }));
+                    setFormData((prev) => ({
+                        ...prev,
+                        referralName: "Not Found",
+                    }));
                 } finally {
                     setIsCheckingReferral(false);
                 }
             }, 800);
+
             return () => clearTimeout(timer);
         } else {
-            setFormData(prev => ({ ...prev, referralName: "" }));
+            setFormData((prev) => ({ ...prev, referralName: "" }));
         }
     }, [formData.referralId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Basic validation
-        const requiredFields = ['referralId', 'memberId', 'fullName', 'phone', 'password', 'transactionPassword', 'package', 'joiningDate', 'activationDate'];
+        const requiredFields = [
+            "referralId",
+            "memberId",
+            "fullName",
+            "phone",
+            "password",
+            "transactionPassword",
+            "package",
+            "joiningDate",
+            "activationDate",
+        ];
+
         for (const field of requiredFields) {
             if (!formData[field as keyof typeof formData]) {
-                toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+                toast.error(
+                    `Please fill in ${field
+                        .replace(/([A-Z])/g, " $1")
+                        .toLowerCase()}`
+                );
                 return;
             }
         }
 
         setIsLoading(true);
+
         try {
             const payload = {
                 ...formData,
@@ -88,9 +112,9 @@ export default function ManualRegistrationPage() {
             };
 
             const res = await memberSignup(payload);
+
             if (res.status) {
                 toast.success("Member registered successfully!");
-                // Optionally reset form
             } else {
                 toast.error(res.message || "Registration failed");
             }
@@ -118,9 +142,9 @@ export default function ManualRegistrationPage() {
                             Manual Registration
                         </CardTitle>
                     </CardHeader>
+
                     <CardContent className="p-8">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Referral Id */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="referralId" className="text-sm font-bold text-foreground/80">
                                     Referral Id<span className="text-rose-500 ml-0.5">*</span>
@@ -134,7 +158,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Referral Name */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="referralName" className="text-sm font-bold text-foreground/80">
                                     Referral Name
@@ -148,7 +171,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Member id */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="memberId" className="text-sm font-bold text-foreground/80">
                                     Member id<span className="text-rose-500 ml-0.5">*</span>
@@ -162,7 +184,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Full Name */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="fullName" className="text-sm font-bold text-foreground/80">
                                     Full Name<span className="text-rose-500 ml-0.5">*</span>
@@ -176,7 +197,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Mobile Number */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="phone" className="text-sm font-bold text-foreground/80">
                                     Mobile Number<span className="text-rose-500 ml-0.5">*</span>
@@ -190,7 +210,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Email */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="email" className="text-sm font-bold text-foreground/80">
                                     Email
@@ -205,12 +224,11 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Country */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="country" className="text-sm font-bold text-foreground/80">
                                     Country
                                 </Label>
-                                <Select value={formData.country} onValueChange={(v) => handleSelectChange('country', v)}>
+                                <Select value={formData.country} onValueChange={(v) => handleSelectChange("country", v)}>
                                     <SelectTrigger className="h-11 bg-white border-border focus:ring-2 focus:ring-primary/10 rounded-md">
                                         <SelectValue placeholder="Select Country" />
                                     </SelectTrigger>
@@ -224,7 +242,6 @@ export default function ManualRegistrationPage() {
                                 </Select>
                             </div>
 
-                            {/* Login Password */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="password" className="text-sm font-bold text-foreground/80">
                                     Login Password<span className="text-rose-500 ml-0.5">*</span>
@@ -238,7 +255,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Transaction Password */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="transactionPassword" className="text-sm font-bold text-foreground/80">
                                     Transaction Password<span className="text-rose-500 ml-0.5">*</span>
@@ -252,12 +268,11 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Select Package */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="package" className="text-sm font-bold text-foreground/80">
                                     Select Package<span className="text-rose-500 ml-0.5">*</span>
                                 </Label>
-                                <Select value={formData.package} onValueChange={(v) => handleSelectChange('package', v)}>
+                                <Select value={formData.package} onValueChange={(v) => handleSelectChange("package", v)}>
                                     <SelectTrigger className="h-11 bg-white border-border focus:ring-2 focus:ring-primary/10 rounded-md">
                                         <SelectValue placeholder="Select Package" />
                                     </SelectTrigger>
@@ -271,7 +286,6 @@ export default function ManualRegistrationPage() {
                                 </Select>
                             </div>
 
-                            {/* Joining Date */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="joiningDate" className="text-sm font-bold text-foreground/80">
                                     Joining Date<span className="text-rose-500 ml-0.5">*</span>
@@ -285,7 +299,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-                            {/* Activation Date */}
                             <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-center gap-x-12 gap-y-2">
                                 <Label htmlFor="activationDate" className="text-sm font-bold text-foreground/80">
                                     Activation Date<span className="text-rose-500 ml-0.5">*</span>
@@ -299,9 +312,6 @@ export default function ManualRegistrationPage() {
                                 />
                             </div>
 
-
-
-                            {/* Submit Button */}
                             <div className="flex justify-end pt-8 border-t border-slate-100">
                                 <Button
                                     type="submit"
