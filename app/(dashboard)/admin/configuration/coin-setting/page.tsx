@@ -49,7 +49,7 @@ export default function CoinSettingPage() {
             />
 
             <div className="flex p-6 md:p-10">
-                <Card className="w-full border-none shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card">
+                <Card className="w-full border-none shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card pt-0">
                     <CardHeader className="border-b bg-muted/20 px-6 py-2">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg text-primary">

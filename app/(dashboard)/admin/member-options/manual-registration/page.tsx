@@ -111,9 +111,9 @@ export default function ManualRegistrationPage() {
                 ]}
             />
 
-            <div className="flex p-6 md:p-10">
-                <Card className="max-w-4xl mx-auto border-none shadow-sm rounded-xl overflow-hidden bg-white">
-                    <CardHeader className="border-b bg-gray-50/10 px-8 py-6">
+            <div className="flex p-6 md:p-10 ">
+                <Card className="max-w-4xl mx-auto border-none shadow-sm rounded-xl overflow-hidden bg-white pt-0">
+                    <CardHeader className="border-b bg-gray-50/10 px-8 py-6 ">
                         <CardTitle className="text-xl font-black text-foreground">
                             Manual Registration
                         </CardTitle>

@@ -117,8 +117,8 @@ export default function WalletHistoryPage() {
                 ]}
             />
 
-            <div className="flex-0 p-6 w-full space-y-6">
-                <Card className="border-border shadow-sm overflow-hidden bg-white">
+            <div className="flex-0 p-6 w-full space-y-6 pt-0">
+                <Card className="border-border shadow-sm overflow-hidden bg-white pt-0">
                     <CardHeader className="p-6 border-b bg-gray-50/30">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg text-primary">

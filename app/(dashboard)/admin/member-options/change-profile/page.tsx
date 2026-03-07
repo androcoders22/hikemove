@@ -41,19 +41,19 @@ export default function ChangeProfilePage() {
                 ]}
             />
 
-            <div className="flex p-6 md:p-8">
-                <Card className="w-full border-none shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card">
-                    <CardHeader className="border-b bg-muted/20 px-8 py-6">
+            <div className="flex px-6 py-4 md:p-8 mt-1 pt-0">
+                <Card className="w-full border-none shadow-sm rounded-xl overflow-hidden   bg-white dark:bg-card pt-0">
+                    <CardHeader className="border-b bg-muted/20 px-8 py-6 ">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                            <div className="bg-primary/10 rounded-lg text-primary">
                                 <UserCog className="h-5 w-5" />
                             </div>
-                            <CardTitle className="text-xl font-black text-foreground uppercase tracking-tight">
+                            <CardTitle className="text-xl font-black text-foreground uppercase tracking-tight ">
                                 Member Change Profile
                             </CardTitle>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-8">
+                    <CardContent className="p-8 pt-0">
                         <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl">
                             {/* First Row: Label and Input */}
                             <div className="flex flex-col md:flex-row items-center gap-12">

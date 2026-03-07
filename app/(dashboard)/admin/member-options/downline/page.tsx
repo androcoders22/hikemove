@@ -83,9 +83,9 @@ export default function MemberDownlinePage() {
                 ]}
             />
 
-            <div className="flex-0 p-6 w-full space-y-6">
-                <Card className="border-border shadow-sm overflow-hidden bg-white dark:bg-card">
-                    <CardHeader className="p-6 border-b bg-muted/30">
+            <div className="flex-0 p-6 w-full space-y-6 pt-0 ">
+                <Card className="border-border shadow-sm overflow-hidden bg-white dark:bg-card pt-0">
+                    <CardHeader className="p-6 border-b bg-muted/30 mt-0">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg text-primary">
                                 <Users className="h-5 w-5" />

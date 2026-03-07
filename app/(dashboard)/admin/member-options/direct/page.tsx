@@ -74,8 +74,8 @@ export default function MyDirectPage() {
                 ]}
             />
 
-            <div className="flex-0 p-6 w-full space-y-6">
-                <Card className="border-border shadow-sm overflow-hidden bg-white dark:bg-card">
+            <div className="flex-0 p-6 w-full space-y-6 pt-0">
+                <Card className="border-border shadow-sm overflow-hidden bg-white dark:bg-card pt-0">
                     <CardHeader className="p-6 border-b bg-muted/30">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg text-primary">
@@ -89,7 +89,7 @@ export default function MyDirectPage() {
 
                     <CardContent className="p-6 space-y-8 text-foreground">
                         {/* Top Input Row matching image */}
-                        <form onSubmit={handleFetchDirect} className="flex flex-col md:flex-row items-center gap-6 bg-muted/5 p-6 rounded-xl border border-border/50">
+                        <form onSubmit={handleFetchDirect} className="flex flex-col md:flex-row items-center gap-6 bg-muted/5 p-4 rounded-xl border border-border/50">
                             <div className="relative group w-full max-w-sm">
                                 <Input
                                     placeholder="Enter Member Id"
@@ -103,7 +103,7 @@ export default function MyDirectPage() {
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="h-11 px-10 bg-primary hover:bg-primary/80 text-white font-black uppercase tracking-widest text-[11px] rounded-lg shadow-sm transition-all shrink-0"
+                                className="h-11 px-4 bg-primary hover:bg-primary/80 text-white font-black uppercase tracking-widest text-[11px] rounded-lg shadow-sm transition-all shrink-0"
                             >
                                 {isLoading ? "Searching..." : "Submit"}
                             </Button>

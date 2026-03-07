@@ -48,8 +48,8 @@ export default function ContactListPage() {
                 ]}
             />
 
-            <div className="flex-0 p-6 w-full space-y-6">
-                <Card className="border-border shadow-sm overflow-hidden bg-white dark:bg-card">
+            <div className="flex-0 px-6 w-full space-y-6">
+                <Card className="border-border py-0 shadow-sm overflow-hidden bg-white dark:bg-card">
                     <CardHeader className="p-6 border-b bg-muted/30">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg text-primary">

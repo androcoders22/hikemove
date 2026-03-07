@@ -53,8 +53,8 @@ export default function ChangePasswordPage() {
                 ]}
             />
 
-            <div className="flex p-6 md:p-10">
-                <Card className="max-w-5xl w-full border-none shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card">
+            <div className="flex p-6 md:p-10 ">
+                <Card className="max-w-5xl w-full border-none shadow-sm rounded-xl overflow-hidden bg-white dark:bg-card pt-0 ">
                     <CardHeader className="border-b bg-muted/20 px-8 py-6">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg text-primary">

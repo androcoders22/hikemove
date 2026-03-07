@@ -68,8 +68,8 @@ export default function WalletUpdatePage() {
                 ]}
             />
 
-            <div className="flex-0 p-6 w-full">
-                <Card className="border-border shadow-sm overflow-hidden bg-white border-border">
+            <div className="flex-0 p-6 w-full pt-0">
+                <Card className="border-border shadow-sm overflow-hidden bg-white border-border pt-0">
                     <CardHeader className="flex flex-row items-center justify-between p-4 px-6 border-b bg-gray-50/30">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 rounded-lg">

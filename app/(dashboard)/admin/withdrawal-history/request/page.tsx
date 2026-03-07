@@ -131,10 +131,10 @@ export default function WithdrawalRequestListPage() {
                 ]}
             />
 
-            <div className="flex-1 p-6 space-y-6">
+            <div className="flex-1 p-6 space-y-6 pt-0">
 
 
-                <Card className="border-border shadow-md overflow-hidden bg-white/80 backdrop-blur-md border-[#d8e5d0]">
+                <Card className="border-border shadow-md overflow-hidden bg-white/80 backdrop-blur-md border-[#d8e5d0] pt-0">
                     <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b bg-gray-50/50">
                         <div className="space-y-1">
                             <CardTitle className="text-lg font-black uppercase tracking-widest text-foreground flex items-center gap-2">
