@@ -43,21 +43,6 @@ export const adminPaths: NavGroup[] = [
     ],
   },
   {
-    title: "Transaction History",
-    items: [
-      {
-        title: "Transaction Request List",
-        url: "/admin/transaction-history/request",
-        icon: Briefcase,
-      },
-      {
-        title: "Transaction Approve List",
-        url: "/admin/transaction-history/approve",
-        icon: Briefcase,
-      },
-    ],
-  },
-  {
     title: "Withdrawal History",
     items: [
       {
@@ -133,16 +118,16 @@ export const adminPaths: NavGroup[] = [
     ],
   },
   {
-    title: "Configuration",
+    title: "configuration",
     items: [
       {
         title: "Change Password",
-        url: "/admin/change-password",
+        url: "/admin/configuration/change-password",
         icon: KeyRound,
       },
       {
         title: "Coin Setting",
-        url: "/admin/coin-setting",
+        url: "/admin/configuration/coin-setting",
         icon: CircleDollarSign,
       },
     ],
