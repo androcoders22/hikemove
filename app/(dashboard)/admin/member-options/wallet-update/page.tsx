@@ -14,8 +14,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-;import toast from "react-hot-toast";
-import { Wallet, ArrowUpCircle, ArrowDownCircle, Info, ShieldCheck, History } from "lucide-react";
+import toast from "react-hot-toast";
+import { Wallet } from "lucide-react";
 
 export default function WalletUpdatePage() {
     const [memberId, setMemberId] = useState("");
@@ -33,17 +33,19 @@ export default function WalletUpdatePage() {
         }
 
         setIsLoading(true);
+
         try {
             const payload = {
                 memberId,
-                action, // 'credit' or 'debit'
+                action,
                 amount: Number(amount),
-                remark
+                remark,
             };
+
             const res = await updateWalletAPI(payload);
+
             if (res.data?.status) {
                 toast.success(res.data?.message || "Wallet updated successfully!");
-                // Reset form
                 setMemberId("");
                 setAction("");
                 setAmount("");
@@ -59,7 +61,7 @@ export default function WalletUpdatePage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50/50">
+        <div className="flex min-h-screen w-full min-w-0 flex-col bg-[#f6f8f4]">
             <PageHeader
                 title="Wallet Update"
                 breadcrumbs={[
@@ -68,87 +70,114 @@ export default function WalletUpdatePage() {
                 ]}
             />
 
-            <div className="flex-0 p-6 w-full pt-0">
-                <Card className="border-border shadow-sm overflow-hidden bg-white pt-0">
-                    <CardHeader className="flex flex-row items-center justify-between p-4 px-6 border-b bg-gray-50/30">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Wallet className="h-5 w-5 text-primary" />
+            <div className="w-full min-w-0 flex-1 p-3 pt-0 sm:p-4 sm:pt-0 lg:p-5 lg:pt-0">
+                <Card className="min-w-0 overflow-hidden rounded-lg border border-[#dce8d3] bg-white shadow-sm pt-0">
+                    <CardHeader className="border-b border-[#dce8d3] bg-[#fafcf8] px-3 py-3 sm:px-4 sm:py-4">
+                        <div className="flex items-center gap-2.5">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/15 text-primary">
+                                <Wallet className="h-4 w-4" />
                             </div>
-                            <CardTitle className="text-sm font-black uppercase tracking-widest text-foreground">
-                                Wallet Credit/Debit Update
-                            </CardTitle>
+
+                            <div className="min-w-0">
+                                <CardTitle className="text-base leading-tight font-extrabold uppercase tracking-[0.05em] text-[#4d553d] sm:text-lg">
+                                    Wallet Update
+                                </CardTitle>
+                                <p className="mt-0.5 text-[11px] font-medium text-[#7a8270] sm:text-xs">
+                                    Credit or debit wallet balance for a member.
+                                </p>
+                            </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-6">
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6">
-                                {/* Row 1 */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="memberId" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        Member Identifier
-                                    </Label>
-                                    <Input
-                                        id="memberId"
-                                        placeholder="Enter Member ID"
-                                        value={memberId}
-                                        onChange={(e) => setMemberId(e.target.value)}
-                                        className="h-11 bg-white border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all rounded-lg"
-                                    />
-                                </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="action" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        Transaction Type
-                                    </Label>
-                                    <Select value={action} onValueChange={setAction}>
-                                        <SelectTrigger className="h-11 bg-white border-border focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all rounded-lg">
-                                            <SelectValue placeholder="Select Credit or Debit" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-lg border-border shadow-xl">
-                                            <SelectItem value="credit" className="py-2 cursor-pointer hover:bg-emerald-50 text-emerald-600 font-bold uppercase text-[10px]">
-                                                Credit Wallet
-                                            </SelectItem>
-                                            <SelectItem value="debit" className="py-2 cursor-pointer hover:bg-rose-50 text-rose-600 font-bold uppercase text-[10px]">
-                                                Debit Wallet
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Row 2 */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="amount" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        Adjustment Amount
-                                    </Label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-xs">$</span>
+                    <CardContent className="p-3 sm:p-4">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="rounded-md border border-[#dce8d3] bg-[#fafcf8] p-3">
+                                <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                                    <div className="min-w-0 space-y-1.5">
+                                        <Label
+                                            htmlFor="memberId"
+                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
+                                        >
+                                            Member Identifier
+                                        </Label>
                                         <Input
-                                            id="amount"
-                                            type="number"
-                                            placeholder="0.00"
-                                            value={amount}
-                                            onChange={(e) => setAmount(e.target.value)}
-                                            className="h-11 pl-8 bg-white border-border focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all rounded-lg font-bold"
+                                            id="memberId"
+                                            placeholder="Enter Member ID"
+                                            value={memberId}
+                                            onChange={(e) => setMemberId(e.target.value)}
+                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                        />
+                                    </div>
+
+                                    <div className="min-w-0 space-y-1.5">
+                                        <Label
+                                            htmlFor="action"
+                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
+                                        >
+                                            Transaction Type
+                                        </Label>
+                                        <Select value={action} onValueChange={setAction}>
+                                            <SelectTrigger className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white text-[11px] shadow-sm focus:ring-2 focus:ring-primary/10">
+                                                <SelectValue placeholder="Select Credit or Debit" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-md border-[#dce8d3] shadow-lg">
+                                                <SelectItem
+                                                    value="credit"
+                                                    className="py-2 text-[11px] font-bold text-emerald-600"
+                                                >
+                                                    Credit Wallet
+                                                </SelectItem>
+                                                <SelectItem
+                                                    value="debit"
+                                                    className="py-2 text-[11px] font-bold text-rose-600"
+                                                >
+                                                    Debit Wallet
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="min-w-0 space-y-1.5">
+                                        <Label
+                                            htmlFor="amount"
+                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
+                                        >
+                                            Adjustment Amount
+                                        </Label>
+                                        <div className="relative min-w-0">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-[#8a927e]">
+                                                $
+                                            </span>
+                                            <Input
+                                                id="amount"
+                                                type="number"
+                                                placeholder="0.00"
+                                                value={amount}
+                                                onChange={(e) => setAmount(e.target.value)}
+                                                className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-7 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="min-w-0 space-y-1.5">
+                                        <Label
+                                            htmlFor="remark"
+                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
+                                        >
+                                            Transaction Note
+                                        </Label>
+                                        <Input
+                                            id="remark"
+                                            placeholder="Reason for adjustment..."
+                                            value={remark}
+                                            onChange={(e) => setRemark(e.target.value)}
+                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
                                         />
                                     </div>
                                 </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="remark" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        Transaction Note
-                                    </Label>
-                                    <Input
-                                        id="remark"
-                                        placeholder="Reason for adjustment..."
-                                        value={remark}
-                                        onChange={(e) => setRemark(e.target.value)}
-                                        className="h-11 bg-white border-border focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all rounded-lg"
-                                    />
-                                </div>
                             </div>
 
-                            <div className="flex items-center gap-3 pt-4 justify-end border-t border-gray-100">
+                            <div className="flex flex-col-reverse gap-2 border-t border-[#edf3e7] pt-3 sm:flex-row sm:items-center sm:justify-end">
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -158,14 +187,15 @@ export default function WalletUpdatePage() {
                                         setAmount("");
                                         setRemark("");
                                     }}
-                                    className="h-10 px-6 border-border bg-white hover:bg-gray-50 text-foreground font-black uppercase tracking-widest text-[10px] rounded-lg transition-all"
+                                    className="h-8 w-full rounded-md border-[#dce8d3] bg-white px-3 text-[10px] font-bold uppercase tracking-[0.05em] text-[#5b624f] shadow-sm transition-all hover:bg-[#f7fbf3] sm:w-auto"
                                 >
                                     Reset
                                 </Button>
+
                                 <Button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="h-10 px-8 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] rounded-lg shadow-sm transition-all"
+                                    className="h-8 w-full rounded-md bg-primary px-3 text-[10px] font-bold uppercase tracking-[0.05em] text-white shadow-sm transition-all hover:bg-primary/90 sm:w-auto"
                                 >
                                     {isLoading ? "Processing..." : "Submit Update"}
                                 </Button>
