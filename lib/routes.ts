@@ -100,12 +100,17 @@ export const adminPaths: NavGroup[] = [
         url: "/admin/payments/income-check",
         icon: LayoutGrid,
       },
+      {
+        title: "Fund Requests",
+        url: "/admin/payments/fund-request",
+        icon: PiggyBank,
+      },
     ],
   },
   {
     title: "Support",
     items: [
-      { title: "Ticket System", url: "/admin/ticket-system", icon: KeyRound },
+      { title: "Tickets System", url: "/admin/support-tickets", icon: Ticket },
     ],
   },
   {
