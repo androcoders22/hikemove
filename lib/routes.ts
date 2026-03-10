@@ -113,15 +113,15 @@ export const adminPaths: NavGroup[] = [
       { title: "Tickets System", url: "/admin/support-tickets", icon: Ticket },
     ],
   },
-  {
-    title: "Settings",
-    items: [
-      { title: "Popup setting", url: "/admin/settings/popup", icon: Settings },
-      { title: "News upload", url: "/admin/settings/news", icon: FileText },
-      { title: "Pillar image", url: "/admin/settings/pillar", icon: Settings },
-      { title: "Contact list", url: "/admin/settings/contact", icon: Users },
-    ],
-  },
+  // {
+  //   title: "Settings",
+  //   items: [
+  //     { title: "Popup setting", url: "/admin/settings/popup", icon: Settings },
+  //     { title: "News upload", url: "/admin/settings/news", icon: FileText },
+  //     { title: "Pillar image", url: "/admin/settings/pillar", icon: Settings },
+  //     { title: "Contact list", url: "/admin/settings/contact", icon: Users },
+  //   ],
+  // },
   {
     title: "configuration",
     items: [
