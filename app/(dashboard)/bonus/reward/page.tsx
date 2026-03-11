@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Trophy, Search, Filter, Calendar } from "lucide-react";
 import {
@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface RewardBonusRow {
   srNo: number;
@@ -39,6 +40,23 @@ export default function RewardBonus() {
     },
   ]);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredData = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+
+    if (!query) return bonusData;
+
+    return bonusData.filter((row) => {
+      return (
+        row.memberId.toLowerCase().includes(query) ||
+        row.memberName.toLowerCase().includes(query) ||
+        row.amount.toLowerCase().includes(query) ||
+        row.date.toLowerCase().includes(query)
+      );
+    });
+  }, [bonusData, searchTerm]);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <PageHeader
@@ -56,15 +74,19 @@ export default function RewardBonus() {
               <Trophy className="h-4 w-4 text-primary" />
               Reward Bonus History
             </h2>
+
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Search className="h-3.5 w-3.5 mr-2" />
-                SEARCH
-              </Button>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 pl-8 pr-3 text-xs"
+                />
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -75,6 +97,7 @@ export default function RewardBonus() {
               </Button>
             </div>
           </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -96,32 +119,44 @@ export default function RewardBonus() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {bonusData.map((row) => (
-                  <TableRow
-                    key={row.srNo}
-                    className="border-border hover:bg-muted/20 transition-colors group"
-                  >
-                    <TableCell className="text-xs font-bold text-muted-foreground">
-                      {row.srNo}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-primary">
-                      {row.memberId}
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-foreground">
-                      {row.memberName}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-emerald-600">
-                      {row.amount}
-                    </TableCell>
-                    <TableCell className="text-right text-xs font-medium text-muted-foreground">
-                      <div className="flex items-center justify-end gap-2">
-                        <Calendar className="h-3 w-3 opacity-50" />
-                        {row.date}
-                      </div>
+                {filteredData.length > 0 ? (
+                  filteredData.map((row) => (
+                    <TableRow
+                      key={row.srNo}
+                      className="border-border hover:bg-muted/20 transition-colors group"
+                    >
+                      <TableCell className="text-xs font-bold text-muted-foreground">
+                        {row.srNo}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-primary">
+                        {row.memberId}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-foreground">
+                        {row.memberName}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-emerald-600">
+                        {row.amount}
+                      </TableCell>
+                      <TableCell className="text-right text-xs font-medium text-muted-foreground">
+                        <div className="flex items-center justify-end gap-2">
+                          <Calendar className="h-3 w-3 opacity-50" />
+                          {row.date}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-6 text-sm text-muted-foreground"
+                    >
+                      No reward bonus record found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>

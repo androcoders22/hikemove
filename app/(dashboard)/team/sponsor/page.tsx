@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import {
   Users,
@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface SponsorRow {
   srNo: number;
@@ -45,6 +46,8 @@ export default function MySponsor() {
     },
   ]);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const stats = [
     {
       label: "Total Business",
@@ -68,6 +71,22 @@ export default function MySponsor() {
       bgColor: "bg-rose-500/10",
     },
   ];
+
+  const filteredData = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+
+    if (!query) return sponsorData;
+
+    return sponsorData.filter((row) => {
+      return (
+        row.memberId.toLowerCase().includes(query) ||
+        row.memberName.toLowerCase().includes(query) ||
+        row.contactNo.toLowerCase().includes(query) ||
+        row.currentPackage.toLowerCase().includes(query) ||
+        row.status.toLowerCase().includes(query)
+      );
+    });
+  }, [sponsorData, searchTerm]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -106,15 +125,19 @@ export default function MySponsor() {
               <Users className="h-4 w-4 text-primary" />
               Sponsor Details
             </h2>
+
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Search className="h-3.5 w-3.5 mr-2" />
-                SEARCH
-              </Button>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 pl-8 pr-3 text-xs"
+                />
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -125,6 +148,7 @@ export default function MySponsor() {
               </Button>
             </div>
           </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -155,46 +179,58 @@ export default function MySponsor() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {sponsorData.map((row) => (
-                  <TableRow
-                    key={row.srNo}
-                    className="border-border hover:bg-muted/20 transition-colors group"
-                  >
-                    <TableCell className="text-xs font-bold text-muted-foreground">
-                      {row.srNo}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-primary">
-                      {row.memberId}
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-foreground">
-                      {row.memberName}
-                    </TableCell>
-                    <TableCell className="text-xs font-medium text-muted-foreground">
-                      {row.contactNo}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-foreground">
-                      {row.currentPackage}
-                    </TableCell>
-                    <TableCell className="text-[10px] font-medium text-muted-foreground">
-                      {row.joinDate}
-                    </TableCell>
-                    <TableCell className="text-[10px] font-medium text-muted-foreground">
-                      {row.activationDate}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${
-                          row.status === "ACTIVE"
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-rose-500/10 text-rose-500"
-                        }`}
-                      >
-                        {row.status}
-                      </span>
+                {filteredData.length > 0 ? (
+                  filteredData.map((row) => (
+                    <TableRow
+                      key={row.srNo}
+                      className="border-border hover:bg-muted/20 transition-colors group"
+                    >
+                      <TableCell className="text-xs font-bold text-muted-foreground">
+                        {row.srNo}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-primary">
+                        {row.memberId}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-foreground">
+                        {row.memberName}
+                      </TableCell>
+                      <TableCell className="text-xs font-medium text-muted-foreground">
+                        {row.contactNo}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-foreground">
+                        {row.currentPackage}
+                      </TableCell>
+                      <TableCell className="text-[10px] font-medium text-muted-foreground">
+                        {row.joinDate}
+                      </TableCell>
+                      <TableCell className="text-[10px] font-medium text-muted-foreground">
+                        {row.activationDate}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${
+                            row.status === "ACTIVE"
+                              ? "bg-emerald-500/10 text-emerald-500"
+                              : "bg-rose-500/10 text-rose-500"
+                          }`}
+                        >
+                          {row.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="text-center py-6 text-sm text-muted-foreground"
+                    >
+                      No sponsor found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
