@@ -82,6 +82,7 @@ api.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
         localStorage.removeItem("userType");
+        localStorage.removeItem("memberId");
         window.location.href = loginPath;
       }
       return Promise.reject(error);
@@ -152,6 +153,7 @@ api.interceptors.response.use(
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
         localStorage.removeItem("userType");
+        localStorage.removeItem("memberId");
 
         // Redirect to correct login
         if (typeof window !== "undefined") {

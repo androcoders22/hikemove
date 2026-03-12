@@ -54,12 +54,12 @@ export default function MemberLoginPage() {
       });
 
       if (res.status === true && res.data?.accessToken) {
+        const userData = res.data.user || res.data;
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("userType", "member");
-        localStorage.setItem(
-          "user",
-          JSON.stringify(res.data.user || res.data),
-        );
+        localStorage.setItem("user", JSON.stringify(userData));
+        // Always store the typed memberId — it's guaranteed to be the login ID
+        localStorage.setItem("memberId", credentials.memberId);
 
         // Redirect to member dashboard or home after login
         router.push("/dashboard");
