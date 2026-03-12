@@ -9,6 +9,17 @@ export const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
+  const skipAuthUrls = [
+    "/admin/login",
+    "/admin/refresh",
+    "/member/login",
+    "/member/refresh",
+  ];
+
+  if (config.url && skipAuthUrls.includes(config.url)) {
+    return config;
+  }
+
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("accessToken");
     if (token && config.headers) {
@@ -37,15 +48,11 @@ const processQueue = (error: any, token: string | null = null) => {
 api.interceptors.response.use(
   (response) => {
     const { status, message } = response.data || {};
-    if (message) {
-      if (status === true && response.config.method !== "get") {
-        toast.success(message);
-      } else if (status === false) {
-        if (Array.isArray(message)) {
-          message.forEach((msg: string) => toast.error(msg));
-        } else if (typeof message === "string") {
-          toast.error(message);
-        }
+    if (message && status === false) {
+      if (Array.isArray(message)) {
+        message.forEach((msg: string) => toast.error(msg));
+      } else if (typeof message === "string") {
+        toast.error(message);
       }
     }
     return response;

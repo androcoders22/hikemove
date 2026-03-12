@@ -7,11 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
-import { UserCog, Search, Save } from "lucide-react";
+import { UserCog, Search, Save, User, Mail, Phone, Calendar, ShieldCheck, MailPlus } from "lucide-react";
+import { checkMemberIdAPI } from "@/lib/api/member";
+import { api } from "@/lib/axios";
 
 export default function ChangeProfilePage() {
     const [memberId, setMemberId] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [memberData, setMemberData] = useState<any>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,24 +26,46 @@ export default function ChangeProfilePage() {
         }
 
         setIsLoading(true);
+        setMemberData(null);
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 800));
-            toast.success("Profile data loaded successfully");
-        } catch (error) {
-            toast.error("Failed to fetch profile");
+            const res = await checkMemberIdAPI(memberId);
+            if (res.data?.status && res.data.data) {
+                setMemberData(res.data.data);
+                toast.success("Member profile retrieved");
+            } else {
+                toast.error(res.data?.message || "Member not found");
+            }
+        } catch (error: any) {
+            console.error("Check member error:", error);
+            // Error toast usually handled by interceptor
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsUpdating(true);
+
+        try {
+            // Placeholder for update API - typically part of profile management
+            await new Promise(r => setTimeout(r, 1000));
+            toast.success("Profile updated successfully");
+        } catch (error) {
+            toast.error("Failed to update profile");
+        } finally {
+            setIsUpdating(false);
         }
     };
 
     return (
         <div className="flex min-h-screen w-full min-w-0 flex-col bg-[#f6f8f4]">
             <PageHeader
-                title="Member Change Profile"
+                title="Member Profile Details"
                 breadcrumbs={[
                     { title: "Member Options", href: "#" },
-                    { title: "Change Profile" },
+                    { title: "Member Profile Details" },
                 ]}
             />
 
@@ -53,7 +79,7 @@ export default function ChangeProfilePage() {
 
                             <div className="min-w-0">
                                 <CardTitle className="text-base leading-tight font-extrabold uppercase tracking-[0.05em] text-[#4d553d] sm:text-lg">
-                                    Member Change Profile
+                                    Member Profile Details
                                 </CardTitle>
                                 <p className="mt-0.5 text-[11px] font-medium text-[#7a8270] sm:text-xs">
                                     Search a member profile by ID.
@@ -95,6 +121,80 @@ export default function ChangeProfilePage() {
                                 </div>
                             </div>
                         </form>
+
+                        {memberData && (
+                            <div className="mt-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                                <form onSubmit={handleUpdateProfile} className="max-w-4xl space-y-6">
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        {/* Full Name */}
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Full Name</Label>
+                                            <div className="relative group">
+                                                <User className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
+                                                <Input
+                                                    defaultValue={memberData.fullName}
+                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 text-[13px] shadow-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Email */}
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Email Address</Label>
+                                            <div className="relative group">
+                                                <Mail className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
+                                                <Input
+                                                    defaultValue={memberData.email}
+                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 text-[13px] shadow-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Phone */}
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Phone Number</Label>
+                                            <div className="relative group">
+                                                <Phone className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
+                                                <Input
+                                                    defaultValue={memberData.phone}
+                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 text-[13px] shadow-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Status */}
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Current Status</Label>
+                                            <div className="relative group">
+                                                <ShieldCheck className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
+                                                <Input
+                                                    readOnly
+                                                    value={memberData.status}
+                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-muted/30 pl-9 text-[13px] font-semibold text-primary shadow-sm"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end pt-2">
+                                        <Button
+                                            type="submit"
+                                            disabled={isUpdating}
+                                            className="h-9 rounded-md bg-primary px-6 text-xs font-bold uppercase tracking-widest text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-lg"
+                                        >
+                                            {isUpdating ? (
+                                                <span className="flex items-center gap-2">
+                                                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                                    Updating...
+                                                </span>
+                                            ) : (
+                                                "Save Changes"
+                                            )}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

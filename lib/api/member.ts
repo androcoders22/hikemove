@@ -28,10 +28,15 @@ export const memberRefresh = async () => {
   );
   return response.data;
 };
-export const getMemberTreeAPI = async () => {
-  return await api.get("/member/tree");
+export const getMemberTreeAPI = async (memberId?: string) => {
+  const url = memberId ? `/member/tree/${memberId}` : "/member/tree";
+  return await api.get(url);
 };
 
 export const getDirectMembersAPI = async () => {
-  return await api.get("/member/direct-members");
+  return await api.get("/member/direct-members/");
+};
+
+export const checkMemberIdAPI = async (memberId: string) => {
+  return await api.get(`/member/check-member-id/${memberId}`);
 };

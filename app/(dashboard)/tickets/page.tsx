@@ -9,6 +9,9 @@ import {
   AlertCircle,
   Upload,
   Image as ImageIcon,
+  Loader2,
+  XCircle,
+  Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +44,8 @@ import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { getTicketsAPI, createTicketAPI } from "@/lib/api/ticket";
+import { uploadImageAPI } from "@/lib/api/aws";
+import { api, BASE_URL } from "@/lib/axios";
 
 interface TicketRow {
   _id: string;
@@ -64,6 +69,32 @@ export default function TicketSystem() {
   });
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Preview state
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
+
+  const buildScreenshotUrl = (key: string | undefined) => {
+    if (!key) return null;
+    return `${BASE_URL}/aws/${encodeURIComponent(key)}`;
+  };
+
+  const getTicketTypeLabel = (type: string) => {
+    if (!type) return "-";
+    switch (type) {
+      case 'topup': return 'Topup';
+      case 'transfer': return 'Transfer';
+      case 'hashVerification': return 'Hash verification';
+      case 'activation': return 'Activation';
+      case 'coin': return 'Coin';
+      case 'payment': return 'Payment';
+      case 'withdrawal': return 'Withdrawal';
+      case 'others': return 'Others';
+      default: return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+  };
 
   const fetchTickets = async () => {
     try {
@@ -93,13 +124,33 @@ export default function TicketSystem() {
 
     try {
       setIsSubmitting(true);
+
+      let screenshotKey = "";
+      if (screenshot) {
+        try {
+          const uploadRes = await uploadImageAPI(screenshot);
+          if (uploadRes.status && uploadRes.data) {
+            screenshotKey = uploadRes.data;
+          } else {
+            toast.error("Failed to upload screenshot");
+            setIsSubmitting(false);
+            return;
+          }
+        } catch (uploadError) {
+          toast.error("Error uploading screenshot");
+          console.error(uploadError);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Constructing JSON data based on your payload structure
       const payload = {
         problemType: formData.problemType,
         description: formData.description,
         subject: formData.subject,
         status: "open",
-        screenshot: "", // Include actual screenshot logic here if/when image upload is supported by your backend
+        screenshot: screenshotKey,
       };
 
       await createTicketAPI(payload);
@@ -262,6 +313,9 @@ export default function TicketSystem() {
                     Description
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                    Screenshot
+                  </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Date
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">
@@ -273,7 +327,7 @@ export default function TicketSystem() {
                 {isLoading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="text-center py-6 text-muted-foreground"
                     >
                       Loading tickets...
@@ -282,7 +336,7 @@ export default function TicketSystem() {
                 ) : tickets.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6}
                       className="text-center py-6 text-muted-foreground"
                     >
                       No tickets found.
@@ -303,29 +357,70 @@ export default function TicketSystem() {
                             {row.subject}
                           </span>
                           <span className="w-fit text-[10px] font-black uppercase tracking-tight bg-primary/10 text-primary px-2 py-0.5 rounded">
-                            {row.problemType}
+                            {getTicketTypeLabel(row.problemType)}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell className="text-xs font-medium text-foreground max-w-[300px] truncate">
                         {row.description}
                       </TableCell>
+                      <TableCell className="text-center">
+                        {row.screenshot ? (
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8 rounded-lg border-border"
+                            type="button"
+                            onClick={() => {
+                              const key = row.screenshot;
+                              if (!key) return;
+
+                              const directUrl = buildScreenshotUrl(key);
+                              setPreviewUrl(directUrl);
+                              setPreviewError(false);
+                              setIsPreviewOpen(true);
+                              setIsPreviewLoading(true);
+
+                              api.get(`/aws/${encodeURIComponent(key)}`)
+                                .then((res) => {
+                                  if (res.data?.status && res.data?.data) {
+                                    setPreviewUrl(res.data.data);
+                                    setPreviewError(false);
+                                  } else {
+                                    setPreviewError(true);
+                                  }
+                                  setIsPreviewLoading(false);
+                                })
+                                .catch((err) => {
+                                  console.error("Failed to fetch S3 URL:", err);
+                                  setPreviewError(true);
+                                  setIsPreviewLoading(false);
+                                });
+                            }}
+                          >
+                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        ) : (
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            NA
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-xs font-bold text-muted-foreground">
                         {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
                       </TableCell>
                       <TableCell className="text-right">
                         <div
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight shadow-sm ${
-                            row.status.toLowerCase() === "resolved" ||
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight shadow-sm ${row.status.toLowerCase() === "resolved" ||
                             row.status.toLowerCase() === "closed"
-                              ? "bg-emerald-50 text-emerald-600"
-                              : "bg-amber-50 text-amber-600"
-                          }`}
+                            ? "bg-emerald-50 text-emerald-600"
+                            : "bg-amber-50 text-amber-600"
+                            }`}
                         >
                           {(row.status.toLowerCase() === "resolved" ||
                             row.status.toLowerCase() === "closed") && (
-                            <CheckCircle2 className="h-3 w-3" />
-                          )}
+                              <CheckCircle2 className="h-3 w-3" />
+                            )}
                           {row.status.toLowerCase() !== "resolved" &&
                             row.status.toLowerCase() !== "closed" && (
                               <Clock className="h-3 w-3 animate-pulse" />
@@ -340,6 +435,64 @@ export default function TicketSystem() {
             </Table>
           </div>
         </div>
+
+        {/* Improved Image Preview Modal */}
+        <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+          <DialogContent className="max-w-3xl bg-transparent border-none p-0 shadow-none focus:outline-none focus:ring-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Screenshot Preview</DialogTitle>
+              <DialogDescription>Viewing uploaded ticket attachment</DialogDescription>
+            </DialogHeader>
+            <div className="relative flex flex-col items-center justify-center p-4">
+              {/* {isPreviewLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm rounded-xl">
+                  <div className="flex flex-col items-center gap-3 bg-background p-6 rounded-2xl shadow-xl border border-border">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm font-bold text-muted-foreground animate-pulse">
+                      Loading secure image...
+                    </p>
+                  </div>
+                </div>
+              )} */}
+
+              {!previewError && previewUrl && (
+                <img
+                  src={previewUrl}
+                  alt="Screenshot preview"
+                  className={`max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl transition-opacity duration-300 ${isPreviewLoading ? 'opacity-0' : 'opacity-100'}`}
+                  onLoad={() => setIsPreviewLoading(false)}
+                  onError={() => {
+                    setPreviewError(true);
+                    setIsPreviewLoading(false);
+                  }}
+                />
+              )}
+
+              {/* {previewError && previewUrl && (
+                <div className="flex flex-col items-center justify-center min-h-[350px] gap-4 p-8 bg-background rounded-xl border border-border shadow-2xl">
+                  <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+                    <XCircle className="h-8 w-8 text-destructive" />
+                  </div>
+                  <div className="text-center max-w-sm space-y-2">
+                    <p className="text-lg font-black text-foreground">
+                      Failed to Load Image
+                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      The image might have been removed, or you might not have permission to view it.
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4 font-bold border-border bg-background hover:bg-muted"
+                    onClick={() => window.open(previewUrl, '_blank')}
+                  >
+                    Open Raw Link 
+                  </Button>
+                </div>
+              )} */}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -29,6 +29,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getLedgerAPI, LedgerType } from "@/lib/api/ledger";
+import { getWalletHistoryAPI } from "@/lib/api/wallet";
+import { Card, CardContent } from "@/components/ui/card";
+import { 
+  IndianRupee, 
+  ArrowDownLeft, 
+  ArrowUpRight as ArrowUpRightIcon, 
+  History as HistoryIcon 
+} from "lucide-react";
 
 interface LedgerRow {
   _id: string;
@@ -43,10 +51,25 @@ interface LedgerRow {
 
 export default function WalletHistory() {
   const [historyData, setHistoryData] = useState<LedgerRow[]>([]);
+  const [walletInfo, setWalletInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>(LedgerType.WITHDRAWAL);
+
+  useEffect(() => {
+    const fetchWalletDetails = async () => {
+      try {
+        const res = await getWalletHistoryAPI();
+        if (res.data?.status && res.data?.data) {
+          setWalletInfo(res.data.data);
+        }
+      } catch (err) {
+        console.error("Wallet fetch error:", err);
+      }
+    };
+    fetchWalletDetails();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,6 +136,73 @@ export default function WalletHistory() {
             {error}
           </div>
         )}
+
+        {/* Wallet Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border-[#dce8d3] bg-white shadow-sm overflow-hidden group">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#8a927e]">Main Balance</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-black text-[#5c634f]">$ {walletInfo?.activationBalance || 0}</span>
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary ring-1 ring-primary/20 group-hover:scale-110 transition-transform">
+                  <WalletCards className="h-5 w-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-amber-100 bg-white shadow-sm overflow-hidden group">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600/70">Income Balance</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-black text-[#5c634f]">$ {walletInfo?.incomeBalance || 0}</span>
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 ring-1 ring-amber-100 group-hover:scale-110 transition-transform">
+                  <ArrowUpRightIcon className="h-5 w-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-emerald-100 bg-white shadow-sm overflow-hidden group">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600/70">Total Earned</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-black text-[#5c634f]">$ {(walletInfo?.totalBonus || 0) + (walletInfo?.weeklyProfit || 0)}</span>
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 ring-1 ring-emerald-100 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[#dce8d3] bg-white shadow-sm overflow-hidden group">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#8a927e]">Total Withdrawal</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-lg font-black text-[#5c634f]">$ {walletInfo?.totalWithdrawal || 0}</span>
+                  </div>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-[#fafcf8] flex items-center justify-center text-[#5c634f] ring-1 ring-[#dce8d3] group-hover:scale-110 transition-transform">
+                  <ArrowDownLeft className="h-5 w-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">
           <div className="p-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/10">

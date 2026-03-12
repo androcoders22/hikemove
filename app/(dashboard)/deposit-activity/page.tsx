@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   Upload,
   X,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +40,8 @@ import {
   getFundRequestsMeAPI,
   createFundRequestAPI,
 } from "@/lib/api/fund-request";
-import { BASE_URL } from "@/lib/axios";
+import { api, BASE_URL } from "@/lib/axios";
+import { uploadImageAPI } from "@/lib/api/aws";
 
 const fundRequestSchema = z.object({
   amount: z.string().min(1, "Amount is required"),
@@ -66,6 +68,7 @@ export default function DepositActivity() {
   const [isAddFundOpen, setIsAddFundOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState(false);
 
@@ -116,20 +119,28 @@ export default function DepositActivity() {
     if (value.startsWith("http://") || value.startsWith("https://")) {
       return value;
     }
-    if (value.startsWith("/")) {
-      return `${BASE_URL}${value}`;
-    }
-    return `${BASE_URL}/${value}`;
+    // Encode the entire key as one segment to correctly handle slashes/folders in the router
+    return `${BASE_URL}/aws/${encodeURIComponent(value)}`;
   };
 
   const onSubmit = async (data: FundRequestFormValues) => {
     try {
       setIsSubmitting(true);
 
+      let screenshotKey = "";
+      if (data.screenshot) {
+        const uploadRes = await uploadImageAPI(data.screenshot);
+        if (uploadRes.status && uploadRes.data) {
+          screenshotKey = uploadRes.data;
+        } else {
+          toast.error("Image upload failed, submitting without image");
+        }
+      }
+
       const payload = {
         amount: Number(data.amount),
         transactionHash: data.transactionHash,
-        screenshot: data.screenshot ? data.screenshot.name : "",
+        screenshot: screenshotKey,
         status: "pending",
       };
 
@@ -408,19 +419,42 @@ export default function DepositActivity() {
 
                       <TableCell className="text-center">
                         {buildScreenshotUrl(row.screenshot) ? (
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-8 w-8 rounded-lg border-border"
-                            type="button"
-                            onClick={() => {
-                              setPreviewUrl(buildScreenshotUrl(row.screenshot));
-                              setPreviewError(false);
-                              setIsPreviewOpen(true);
-                            }}
-                          >
-                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                          </Button>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-8 w-8 rounded-lg border-border"
+                              type="button"
+                              onClick={() => {
+                                const key = row.screenshot;
+                                if (!key) return;
+                                
+                                const directUrl = buildScreenshotUrl(key);
+                                setPreviewUrl(directUrl);
+                                setPreviewError(false);
+                                setIsPreviewOpen(true);
+                                setIsPreviewLoading(true);
+                                
+                                // The /aws endpoint returns a JSON containing a presigned S3 URL!
+                                api.get(`/aws/${encodeURIComponent(key)}`)
+                                  .then((res) => {
+                                    if (res.data?.status && res.data?.data) {
+                                      // res.data.data is the presigned S3 URL
+                                      setPreviewUrl(res.data.data);
+                                      setPreviewError(false);
+                                    } else {
+                                      setPreviewError(true);
+                                    }
+                                    setIsPreviewLoading(false);
+                                  })
+                                  .catch((err) => {
+                                    console.error("Failed to fetch S3 URL:", err);
+                                    setPreviewError(true);
+                                    setIsPreviewLoading(false);
+                                  });
+                              }}
+                            >
+                              <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                            </Button>
                         ) : (
                           <span className="text-xs font-semibold text-muted-foreground">
                             NA
@@ -471,20 +505,59 @@ export default function DepositActivity() {
             <DialogTitle className="text-sm font-black uppercase tracking-widest">
               Screenshot Preview
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Viewing the transaction proof screenshot for this fund request.
+            </DialogDescription>
           </DialogHeader>
-          {previewUrl && !previewError ? (
+          {isPreviewLoading ? (
+            <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                Fetching secure image...
+              </p>
+            </div>
+          ) : previewUrl && !previewError ? (
             <div className="flex items-center justify-center">
               <img
                 src={previewUrl}
                 alt="Transaction screenshot"
                 className="max-h-[70vh] w-auto max-w-full rounded-lg border border-border"
-                onError={() => setPreviewError(true)}
+                onError={() => {
+                  console.error("Image tag failed to load:", previewUrl);
+                  setPreviewError(true);
+                }}
               />
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Image could not be loaded.
-            </p>
+            <div className="flex flex-col items-center justify-center min-h-[350px] gap-4 p-8">
+              <div className="h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+                <XCircle className="h-8 w-8 text-destructive" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-sm font-black uppercase tracking-widest text-foreground">
+                  Image could not be loaded
+                </h3>
+                <p className="text-[10px] text-muted-foreground font-bold uppercase max-w-[280px] leading-relaxed opacity-60">
+                   The security token matched, but the file was not found or the format is invalid.
+                </p>
+              </div>
+              
+              <div className="flex flex-col gap-2 w-full max-w-[320px]">
+                 <Button 
+                   variant="outline" 
+                   className="text-[10px] font-black uppercase h-10 border-border"
+                   onClick={() => window.open(previewUrl || "", '_blank')}
+                 >
+                   Open Raw Link
+                 </Button>
+                 
+                 <div className="rounded-lg bg-muted/50 p-3 border border-border">
+                   <p className="text-[9px] font-mono text-muted-foreground break-all text-center">
+                     {previewUrl}
+                   </p>
+                 </div>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>

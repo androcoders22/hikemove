@@ -37,10 +37,12 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
 import { getAllFundRequestsAPI, approveFundRequestAPI, rejectFundRequestAPI } from "@/lib/api/fund-request";
 import toast from "react-hot-toast";
+import { api, BASE_URL } from "@/lib/axios";
 
 interface FundRequest {
     _id: string;
@@ -61,7 +63,9 @@ export default function FundRequestManagementPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState("all");
     const [isScreenshotModalOpen, setIsScreenshotModalOpen] = useState(false);
+    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
     const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
+    const [previewError, setPreviewError] = useState(false);
     const [submittingId, setSubmittingId] = useState<string | null>(null);
 
     const fetchFundRequests = async (silent = false) => {
@@ -125,9 +129,36 @@ export default function FundRequestManagementPage() {
         }
     };
 
-    const handleViewScreenshot = (url: string) => {
-        setSelectedScreenshot(url);
+    const buildScreenshotUrl = (value?: string | null) => {
+        if (!value || !value.trim()) return null;
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            return value;
+        }
+        return `${BASE_URL}/aws/${encodeURIComponent(value)}`;
+    };
+
+    const handleViewScreenshot = (screenshotKey: string) => {
+        const directUrl = buildScreenshotUrl(screenshotKey);
+        setSelectedScreenshot(directUrl);
+        setPreviewError(false);
         setIsScreenshotModalOpen(true);
+        setIsPreviewLoading(true);
+
+        api.get(`/aws/${encodeURIComponent(screenshotKey)}`)
+            .then(res => {
+                if (res.data?.status && res.data?.data) {
+                    setSelectedScreenshot(res.data.data);
+                    setPreviewError(false);
+                } else {
+                    setPreviewError(true);
+                }
+                setIsPreviewLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch S3 URL:", err);
+                setPreviewError(true);
+                setIsPreviewLoading(false);
+            });
     };
 
     const getStatusBadge = (status: string) => {
@@ -385,19 +416,32 @@ export default function FundRequestManagementPage() {
                             <ImageIcon className="h-5 w-5 text-primary" />
                             Payment Screenshot
                         </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            Reviewing the payment proof for this fund request.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div className="p-6 bg-white flex items-center justify-center min-h-[300px]">
-                        {selectedScreenshot ? (
+                        {isPreviewLoading ? (
+                            <div className="flex flex-col items-center justify-center gap-3">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Loading secure image...</p>
+                            </div>
+                        ) : selectedScreenshot && !previewError ? (
                             <img
                                 src={selectedScreenshot}
                                 alt="Payment Proof"
                                 className="max-h-[70vh] w-auto rounded-lg shadow-lg border border-[#dce8d3] object-contain"
+                                onError={() => {
+                                    console.error("Image load failed:", selectedScreenshot);
+                                    setPreviewError(true);
+                                }}
                             />
                         ) : (
                             <div className="text-center p-10">
                                 <XCircle className="h-10 w-10 text-rose-500 mx-auto mb-3 opacity-20" />
-                                <p className="text-sm font-medium text-[#7a8270]">Image could not be loaded</p>
+                                <p className="text-sm font-bold text-[#7a8270]">Image could not be loaded</p>
+                                <p className="text-[10px] text-muted-foreground break-all max-w-xs mx-auto mt-2 opacity-40">{selectedScreenshot}</p>
                             </div>
                         )}
                     </div>

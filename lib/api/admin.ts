@@ -2,7 +2,11 @@ import axios from "axios";
 import { api, BASE_URL } from "../axios";
 
 export const adminLogin = async (data: any) => {
-  const response = await api.post("/admin/login", data);
+  const response = await api.post("/admin/login", data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
   return response.data;
 };
 
