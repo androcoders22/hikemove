@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -54,6 +54,7 @@ interface WithdrawalData {
 export default function WithdrawalPage() {
   const [historyData, setHistoryData] = useState<WithdrawalData[]>([]);
   const [memberInfo, setMemberInfo] = useState({ id: "", balance: 0 });
+  const [searchTerm, setSearchTerm] = useState("");
 
   const withdrawalSchema = z.object({
     walletAddress: z
@@ -110,6 +111,24 @@ export default function WithdrawalPage() {
     fetchWallet();
   }, []);
 
+  const filteredData = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+
+    if (!query) return historyData;
+
+    return historyData.filter((row) => {
+      const formattedDate = new Date(row.createdAt).toLocaleString("en-GB");
+      return (
+        row.walletAddress.toLowerCase().includes(query) ||
+        row.status.toLowerCase().includes(query) ||
+        row.amount.toString().toLowerCase().includes(query) ||
+        formattedDate.toLowerCase().includes(query) ||
+        `withdrawal to ${row.walletAddress}`.toLowerCase().includes(query) ||
+        "withdrawal".includes(query)
+      );
+    });
+  }, [historyData, searchTerm]);
+
   const onSubmit = async (values: WithdrawalFormValues) => {
     setIsLoading(true);
     try {
@@ -123,7 +142,7 @@ export default function WithdrawalPage() {
         form.reset();
         setIsDialogOpen(false);
         fetchHistory();
-        fetchWallet(); // refresh balance
+        fetchWallet();
       }
     } catch (error: any) {
       const errMessage =
@@ -151,15 +170,19 @@ export default function WithdrawalPage() {
               <History className="h-5 w-5 text-[#7db538]" />
               TRANSFER HISTORY :
             </h2>
+
             <div className="flex flex-wrap items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 px-4 text-xs font-bold bg-white text-muted-foreground hover:bg-muted/50 border-input"
-              >
-                <Search className="h-4 w-4 mr-2" />
-                SEARCH
-              </Button>
+              <div className="relative w-full sm:w-56 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-9 pl-9 pr-3 text-xs bg-white border-input"
+                />
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -179,6 +202,7 @@ export default function WithdrawalPage() {
                     NEW REQUEST
                   </Button>
                 </DialogTrigger>
+
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
                     <DialogTitle>Submit Request</DialogTitle>
@@ -191,7 +215,6 @@ export default function WithdrawalPage() {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6 pt-2"
                   >
-                    {/* Read-only Info Grid */}
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label className="text-sm text-muted-foreground">
@@ -204,6 +227,7 @@ export default function WithdrawalPage() {
                           {memberInfo.id || "Loading..."}
                         </p>
                       </div>
+
                       <div className="space-y-1">
                         <Label className="text-sm text-muted-foreground">
                           Balance
@@ -216,7 +240,6 @@ export default function WithdrawalPage() {
                       </div>
                     </div>
 
-                    {/* Input Fields */}
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="walletAddress">
@@ -269,6 +292,7 @@ export default function WithdrawalPage() {
               </Dialog>
             </div>
           </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-[#f8fcf5]">
@@ -299,73 +323,93 @@ export default function WithdrawalPage() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {historyData.map((row, index) => {
-                  const date = new Date(row.createdAt);
-                  const formattedDate = `${date.toLocaleDateString("en-GB")} ${date.toLocaleTimeString("en-GB")}`;
-                  const displayStatus =
-                    row.status.charAt(0).toUpperCase() + row.status.slice(1);
-                  return (
-                    <TableRow
-                      key={row._id}
-                      className="border-border hover:bg-muted/20 transition-colors group"
-                    >
-                      <TableCell className="text-sm font-bold text-muted-foreground py-2 px-3">
-                        {index + 1}
-                      </TableCell>
-                      <TableCell className="text-xs font-bold text-foreground py-2 px-3">
-                        <div className="flex flex-col gap-0.5">
-                          <span>{formattedDate.split(" ")[0]}</span>
-                          <span className="text-xs text-muted-foreground font-mono leading-none">
-                            {formattedDate.split(" ")[1]}
+                {filteredData.length > 0 ? (
+                  filteredData.map((row, index) => {
+                    const date = new Date(row.createdAt);
+                    const formattedDate = `${date.toLocaleDateString("en-GB")} ${date.toLocaleTimeString("en-GB")}`;
+                    const displayStatus =
+                      row.status.charAt(0).toUpperCase() + row.status.slice(1);
+
+                    return (
+                      <TableRow
+                        key={row._id}
+                        className="border-border hover:bg-muted/20 transition-colors group"
+                      >
+                        <TableCell className="text-sm font-bold text-muted-foreground py-2 px-3">
+                          {index + 1}
+                        </TableCell>
+
+                        <TableCell className="text-xs font-bold text-foreground py-2 px-3">
+                          <div className="flex flex-col gap-0.5">
+                            <span>{formattedDate.split(" ")[0]}</span>
+                            <span className="text-xs text-muted-foreground font-mono leading-none">
+                              {formattedDate.split(" ")[1]}
+                            </span>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-sm font-medium text-slate-500 italic py-2 px-3">
+                          Withdrawal to {row.walletAddress}
+                        </TableCell>
+
+                        <TableCell className="py-2 px-3">
+                          <span className="text-xs font-black uppercase tracking-tight bg-[#ebf3e2] text-[#7db538] px-2.5 py-1 rounded">
+                            Withdrawal
                           </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm font-medium text-slate-500 italic py-2 px-3">
-                        Withdrawal to {row.walletAddress}
-                      </TableCell>
-                      <TableCell className="py-2 px-3">
-                        <span className="text-xs font-black uppercase tracking-tight bg-[#ebf3e2] text-[#7db538] px-2.5 py-1 rounded">
-                          Withdrawal
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm font-black text-foreground/80 py-2 px-3">
-                        {Number(row.amount).toFixed(2)} $
-                      </TableCell>
-                      <TableCell className="text-sm font-bold text-[#ff4d4f] py-2 px-3">
-                        0.00 $
-                      </TableCell>
-                      <TableCell className="text-base font-black text-foreground py-2 px-3">
-                        {Number(row.amount).toFixed(2)} $
-                      </TableCell>
-                      <TableCell className="text-right py-2 px-3">
-                        <div
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-full text-xs font-black uppercase tracking-tight shadow-sm ${
-                            displayStatus === "Paid" ||
-                            displayStatus === "Approved"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                              : displayStatus === "Pending"
-                                ? "bg-amber-50 text-amber-600 border-amber-200"
-                                : "bg-rose-50 text-rose-600 border-rose-200"
-                          }`}
-                        >
-                          {(displayStatus === "Paid" ||
-                            displayStatus === "Approved") && (
-                            <CheckCircle2 className="h-4 w-4" />
-                          )}
-                          {displayStatus === "Pending" && (
-                            <Clock className="h-4 w-4 animate-pulse" />
-                          )}
-                          {(displayStatus === "Rejected" ||
-                            displayStatus === "Failed") && (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                          {displayStatus}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                        </TableCell>
+
+                        <TableCell className="text-sm font-black text-foreground/80 py-2 px-3">
+                          {Number(row.amount).toFixed(2)} $
+                        </TableCell>
+
+                        <TableCell className="text-sm font-bold text-[#ff4d4f] py-2 px-3">
+                          0.00 $
+                        </TableCell>
+
+                        <TableCell className="text-base font-black text-foreground py-2 px-3">
+                          {Number(row.amount).toFixed(2)} $
+                        </TableCell>
+
+                        <TableCell className="text-right py-2 px-3">
+                          <div
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-full text-xs font-black uppercase tracking-tight shadow-sm ${
+                              displayStatus === "Paid" ||
+                              displayStatus === "Approved"
+                                ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                : displayStatus === "Pending"
+                                  ? "bg-amber-50 text-amber-600 border-amber-200"
+                                  : "bg-rose-50 text-rose-600 border-rose-200"
+                            }`}
+                          >
+                            {(displayStatus === "Paid" ||
+                              displayStatus === "Approved") && (
+                              <CheckCircle2 className="h-4 w-4" />
+                            )}
+                            {displayStatus === "Pending" && (
+                              <Clock className="h-4 w-4 animate-pulse" />
+                            )}
+                            {(displayStatus === "Rejected" ||
+                              displayStatus === "Failed") && (
+                              <XCircle className="h-4 w-4" />
+                            )}
+                            {displayStatus}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={8}
+                      className="text-center py-6 text-sm text-muted-foreground"
+                    >
+                      No withdrawal history found.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>

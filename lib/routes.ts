@@ -40,6 +40,7 @@ export const adminPaths: NavGroup[] = [
     title: "Overview",
     items: [
       { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+      { title: "Tree View", url: "/admin/tree-view", icon: Workflow },
     ],
   },
   {
@@ -100,23 +101,28 @@ export const adminPaths: NavGroup[] = [
         url: "/admin/payments/income-check",
         icon: LayoutGrid,
       },
+      {
+        title: "Fund Requests",
+        url: "/admin/payments/fund-request",
+        icon: PiggyBank,
+      },
     ],
   },
   {
     title: "Support",
     items: [
-      { title: "Ticket System", url: "/admin/ticket-system", icon: KeyRound },
+      { title: "Tickets System", url: "/admin/support-tickets", icon: Ticket },
     ],
   },
-  {
-    title: "Settings",
-    items: [
-      { title: "Popup setting", url: "/admin/settings/popup", icon: Settings },
-      { title: "News upload", url: "/admin/settings/news", icon: FileText },
-      { title: "Pillar image", url: "/admin/settings/pillar", icon: Settings },
-      { title: "Contact list", url: "/admin/settings/contact", icon: Users },
-    ],
-  },
+  // {
+  //   title: "Settings",
+  //   items: [
+  //     { title: "Popup setting", url: "/admin/settings/popup", icon: Settings },
+  //     { title: "News upload", url: "/admin/settings/news", icon: FileText },
+  //     { title: "Pillar image", url: "/admin/settings/pillar", icon: Settings },
+  //     { title: "Contact list", url: "/admin/settings/contact", icon: Users },
+  //   ],
+  // },
   {
     title: "configuration",
     items: [
@@ -150,7 +156,6 @@ export const memberPaths: NavGroup[] = [
     items: [
       { title: "My Sponsor", url: "/team/sponsor", icon: User },
       { title: "My Team", url: "/team/list", icon: Users },
-      { title: "Level Wise Team", url: "/team/level-wise", icon: Workflow },
     ],
   },
   {

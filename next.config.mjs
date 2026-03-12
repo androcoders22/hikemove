@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   outputFileTracingRoot: process.cwd(),
-  typedRoutes: true,
+  // typedRoutes: true, // commented out to optimize speed
   eslint: {
     ignoreDuringBuilds: true,
   },

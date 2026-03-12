@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Medal, Search, Filter, BarChart3 } from "lucide-react";
 import {
@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface BusinessSummary {
   firstLeg: string;
@@ -64,6 +65,24 @@ export default function RewardList() {
     },
   ]);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredData = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+
+    if (!query) return rewardData;
+
+    return rewardData.filter((row) => {
+      return (
+        row.rank.toLowerCase().includes(query) ||
+        row.rewardName.toLowerCase().includes(query) ||
+        row.rewardAmount.toLowerCase().includes(query) ||
+        row.targetBusiness.toLowerCase().includes(query) ||
+        row.currentBusiness.toLowerCase().includes(query)
+      );
+    });
+  }, [rewardData, searchTerm]);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <PageHeader
@@ -83,6 +102,7 @@ export default function RewardList() {
               Business Summary
             </h2>
           </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -101,6 +121,7 @@ export default function RewardList() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
                 <TableRow className="hover:bg-transparent">
                   <TableCell className="text-center font-black text-foreground border-r border-border/50 py-6">
@@ -128,15 +149,19 @@ export default function RewardList() {
               <Medal className="h-4 w-4 text-primary" />
               Available Rewards
             </h2>
+
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Search className="h-3.5 w-3.5 mr-2" />
-                SEARCH
-              </Button>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 pl-8 pr-3 text-xs"
+                />
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -147,6 +172,7 @@ export default function RewardList() {
               </Button>
             </div>
           </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -171,46 +197,68 @@ export default function RewardList() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {rewardData.map((row) => (
-                  <TableRow
-                    key={row.srNo}
-                    className="border-border hover:bg-muted/20 transition-colors group"
-                  >
-                    <TableCell className="text-xs font-bold text-muted-foreground">
-                      {row.srNo}
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-black uppercase">
-                        {row.rank}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-foreground">
-                      {row.rewardName}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-emerald-600">
-                      {row.rewardAmount}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-rose-600/80">
-                      {row.targetBusiness}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="text-xs font-black text-primary">
-                          {row.currentBusiness}
+                {filteredData.length > 0 ? (
+                  filteredData.map((row) => (
+                    <TableRow
+                      key={row.srNo}
+                      className="border-border hover:bg-muted/20 transition-colors group"
+                    >
+                      <TableCell className="text-xs font-bold text-muted-foreground">
+                        {row.srNo}
+                      </TableCell>
+
+                      <TableCell>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-black uppercase">
+                          {row.rank}
                         </span>
-                        <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary"
-                            style={{
-                              width: `${Math.min(100, (parseFloat(row.currentBusiness) / parseFloat(row.targetBusiness)) * 100)}%`,
-                            }}
-                          />
+                      </TableCell>
+
+                      <TableCell className="text-xs font-bold text-foreground">
+                        {row.rewardName}
+                      </TableCell>
+
+                      <TableCell className="text-xs font-black text-emerald-600">
+                        {row.rewardAmount}
+                      </TableCell>
+
+                      <TableCell className="text-xs font-black text-rose-600/80">
+                        {row.targetBusiness}
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-xs font-black text-primary">
+                            {row.currentBusiness}
+                          </span>
+                          <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary"
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  (parseFloat(row.currentBusiness) /
+                                    parseFloat(row.targetBusiness)) *
+                                    100
+                                )}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-6 text-sm text-muted-foreground"
+                    >
+                      No reward found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>

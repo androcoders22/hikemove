@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
 import {
   Users,
@@ -9,6 +9,7 @@ import {
   TrendingUp,
   UserCheck,
   UserMinus,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -19,64 +20,137 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getDirectMembersAPI } from "@/lib/api/member";
 
-interface SponsorRow {
-  srNo: number;
+interface MemberRow {
+  _id: string;
   memberId: string;
-  memberName: string;
-  contactNo: string;
-  currentPackage: string;
-  joinDate: string;
-  activationDate: string;
-  status: "ACTIVE" | "INACTIVE";
+  fullName: string;
+  phone: string;
+  package: string;
+  sponsorId?: {
+    _id: string;
+    fullName: string;
+    memberId: string;
+  };
+  createdAt: string;
+  activationDate: string | null;
+  status: string;
 }
 
 export default function MySponsor() {
-  const [sponsorData] = useState<SponsorRow[]>([
-    {
-      srNo: 1,
-      memberId: "HM3347546",
-      memberName: "ASHISH KUMAR",
-      contactNo: "0522375835",
-      currentPackage: "1000 $",
-      joinDate: "Nov 17 2025 3:24:36:703PM",
-      activationDate: "Nov 17 2025 3:32:01:760PM",
-      status: "ACTIVE",
-    },
-  ]);
+  const [memberData, setMemberData] = useState<MemberRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getDirectMembersAPI();
+        if (response.data?.status && Array.isArray(response.data.data)) {
+          setMemberData(response.data.data);
+        } else {
+          setError("Failed to load members data");
+        }
+      } catch (err: any) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const activeCount = useMemo(() =>
+    memberData.filter(m => m.status.toLowerCase() === "active").length,
+    [memberData]);
+
+  const inactiveCount = useMemo(() =>
+    memberData.filter(m => m.status.toLowerCase() !== "active").length,
+    [memberData]);
 
   const stats = [
     {
-      label: "Total Business",
-      value: "1100",
-      icon: TrendingUp,
+      label: "Total Members",
+      value: memberData.length.toString(),
+      icon: Users,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
     {
-      label: "Active Direct Members",
-      value: "2",
+      label: "Active Members",
+      value: activeCount.toString(),
       icon: UserCheck,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
     },
     {
-      label: "Inactive Direct Members",
-      value: "0",
+      label: "Inactive Members",
+      value: inactiveCount.toString(),
       icon: UserMinus,
       color: "text-rose-500",
       bgColor: "bg-rose-500/10",
     },
   ];
 
+  const filteredData = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+    if (!query) return memberData;
+
+    return memberData.filter((row) => {
+      const sId = row.sponsorId?.memberId || "";
+      const sName = row.sponsorId?.fullName || "";
+
+      return (
+        row.memberId.toLowerCase().includes(query) ||
+        row.fullName.toLowerCase().includes(query) ||
+        row.phone.toLowerCase().includes(query) ||
+        (row.package || "").toLowerCase().includes(query) ||
+        sId.toLowerCase().includes(query) ||
+        sName.toLowerCase().includes(query) ||
+        row.status.toLowerCase().includes(query)
+      );
+    });
+  }, [memberData, searchTerm]);
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <PageHeader title="Direct Members" breadcrumbs={[{ title: "My Team", href: "#" }, { title: "Direct Members" }]} />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <PageHeader
-        title="My Sponsor"
-        breadcrumbs={[{ title: "My Team", href: "#" }, { title: "My Sponsor" }]}
+        title="Direct Members"
+        breadcrumbs={[{ title: "My Team", href: "#" }, { title: "Direct Members" }]}
       />
 
       <div className="flex-1 p-6 space-y-6">
+        {error && (
+          <div className="bg-destructive/10 text-destructive p-4 rounded-xl text-sm font-bold border border-destructive/20">
+            {error}
+          </div>
+        )}
+
         {/* Stats Summary Area */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {stats.map((stat, idx) => (
@@ -104,17 +178,21 @@ export default function MySponsor() {
           <div className="p-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/10">
             <h2 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
-              Sponsor Details
+              Direct Members List
             </h2>
+
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Search className="h-3.5 w-3.5 mr-2" />
-                SEARCH
-              </Button>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 pl-8 pr-3 text-xs"
+                />
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -125,6 +203,7 @@ export default function MySponsor() {
               </Button>
             </div>
           </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -145,6 +224,12 @@ export default function MySponsor() {
                     Current Package
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                    Sponsor Id
+                  </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                    Sponsor Name
+                  </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Join Date
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
@@ -155,46 +240,63 @@ export default function MySponsor() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {sponsorData.map((row) => (
-                  <TableRow
-                    key={row.srNo}
-                    className="border-border hover:bg-muted/20 transition-colors group"
-                  >
-                    <TableCell className="text-xs font-bold text-muted-foreground">
-                      {row.srNo}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-primary">
-                      {row.memberId}
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-foreground">
-                      {row.memberName}
-                    </TableCell>
-                    <TableCell className="text-xs font-medium text-muted-foreground">
-                      {row.contactNo}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-foreground">
-                      {row.currentPackage}
-                    </TableCell>
-                    <TableCell className="text-[10px] font-medium text-muted-foreground">
-                      {row.joinDate}
-                    </TableCell>
-                    <TableCell className="text-[10px] font-medium text-muted-foreground">
-                      {row.activationDate}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${
-                          row.status === "ACTIVE"
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-rose-500/10 text-rose-500"
-                        }`}
-                      >
-                        {row.status}
-                      </span>
+                {filteredData.length > 0 ? (
+                  filteredData.map((row, idx) => (
+                    <TableRow
+                      key={row._id}
+                      className="border-border hover:bg-muted/20 transition-colors group"
+                    >
+                      <TableCell className="text-xs font-bold text-muted-foreground">
+                        {idx + 1}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-primary">
+                        {row.memberId}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-foreground">
+                        {row.fullName}
+                      </TableCell>
+                      <TableCell className="text-xs font-medium text-muted-foreground">
+                        {row.phone}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-foreground">
+                        {row.package || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-primary/80">
+                        {row.sponsorId?.memberId || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-xs font-medium text-foreground/80">
+                        {row.sponsorId?.fullName || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-[10px] font-medium text-muted-foreground">
+                        {formatDate(row.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-[10px] font-medium text-muted-foreground">
+                        {row.activationDate ? formatDate(row.activationDate) : "No Active"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${row.status.toLowerCase() === "active"
+                              ? "bg-emerald-500/10 text-emerald-500"
+                              : "bg-rose-500/10 text-rose-500"
+                            }`}
+                        >
+                          {row.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={10}
+                      className="text-center py-6 text-sm text-muted-foreground"
+                    >
+                      No members found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>

@@ -1,16 +1,16 @@
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
 import {
   Users,
   Search,
   Filter,
-  ArrowUpRight,
   TrendingUp,
   UserCheck,
   UserMinus,
-  Contact,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -21,95 +21,155 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getMemberTreeAPI } from "@/lib/api/member";
 
 interface TeamRow {
-  srNo: number;
+  _id: string;
   memberId: string;
-  memberName: string;
-  contactNo: string;
-  currentPackage: string;
-  sponsorId: string;
-  sponsorName: string;
-  joinDate: string;
-  activationDate: string;
-  status: "ACTIVE" | "INACTIVE";
+  fullName: string;
+  phone: string;
+  package: string;
+  sponsorId: any;
+  sponsorMemberId?: string;
+  sponsorFullName?: string;
+  createdAt: string;
+  activationDate: string | null;
+  status: string;
 }
 
 export default function MyTeam() {
-  const [teamData] = useState<TeamRow[]>([
-    {
-      srNo: 1,
-      memberId: "HM9623400",
-      memberName: "BHAVIN SONGARA",
-      contactNo: "9016653966",
-      currentPackage: "600 $",
-      sponsorId: "HM8349314",
-      sponsorName: "HM01",
-      joinDate: "Nov 30 2025 3:45:48:600PM",
-      activationDate: "Nov 30 2025 4:07:34:273PM",
-      status: "ACTIVE",
-    },
-    {
-      srNo: 2,
-      memberId: "HM5809294",
-      memberName: "SIVARAMAN",
-      contactNo: "8870191889",
-      currentPackage: "1000 $",
-      sponsorId: "HM8349314",
-      sponsorName: "HM01",
-      joinDate: "Nov 27 2025 5:32:00:877PM",
-      activationDate: "Nov 29 2025 3:29:48:297PM",
-      status: "ACTIVE",
-    },
-    {
-      srNo: 3,
-      memberId: "HM8270370",
-      memberName: "JIGNESH A VADHER",
-      contactNo: "09687514957",
-      currentPackage: "500 $",
-      sponsorId: "HM8349314",
-      sponsorName: "HM01",
-      joinDate: "Nov 27 2025 2:11:24:697PM",
-      activationDate: "Nov 27 2025 4:21:28:533PM",
-      status: "ACTIVE",
-    },
-    {
-      srNo: 4,
-      memberId: "HM4071480",
-      memberName: "SUSHIL KUMAR2",
-      contactNo: "+919829170281",
-      currentPackage: "100 $",
-      sponsorId: "HM5206394",
-      sponsorName: "SUSHIL KUMAR1",
-      joinDate: "Nov 26 2025 1:17:30:057PM",
-      activationDate: "Nov 27 2025 12:25:15:367AM",
-      status: "ACTIVE",
-    },
-  ]);
+  const [teamData, setTeamData] = useState<TeamRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getMemberTreeAPI();
+        if (response.data?.status && response.data.data) {
+          const rawTree = response.data.data;
+          const flattened = flattenTree(rawTree);
+          
+          // Create a lookup map for MongoID -> Member Details
+          const idMap: Record<string, { memberId: string, fullName: string }> = {};
+          flattened.forEach(m => {
+            idMap[m._id] = { memberId: m.memberId, fullName: m.fullName };
+          });
+
+          // Enrich data with sponsor's human-readable info
+          const enriched = flattened.map(m => {
+            const sponsorInfo = typeof m.sponsorId === 'string' ? idMap[m.sponsorId] : null;
+            return {
+              ...m,
+              sponsorMemberId: sponsorInfo ? sponsorInfo.memberId : (typeof m.sponsorId === 'object' ? m.sponsorId?.memberId : null),
+              sponsorFullName: sponsorInfo ? sponsorInfo.fullName : (typeof m.sponsorId === 'object' ? m.sponsorId?.fullName : "N/A"),
+            };
+          });
+
+          // Exclude the root member (the current user) from "My Team" list
+          setTeamData(enriched.slice(1)); 
+        } else {
+          setError("Failed to load team data");
+        }
+      } catch (err: any) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const flattenTree = (node: any): any[] => {
+    let result: any[] = [node];
+    if (node.downlines && Array.isArray(node.downlines)) {
+      node.downlines.forEach((child: any) => {
+        result = [...result, ...flattenTree(child)];
+      });
+    }
+    return result;
+  };
+
+  const activeCount = useMemo(() => 
+    teamData.filter(m => m.status.toLowerCase() === "active").length, 
+  [teamData]);
+  
+  const inactiveCount = useMemo(() => 
+    teamData.filter(m => m.status.toLowerCase() !== "active").length, 
+  [teamData]);
+
+  const totalBusiness = useMemo(() => {
+    return teamData.reduce((acc, curr) => {
+      const pkg = parseFloat(curr.package) || 0;
+      return acc + pkg;
+    }, 0);
+  }, [teamData]);
 
   const stats = [
     {
       label: "Total Business",
-      value: "55000",
+      value: `$ ${totalBusiness}`,
       icon: TrendingUp,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
     {
-      label: "Active Direct Members",
-      value: "176",
+      label: "Active Team Members",
+      value: activeCount.toString(),
       icon: UserCheck,
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
     },
     {
-      label: "Inactive Direct Members",
-      value: "12",
+      label: "Inactive Team Members",
+      value: inactiveCount.toString(),
       icon: UserMinus,
       color: "text-rose-500",
       bgColor: "bg-rose-500/10",
     },
   ];
+
+  const filteredData = useMemo(() => {
+    const query = searchTerm.toLowerCase().trim();
+    if (!query) return teamData;
+
+    return teamData.filter((row) => {
+      const sId = row.sponsorMemberId || "";
+      const sName = row.sponsorFullName || "";
+
+      return (
+        row.memberId.toLowerCase().includes(query) ||
+        row.fullName.toLowerCase().includes(query) ||
+        row.phone.toLowerCase().includes(query) ||
+        (row.package || "").toLowerCase().includes(query) ||
+        sId.toLowerCase().includes(query) ||
+        sName.toLowerCase().includes(query) ||
+        row.status.toLowerCase().includes(query)
+      );
+    });
+  }, [teamData, searchTerm]);
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <PageHeader title="My Team" breadcrumbs={[{ title: "My Team", href: "#" }, { title: "Team List" }]} />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -122,6 +182,12 @@ export default function MyTeam() {
       />
 
       <div className="flex-1 p-6 space-y-6">
+        {error && (
+          <div className="bg-destructive/10 text-destructive p-4 rounded-xl text-sm font-bold border border-destructive/20">
+            {error}
+          </div>
+        )}
+
         {/* Stats Summary Area */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {stats.map((stat, idx) => (
@@ -151,15 +217,19 @@ export default function MyTeam() {
               <Users className="h-4 w-4 text-primary" />
               Team List
             </h2>
+
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Search className="h-3.5 w-3.5 mr-2" />
-                SEARCH
-              </Button>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8 pl-8 pr-3 text-xs"
+                />
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -170,6 +240,7 @@ export default function MyTeam() {
               </Button>
             </div>
           </div>
+
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/30">
@@ -206,52 +277,64 @@ export default function MyTeam() {
                   </TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {teamData.map((row) => (
-                  <TableRow
-                    key={row.srNo}
-                    className="border-border hover:bg-muted/20 transition-colors group"
-                  >
-                    <TableCell className="text-xs font-bold text-muted-foreground">
-                      {row.srNo}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-primary">
-                      {row.memberId}
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-foreground">
-                      {row.memberName}
-                    </TableCell>
-                    <TableCell className="text-xs font-medium text-muted-foreground">
-                      {row.contactNo}
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-foreground">
-                      {row.currentPackage}
-                    </TableCell>
-                    <TableCell className="text-xs font-bold text-primary/80">
-                      {row.sponsorId}
-                    </TableCell>
-                    <TableCell className="text-xs font-medium text-foreground/80">
-                      {row.sponsorName}
-                    </TableCell>
-                    <TableCell className="text-[10px] font-medium text-muted-foreground">
-                      {row.joinDate}
-                    </TableCell>
-                    <TableCell className="text-[10px] font-medium text-muted-foreground">
-                      {row.activationDate}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${
-                          row.status === "ACTIVE"
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-rose-500/10 text-rose-500"
-                        }`}
-                      >
-                        {row.status}
-                      </span>
+                {filteredData.length > 0 ? (
+                  filteredData.map((row, idx) => (
+                    <TableRow
+                      key={row._id}
+                      className="border-border hover:bg-muted/20 transition-colors group"
+                    >
+                      <TableCell className="text-xs font-bold text-muted-foreground">
+                        {idx + 1}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-primary">
+                        {row.memberId}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-foreground">
+                        {row.fullName}
+                      </TableCell>
+                      <TableCell className="text-xs font-medium text-muted-foreground">
+                        {row.phone}
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-foreground">
+                        {row.package ? `$ ${row.package}` : "N/A"}
+                      </TableCell>
+                      <TableCell className="text-xs font-bold text-primary/80">
+                        {row.sponsorMemberId || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-xs font-medium text-foreground/80">
+                        {row.sponsorFullName || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-[10px] font-medium text-muted-foreground">
+                        {formatDate(row.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-[10px] font-medium text-muted-foreground">
+                        {row.activationDate ? formatDate(row.activationDate) : "No Active"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${
+                            row.status.toLowerCase() === "active"
+                              ? "bg-emerald-500/10 text-emerald-500"
+                              : "bg-rose-500/10 text-rose-500"
+                          }`}
+                        >
+                          {row.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={10}
+                      className="text-center py-6 text-sm text-muted-foreground"
+                    >
+                      No team member found.
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>

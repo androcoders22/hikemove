@@ -46,22 +46,48 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 import { PageHeader } from "@/components/page-header";
+import { getWalletAPI } from "@/lib/api/wallet";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/data/dashboard.json")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
+    const fetchData = async () => {
+      try {
+        const [dashboardRes, walletRes] = await Promise.all([
+          fetch("/data/dashboard.json").then(res => res.json()),
+          getWalletAPI().catch(() => null)
+        ]);
+
+        let finalData = dashboardRes;
+
+        if (walletRes?.data?.status) {
+          const wallet = walletRes.data.data;
+          finalData = {
+            ...dashboardRes,
+            stats: dashboardRes.stats.map((stat: any) => {
+              if (stat.id === "credit-wallet") {
+                return { ...stat, value: wallet.depositBalance };
+              }
+              if (stat.id === "income-wallet") {
+                return { ...stat, value: wallet.incomeBalance };
+              }
+              return stat;
+            }),
+            // Use depositBalance as the "Total Profits" for this demo as per user's request focus
+            totalBalance: wallet.depositBalance
+          };
+        }
+
+        setData(finalData);
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching dashboard data:", err);
+      } catch (err) {
+        console.error("Error fetching data:", err);
         setLoading(false);
-      });
+      }
+    };
+    fetchData();
   }, []);
 
   if (loading || !data) return null;
@@ -139,7 +165,7 @@ export default function DashboardPage() {
                 Total Profits
               </p>
               <h2 className="text-3xl font-black tracking-tight text-foreground">
-                $1,224.75
+                ${(data as any).totalBalance ? (data as any).totalBalance.toLocaleString() : "1,224.75"}
               </h2>
             </div>
             <div className="flex gap-1">
