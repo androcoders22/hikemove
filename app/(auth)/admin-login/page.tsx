@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Loader2, Command } from "lucide-react";
 import { adminLogin } from "@/lib/api/admin";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,22 +35,20 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    import("react-hot-toast").then((mod) => {
-      const toast = mod.default;
-      if (!credentials.email || !credentials.password) {
-        toast.error("Please fill in all fields");
-        return;
-      }
-    });
+    const email = credentials.email.trim().toLowerCase();
+    const password = credentials.password;
 
-    if (!credentials.email || !credentials.password) return;
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
 
     try {
       setLoading(true);
 
       const res = await adminLogin({
-        email: credentials.email,
-        password: credentials.password,
+        email,
+        password,
       });
 
       if (res.status === true && res.data?.accessToken) {
@@ -59,16 +58,24 @@ export default function LoginPage() {
           "user",
           JSON.stringify({
             name: "Admin User",
-            email: credentials.email,
+            email,
             avatar: "/s-traders-logo.webp",
           }),
         );
 
         router.push("/admin/dashboard");
+      } else {
+        toast.error(res?.message || "Invalid credentials");
       }
     } catch (err: any) {
-      // Global axios interceptor already handles throwing the toast error message
-      console.error(err);
+      const serverMessage = err?.response?.data?.message;
+      if (Array.isArray(serverMessage)) {
+        serverMessage.forEach((msg: string) => toast.error(msg));
+      } else if (typeof serverMessage === "string") {
+        toast.error(serverMessage);
+      } else {
+        toast.error("Login failed");
+      }
     } finally {
       setLoading(false);
     }

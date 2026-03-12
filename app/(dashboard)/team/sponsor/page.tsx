@@ -21,6 +21,14 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getDirectMembersAPI } from "@/lib/api/member";
 
 interface MemberRow {
@@ -37,13 +45,16 @@ interface MemberRow {
   createdAt: string;
   activationDate: string | null;
   status: string;
+  sponsor?: { memberId?: string; fullName?: string } | string;
 }
 
 export default function MySponsor() {
   const [memberData, setMemberData] = useState<MemberRow[]>([]);
+  const [currentUser, setCurrentUser] = useState<{ memberId?: string; fullName?: string }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +72,22 @@ export default function MySponsor() {
       }
     };
     fetchData();
+    
+    // Fallback: Since these are direct members, the sponsor is the current user
+    if (typeof window !== "undefined") {
+      try {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          setCurrentUser(JSON.parse(userStr));
+        } else {
+          // Alternative: we might have memberId stored directly
+          const mid = localStorage.getItem("memberId");
+          if (mid) setCurrentUser({ memberId: mid, fullName: "Me" });
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
   }, []);
 
   const activeCount = useMemo(() =>
@@ -97,11 +124,22 @@ export default function MySponsor() {
 
   const filteredData = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
-    if (!query) return memberData;
 
     return memberData.filter((row) => {
-      const sId = row.sponsorId?.memberId || "";
-      const sName = row.sponsorId?.fullName || "";
+      // Status filter
+      if (statusFilter !== "all" && row.status.toLowerCase() !== statusFilter) {
+        return false;
+      }
+
+      if (!query) return true;
+
+      // Robust sponsor extraction
+      let sponsorObj = row.sponsorId || row.sponsor;
+      let sId = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.memberId : (typeof sponsorObj === 'string' ? sponsorObj : currentUser.memberId);
+      let sName = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.fullName : currentUser.fullName;
+      
+      sId = sId || "";
+      sName = sName || "";
 
       return (
         row.memberId.toLowerCase().includes(query) ||
@@ -113,7 +151,7 @@ export default function MySponsor() {
         row.status.toLowerCase().includes(query)
       );
     });
-  }, [memberData, searchTerm]);
+  }, [memberData, searchTerm, statusFilter, currentUser]);
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
@@ -193,14 +231,40 @@ export default function MySponsor() {
                 />
               </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Filter className="h-3.5 w-3.5 mr-2" />
-                FILTER
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`h-8 text-[10px] font-bold ${statusFilter !== "all" ? "bg-primary/10 text-primary border-primary/20" : ""}`}
+                  >
+                    <Filter className="h-3.5 w-3.5 mr-2" />
+                    {statusFilter === "all" ? "FILTER" : statusFilter.toUpperCase()}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[160px]">
+                  <DropdownMenuLabel className="text-xs font-black uppercase text-muted-foreground">Status</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => setStatusFilter("all")}
+                    className={statusFilter === "all" ? "bg-muted font-bold" : ""}
+                  >
+                    All Members
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setStatusFilter("active")}
+                    className={statusFilter === "active" ? "bg-muted font-bold text-emerald-600" : "text-emerald-600"}
+                  >
+                    Active
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setStatusFilter("inactive")}
+                    className={statusFilter === "inactive" ? "bg-muted font-bold text-rose-600" : "text-rose-600"}
+                  >
+                    Inactive
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -264,10 +328,18 @@ export default function MySponsor() {
                         {row.package || "N/A"}
                       </TableCell>
                       <TableCell className="text-xs font-bold text-primary/80">
-                        {row.sponsorId?.memberId || "N/A"}
+                        {(() => {
+                           let sponsorObj = row.sponsorId || row.sponsor;
+                           let sId = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.memberId : (typeof sponsorObj === 'string' ? sponsorObj : currentUser.memberId);
+                           return sId || "N/A";
+                        })()}
                       </TableCell>
                       <TableCell className="text-xs font-medium text-foreground/80">
-                        {row.sponsorId?.fullName || "N/A"}
+                        {(() => {
+                           let sponsorObj = row.sponsorId || row.sponsor;
+                           let sName = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.fullName : currentUser.fullName;
+                           return sName || "N/A";
+                        })()}
                       </TableCell>
                       <TableCell className="text-[10px] font-medium text-muted-foreground">
                         {formatDate(row.createdAt)}

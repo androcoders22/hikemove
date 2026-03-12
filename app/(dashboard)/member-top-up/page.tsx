@@ -72,6 +72,7 @@ export default function MemberTopUp() {
   const [memberName, setMemberName] = useState("");
   const [memberObjectId, setMemberObjectId] = useState("");
   const [isCheckingMember, setIsCheckingMember] = useState(false);
+  const [isLoadingRecords, setIsLoadingRecords] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [myMemberId, setMyMemberId] = useState("");
 
@@ -92,15 +93,40 @@ export default function MemberTopUp() {
     fetchWallet();
   }, []);
 
+  const [rawApiResponse, setRawApiResponse] = useState<any>(null);
+
   // Fetch topup records
   const fetchRecords = useCallback(async () => {
+    setIsLoadingRecords(true);
     try {
       const res = await getMemberTopupsAPI();
-      if (res.data?.status) {
-        setRecords(res.data.data || []);
-      }
+      const d = res.data;
+      setRawApiResponse(d); // store raw for debug
+      console.log("[TopUp Records API] Full response:", JSON.stringify(d, null, 2));
+
+      // Try to find an array anywhere in the response
+      const extractArray = (obj: any): any[] => {
+        if (Array.isArray(obj)) return obj;
+        if (obj && typeof obj === "object") {
+          // check common keys in order
+          for (const key of ["data", "records", "items", "result", "topups", "list"]) {
+            if (Array.isArray(obj[key])) return obj[key];
+            if (obj[key] && typeof obj[key] === "object") {
+              const nested = extractArray(obj[key]);
+              if (nested.length > 0) return nested;
+            }
+          }
+        }
+        return [];
+      };
+
+      const arr = extractArray(d);
+      setRecords(arr);
     } catch (err) {
       console.error("Failed to fetch topup records", err);
+      setRecords([]);
+    } finally {
+      setIsLoadingRecords(false);
     }
   }, []);
 
@@ -399,60 +425,74 @@ export default function MemberTopUp() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {records.map((row, index) => (
-                  <TableRow
-                    key={row._id || index}
-                    className="border-border hover:bg-muted/20 transition-colors group"
-                  >
-                    <TableCell className="text-[11px] font-bold text-muted-foreground">
-                      {index + 1}
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center font-mono text-[11px] font-black bg-primary/5 text-primary px-2 py-0.5 rounded-md border border-primary/10">
-                        {row.toMember?.memberId || "-"}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-xs font-black text-foreground uppercase truncate max-w-[150px]">
-                      {row.toMember?.fullName || "-"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5 font-black text-slate-900">
-                        <div className="h-6 w-6 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px]">
-                          $
-                        </div>
-                        <span className="text-sm">{row.amount}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-[11px] font-bold text-muted-foreground italic">
-                      {row.createdAt
-                        ? format(
-                          new Date(row.createdAt),
-                          "dd-MMM-yyyy hh:mm:ss a",
-                        )
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-3 h-6 rounded-full text-[9px] font-black uppercase tracking-widest border ${row.status === "confirmed" ||
-                          row.status === "Confirmed"
-                          ? "bg-emerald-500/5 text-emerald-600 border-emerald-500/20"
-                          : row.status === "rejected" ||
-                            row.status === "Rejected"
-                            ? "bg-red-500/5 text-red-600 border-red-500/20"
-                            : "bg-amber-500/5 text-amber-600 border-amber-500/20"
-                          }`}
-                      >
-                        {row.status === "confirmed" ||
-                          row.status === "Confirmed" ? (
-                          <CheckCircle2 className="h-3 w-3" />
-                        ) : (
-                          <Clock className="h-3 w-3" />
-                        )}
-                        {row.status}
-                      </div>
+                {isLoadingRecords ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10">
+                      <Loader2 className="h-5 w-5 animate-spin mx-auto text-primary" />
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : records.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-sm text-muted-foreground font-medium">
+                      No activation records found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  records.map((row, index) => (
+                    <TableRow
+                      key={row._id || index}
+                      className="border-border hover:bg-muted/20 transition-colors group"
+                    >
+                      <TableCell className="text-[11px] font-bold text-muted-foreground">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center font-mono text-[11px] font-black bg-primary/5 text-primary px-2 py-0.5 rounded-md border border-primary/10">
+                          {row.toMember?.memberId || row.toMember || "-"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-xs font-black text-foreground uppercase truncate max-w-[150px]">
+                        {row.toMember?.fullName || "-"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 font-black text-slate-900">
+                          <div className="h-6 w-6 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px]">
+                            $
+                          </div>
+                          <span className="text-sm">{row.amount}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-[11px] font-bold text-muted-foreground italic">
+                        {row.createdAt
+                          ? format(
+                            new Date(row.createdAt),
+                            "dd-MMM-yyyy hh:mm:ss a",
+                          )
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div
+                          className={`inline-flex items-center gap-1.5 px-3 h-6 rounded-full text-[9px] font-black uppercase tracking-widest border ${row.status === "confirmed" ||
+                            row.status === "Confirmed"
+                            ? "bg-emerald-500/5 text-emerald-600 border-emerald-500/20"
+                            : row.status === "rejected" ||
+                              row.status === "Rejected"
+                              ? "bg-red-500/5 text-red-600 border-red-500/20"
+                              : "bg-amber-500/5 text-amber-600 border-amber-500/20"
+                            }`}
+                        >
+                          {row.status === "confirmed" ||
+                            row.status === "Confirmed" ? (
+                            <CheckCircle2 className="h-3 w-3" />
+                          ) : (
+                            <Clock className="h-3 w-3" />
+                          )}
+                          {row.status}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

@@ -51,6 +51,7 @@ import { getWalletAPI } from "@/lib/api/wallet";
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [referralLink, setReferralLink] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,7 +89,26 @@ export default function DashboardPage() {
       }
     };
     fetchData();
+
+    // Build referral link on the client (localStorage only available after mount)
+    try {
+      const directId = localStorage.getItem("memberId");
+      if (directId) {
+        setReferralLink(`${window.location.origin}/member-signup/${directId}`);
+      } else {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          const memberId = user.memberId || user.member_id || user.id || "";
+          if (memberId) {
+            setReferralLink(`${window.location.origin}/member-signup/${memberId}`);
+          }
+        }
+      }
+    } catch (e) {}
   }, []);
+
+
 
   if (loading || !data) return null;
 
@@ -103,14 +123,6 @@ export default function DashboardPage() {
     return stat.value;
   };
 
-  const fullReferralLink = `${typeof window !== "undefined" ? window.location.origin : ""}/member-signup/${(() => {
-    try {
-      const userStr = localStorage.getItem("user");
-      return userStr ? JSON.parse(userStr).memberId : "default";
-    } catch (e) {
-      return "default";
-    }
-  })()}`;
 
   return (
     <div className="flex flex-col selection:bg-primary/10 selection:text-primary">
@@ -127,14 +139,14 @@ export default function DashboardPage() {
           </span>
           <div className="flex items-center bg-background border border-border px-2 py-0.5 rounded gap-2 min-w-0">
             <span className="text-[11px] font-mono text-foreground truncate select-all">
-              {fullReferralLink}
+              {referralLink}
             </span>
             <Button
               size="icon"
               variant="ghost"
               className="h-5 w-5 text-muted-foreground hover:text-primary shrink-0"
               onClick={() => {
-                navigator.clipboard.writeText(fullReferralLink);
+                navigator.clipboard.writeText(referralLink);
                 toast.success("Copied to clipboard");
               }}
             >

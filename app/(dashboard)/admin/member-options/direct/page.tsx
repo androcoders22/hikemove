@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Search, CheckCircle2, Clock, List, UserCheck, UserCircle2 } from "lucide-react";
 import {
@@ -15,27 +15,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
+import { api } from "@/lib/axios";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface DirectRow {
-    srNo: number;
+    _id: string;
     memberId: string;
-    memberName: string;
-    memberPackage: string;
-    joiningDate: string;
-    activationDate: string;
+    fullName: string;
+    phone: string;
+    package: string;
+    sponsorId?: {
+        _id: string;
+        fullName: string;
+        memberId: string;
+    };
+    createdAt: string;
+    activationDate: string | null;
     status: string;
 }
 
 export default function MyDirectPage() {
-    const [memberIdSearch, setMemberIdSearch] = useState("");
+    const [memberId, setMemberId] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const [filters, setFilters] = useState({
-        memberId: "",
         memberName: "",
-        joiningDate: "",
-        activationDate: "",
-        status: "",
+        status: "all",
     });
 
     const [directData, setDirectData] = useState<DirectRow[]>([]);
@@ -43,23 +54,62 @@ export default function MyDirectPage() {
     const handleFetchDirect = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!memberIdSearch) {
+        if (!memberId) {
             toast.error("Please enter a Member Id");
             return;
         }
 
         setIsLoading(true);
+        setDirectData([]); // Clear previous results
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 800));
+            const response = await api.get(`/member/direct-members/${memberId}`);
+
+            if (response.data?.status && Array.isArray(response.data.data)) {
+                const results = response.data.data;
+                setDirectData(results);
+                if (results.length === 0) {
+                    toast("No direct members found for this ID", { icon: "ℹ️" });
+                } else {
+                    toast.success(`Found ${results.length} direct member(s)`);
+                }
+            } else {
+                setDirectData([]);
+            }
+        } catch (error: any) {
+            // Axios interceptor already shows the error toast — just log it
+            console.error("Fetch direct error:", error);
             setDirectData([]);
-            toast.success("Direct member data retrieved");
-        } catch (error) {
-            toast.error("Failed to fetch data");
         } finally {
             setIsLoading(false);
         }
     };
+
+    const formatDate = (dateStr: string | null) => {
+        if (!dateStr) return "N/A";
+        try {
+            return new Date(dateStr).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch (e) {
+            return dateStr;
+        }
+    };
+
+    const filteredData = useMemo(() => {
+        return directData.filter((row) => {
+            const mId = (row.memberId || "").toLowerCase();
+            const mName = (row.fullName || "").toLowerCase();
+            const mStatus = (row.status || "").toLowerCase();
+
+            return (
+                mName.includes(filters.memberName.toLowerCase()) &&
+                (filters.status === "all" || mStatus === filters.status.toLowerCase())
+            );
+        });
+    }, [directData, filters]);
 
     const handleFilterChange = (key: keyof typeof filters, value: string) => {
         setFilters((prev) => ({ ...prev, [key]: value }));
@@ -103,8 +153,8 @@ export default function MyDirectPage() {
                                     <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e] transition-colors group-focus-within:text-primary" />
                                     <Input
                                         placeholder="Enter Member Id"
-                                        value={memberIdSearch}
-                                        onChange={(e) => setMemberIdSearch(e.target.value)}
+                                        value={memberId}
+                                        onChange={(e) => setMemberId(e.target.value)}
                                         className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10 xl:w-[280px]"
                                     />
                                 </div>
@@ -128,28 +178,35 @@ export default function MyDirectPage() {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                                {Object.keys(filters).map((key) => (
-                                    <div key={key} className="relative group min-w-0">
-                                        <Input
-                                            placeholder={key
-                                                .replace(/([A-Z])/g, " $1")
-                                                .replace(/^./, (str) => str.toUpperCase())}
-                                            value={filters[key as keyof typeof filters]}
-                                            onChange={(e) =>
-                                                handleFilterChange(
-                                                    key as keyof typeof filters,
-                                                    e.target.value
-                                                )
-                                            }
-                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[11px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                        />
-                                    </div>
-                                ))}
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                <div className="relative group min-w-0">
+                                    <Input
+                                        placeholder="Filter by Name"
+                                        value={filters.memberName}
+                                        onChange={(e) => handleFilterChange("memberName", e.target.value)}
+                                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[11px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                    />
+                                </div>
+
+                                <div className="relative group min-w-0">
+                                    <Select
+                                        value={filters.status}
+                                        onValueChange={(val) => handleFilterChange("status", val)}
+                                    >
+                                        <SelectTrigger className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[11px] shadow-sm focus:ring-primary/10">
+                                            <SelectValue placeholder="All Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Status</SelectItem>
+                                            <SelectItem value="active">Active</SelectItem>
+                                            <SelectItem value="inactive">Inactive</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </div>
 
-                        {directData.length === 0 ? (
+                        {filteredData.length === 0 ? (
                             <div className="rounded-lg border border-[#dce8d3] shadow-sm">
                                 <div className="flex min-h-[220px] flex-col items-center justify-center px-4 text-center sm:min-h-[240px]">
                                     <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 ring-1 ring-[#dce8d3]">
@@ -167,20 +224,20 @@ export default function MyDirectPage() {
                             <>
                                 {/* Mobile + Tablet Card View */}
                                 <div className="space-y-3 xl:hidden">
-                                    {directData.map((row) => (
+                                    {filteredData.map((row, index) => (
                                         <div
-                                            key={row.srNo}
+                                            key={row._id || index}
                                             className="rounded-lg border border-[#dce8d3] bg-[#fafcf8] p-3 shadow-sm"
                                         >
                                             <div className="mb-2 flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
                                                     <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
-                                                        Sr. No. {row.srNo}
+                                                        Sr. No. {index + 1}
                                                     </p>
 
                                                     <div className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#4d553d]">
                                                         <UserCircle2 className="h-4 w-4 shrink-0 text-primary" />
-                                                        <span className="truncate">{row.memberName}</span>
+                                                        <span className="truncate">{row.fullName}</span>
                                                     </div>
 
                                                     <p className="mt-1 break-all text-[11px] font-medium text-primary">
@@ -189,11 +246,10 @@ export default function MyDirectPage() {
                                                 </div>
 
                                                 <span
-                                                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${
-                                                        row.status === "Active"
-                                                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                                            : "border-amber-200 bg-amber-50 text-amber-700"
-                                                    }`}
+                                                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${row.status?.toLowerCase() === "active"
+                                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                        : "border-amber-200 bg-amber-50 text-amber-700"
+                                                        }`}
                                                 >
                                                     {row.status}
                                                 </span>
@@ -206,17 +262,17 @@ export default function MyDirectPage() {
                                                             Package
                                                         </p>
                                                         <p className="mt-1 text-[11px] font-bold text-amber-700">
-                                                            {row.memberPackage}
+                                                            {row.package || "N/A"}
                                                         </p>
                                                     </div>
 
-                                                    <div className="rounded-md bg-white p-2">
+                                                    <div className="rounded-md bg-white p-2 text-center">
                                                         <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
                                                             Joining Date
                                                         </p>
-                                                        <div className="mt-1 flex items-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
+                                                        <div className="mt-1 flex items-center justify-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
                                                             <Clock className="h-3 w-3" />
-                                                            <span>{row.joiningDate}</span>
+                                                            <span>{formatDate(row.createdAt)}</span>
                                                         </div>
                                                     </div>
 
@@ -226,7 +282,7 @@ export default function MyDirectPage() {
                                                         </p>
                                                         <div className="mt-1 flex items-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
                                                             <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                                                            <span>{row.activationDate}</span>
+                                                            <span>{row.activationDate ? formatDate(row.activationDate) : "N/A"}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -266,13 +322,13 @@ export default function MyDirectPage() {
                                             </TableHeader>
 
                                             <TableBody>
-                                                {directData.map((row) => (
+                                                {filteredData.map((row, index) => (
                                                     <TableRow
-                                                        key={row.srNo}
+                                                        key={row._id || index}
                                                         className="border-b border-[#edf3e7] transition-colors hover:bg-[#fbfdf8]"
                                                     >
                                                         <TableCell className="px-3 py-2.5 text-xs font-medium text-[#8a927e]">
-                                                            {row.srNo}
+                                                            {index + 1}
                                                         </TableCell>
 
                                                         <TableCell className="px-3 py-2.5">
@@ -283,37 +339,36 @@ export default function MyDirectPage() {
 
                                                         <TableCell className="px-3 py-2.5">
                                                             <div className="text-xs font-medium text-[#5f6851]">
-                                                                {row.memberName}
+                                                                {row.fullName}
                                                             </div>
                                                         </TableCell>
 
                                                         <TableCell className="px-3 py-2.5">
                                                             <span className="inline-flex rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                                                                {row.memberPackage}
+                                                                {row.package || "N/A"}
                                                             </span>
                                                         </TableCell>
 
                                                         <TableCell className="px-3 py-2.5">
                                                             <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
                                                                 <Clock className="h-3 w-3" />
-                                                                {row.joiningDate}
+                                                                {formatDate(row.createdAt)}
                                                             </div>
                                                         </TableCell>
 
                                                         <TableCell className="px-3 py-2.5">
                                                             <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
                                                                 <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                                                                {row.activationDate}
+                                                                {row.activationDate ? formatDate(row.activationDate) : "N/A"}
                                                             </div>
                                                         </TableCell>
 
                                                         <TableCell className="px-3 py-2.5 text-right">
                                                             <span
-                                                                className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${
-                                                                    row.status === "Active"
-                                                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                                                        : "border-amber-200 bg-amber-50 text-amber-700"
-                                                                }`}
+                                                                className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${row.status?.toLowerCase() === "active"
+                                                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                                    : "border-amber-200 bg-amber-50 text-amber-700"
+                                                                    }`}
                                                             >
                                                                 {row.status}
                                                             </span>

@@ -14,6 +14,7 @@ export function NavUser() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     localStorage.removeItem("userType");
+    localStorage.removeItem("memberId");
     const loginPath = userType === "member" ? "/member-login" : "/admin-login";
     window.location.href = loginPath;
   };

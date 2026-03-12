@@ -30,6 +30,7 @@ import {
     Dialog,
     DialogClose,
     DialogContent,
+    DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
 
@@ -179,6 +180,7 @@ export default function WalletHistoryPage() {
                                     showCloseButton={false}
                                     className="w-[96vw] max-w-[980px] border-0 bg-transparent p-0 shadow-none"
                                 >
+                                    <DialogTitle className="sr-only">Wallet History Filters</DialogTitle>
                                     <div className="mx-auto flex max-h-[85vh] w-full flex-col overflow-hidden rounded-xl border border-[#dce8d3] bg-[#f8fbf5] shadow-xl">
                                         <div className="flex items-center justify-between border-b border-[#e4eddc] bg-[#f7fbf3] px-4 py-3 sm:px-5 sm:py-4">
                                             <h2 className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[#4d553d] sm:text-[15px]">
@@ -208,10 +210,10 @@ export default function WalletHistoryPage() {
                                                     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
                                                         <div className="space-y-1.5">
                                                             <Label className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#5f6851]">
-                                                                Wallet Id
+                                                                Member Id
                                                             </Label>
                                                             <Input
-                                                                placeholder="Enter Wallet Id"
+                                                                placeholder="Enter Member Id"
                                                                 value={walletId}
                                                                 onChange={(e) => setWalletId(e.target.value)}
                                                                 className="h-8 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
@@ -374,11 +376,10 @@ export default function WalletHistoryPage() {
                                                             Type
                                                         </p>
                                                         <span
-                                                            className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${
-                                                                row.type === "Credit"
+                                                            className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${row.type === "Credit"
                                                                     ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                                                                     : "border border-rose-200 bg-rose-50 text-rose-700"
-                                                            }`}
+                                                                }`}
                                                         >
                                                             {row.type}
                                                         </span>
@@ -490,11 +491,10 @@ export default function WalletHistoryPage() {
 
                                                         <TableCell className="px-3 py-2.5">
                                                             <span
-                                                                className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${
-                                                                    row.type === "Credit"
+                                                                className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${row.type === "Credit"
                                                                         ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
                                                                         : "border border-rose-200 bg-rose-50 text-rose-700"
-                                                                }`}
+                                                                    }`}
                                                             >
                                                                 {row.type}
                                                             </span>
