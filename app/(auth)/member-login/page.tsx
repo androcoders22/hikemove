@@ -58,11 +58,7 @@ export default function MemberLoginPage() {
         localStorage.setItem("userType", "member");
         localStorage.setItem(
           "user",
-          JSON.stringify({
-            name: "Member User",
-            memberId: credentials.memberId,
-            avatar: "/s-traders-logo.webp",
-          }),
+          JSON.stringify(res.data.user || res.data),
         );
 
         // Redirect to member dashboard or home after login

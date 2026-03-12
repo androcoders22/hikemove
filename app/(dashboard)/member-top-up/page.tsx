@@ -18,6 +18,7 @@ import {
   checkMemberIdAPI,
   createMemberTopupAPI,
   getMemberTopupsAPI,
+  PackageType,
 } from "@/lib/api/member-topup";
 import {
   Plus,
@@ -67,10 +68,12 @@ export default function MemberTopUp() {
   const [records, setRecords] = useState<TopUpRecord[]>([]);
   const [isActivationOpen, setIsActivationOpen] = useState(false);
   const [incomeBalance, setIncomeBalance] = useState<number>(0);
+  const [depositBalance, setDepositBalance] = useState<number>(0);
   const [memberName, setMemberName] = useState("");
   const [memberObjectId, setMemberObjectId] = useState("");
   const [isCheckingMember, setIsCheckingMember] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [myMemberId, setMyMemberId] = useState("");
 
   // Fetch wallet balance
   useEffect(() => {
@@ -79,6 +82,8 @@ export default function MemberTopUp() {
         const res = await getWalletAPI();
         if (res.data?.status) {
           setIncomeBalance(res.data.data.incomeBalance || 0);
+          setDepositBalance(res.data.data.depositBalance || 0);
+          setMyMemberId(res.data.data.member || "");
         }
       } catch (err) {
         console.error("Failed to fetch wallet", err);
@@ -109,8 +114,8 @@ export default function MemberTopUp() {
         package: z
           .string()
           .min(1, { message: "Package is required" })
-          .refine((val) => Number(val) <= incomeBalance, {
-            message: `Amount exceeds income balance ($${incomeBalance})`,
+          .refine((val) => Number(val) <= depositBalance, {
+            message: `Amount exceeds deposit balance ($${depositBalance})`,
           }),
         memberId: z.string().min(1, { message: "Member Id is required" }),
       }),
@@ -169,15 +174,26 @@ export default function MemberTopUp() {
       return;
     }
 
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : null;
+    // Prioritize ID from wallet API state, fallback to localStorage
+    const fromMember = myMemberId || user?._id || user?.id || "";
+
+    if (!fromMember) {
+      toast.error("Critical identity error. Please re-login.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await createMemberTopupAPI({
+        fromMember,
         toMember: memberObjectId,
         amount: Number(values.package),
       });
 
       if (res.data?.status) {
-        setIncomeBalance((prev) => prev - Number(values.package));
+        setDepositBalance((prev) => prev - Number(values.package));
         setIsActivationOpen(false);
         toast.success(
           `Success: ${values.memberId.toUpperCase()} activated with $${values.package}`,
@@ -203,13 +219,25 @@ export default function MemberTopUp() {
       <div className="flex-1 px-6 py-4 space-y-4">
         {/* Header Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="text-xl font-black uppercase tracking-tight text-foreground">
-              Activation History
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              List of all member top-ups and activations
-            </p>
+          <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="space-y-1">
+              <h2 className="text-xl font-black uppercase tracking-tight text-foreground">
+                Activation History
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                List of all member top-ups and activations
+              </p>
+            </div>
+            <div className="flex items-center gap-4 px-4 h-12 bg-muted/20 border border-border rounded-xl">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">
+                  Deposit Balance
+                </p>
+                <p className="text-sm font-black text-foreground">
+                  ${depositBalance.toLocaleString()}
+                </p>
+              </div>
+            </div>
           </div>
 
           <Dialog open={isActivationOpen} onOpenChange={setIsActivationOpen}>
@@ -232,10 +260,12 @@ export default function MemberTopUp() {
                     Secured transaction protocol
                   </p>
                   <div className="text-right">
-                    <p className="text-[10px] font-bold opacity-70 uppercase tracking-wider">
-                      Balance
-                    </p>
-                    <p className="text-sm font-black">${incomeBalance}</p>
+                    <div>
+                      <p className="text-[10px] font-bold opacity-70 uppercase tracking-wider">
+                        Deposit
+                      </p>
+                      <p className="text-sm font-black">${depositBalance}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -265,15 +295,7 @@ export default function MemberTopUp() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="rounded-xl border-border">
-                              {[
-                                "100",
-                                "500",
-                                "1000",
-                                "5000",
-                                "10000",
-                                "25000",
-                                "50000",
-                              ].map((pkg) => (
+                              {Object.values(PackageType).map((pkg) => (
                                 <SelectItem
                                   key={pkg}
                                   value={pkg}
@@ -404,25 +426,24 @@ export default function MemberTopUp() {
                     <TableCell className="text-[11px] font-bold text-muted-foreground italic">
                       {row.createdAt
                         ? format(
-                            new Date(row.createdAt),
-                            "dd-MMM-yyyy hh:mm:ss a",
-                          )
+                          new Date(row.createdAt),
+                          "dd-MMM-yyyy hh:mm:ss a",
+                        )
                         : "-"}
                     </TableCell>
                     <TableCell className="text-right">
                       <div
-                        className={`inline-flex items-center gap-1.5 px-3 h-6 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                          row.status === "confirmed" ||
+                        className={`inline-flex items-center gap-1.5 px-3 h-6 rounded-full text-[9px] font-black uppercase tracking-widest border ${row.status === "confirmed" ||
                           row.status === "Confirmed"
-                            ? "bg-emerald-500/5 text-emerald-600 border-emerald-500/20"
-                            : row.status === "rejected" ||
-                                row.status === "Rejected"
-                              ? "bg-red-500/5 text-red-600 border-red-500/20"
-                              : "bg-amber-500/5 text-amber-600 border-amber-500/20"
-                        }`}
+                          ? "bg-emerald-500/5 text-emerald-600 border-emerald-500/20"
+                          : row.status === "rejected" ||
+                            row.status === "Rejected"
+                            ? "bg-red-500/5 text-red-600 border-red-500/20"
+                            : "bg-amber-500/5 text-amber-600 border-amber-500/20"
+                          }`}
                       >
                         {row.status === "confirmed" ||
-                        row.status === "Confirmed" ? (
+                          row.status === "Confirmed" ? (
                           <CheckCircle2 className="h-3 w-3" />
                         ) : (
                           <Clock className="h-3 w-3" />

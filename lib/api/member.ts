@@ -7,7 +7,7 @@ export const memberLogin = async (data: any) => {
 };
 
 export const memberSignup = async (data: any) => {
-  const response = await api.post("/member/signup", data);
+  const response = await api.post("/member", data);
   return response.data;
 };
 
@@ -27,4 +27,11 @@ export const memberRefresh = async () => {
     },
   );
   return response.data;
+};
+export const getMemberTreeAPI = async () => {
+  return await api.get("/member/tree");
+};
+
+export const getDirectMembersAPI = async () => {
+  return await api.get("/member/direct-members");
 };

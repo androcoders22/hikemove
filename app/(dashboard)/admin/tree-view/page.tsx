@@ -94,8 +94,8 @@ function TreeView() {
   return (
     <div className="h-screen flex flex-col">
       <PageHeader
-        title="Tree View"
-        breadcrumbs={[{ title: "Tree View", href: "/tree-view" }]}
+        title="Admin Tree View"
+        breadcrumbs={[{ title: "Admin", href: "/admin/dashboard" }, { title: "Tree View" }]}
       />
       <TreeViewCanvas />
     </div>
@@ -119,17 +119,15 @@ function TreeViewCanvas() {
     const loadGraphData = async () => {
       try {
         const res = await getMemberTreeAPI();
-        console.log("Tree API Data:", res.data); // For help in debugging
+        console.log("Tree API Data:", res.data);
         
         if (res.data?.status && res.data.data) {
           const apiData = res.data.data;
           
           if (apiData.nodes && apiData.edges) {
-            // Already formatted correctly
             setNodes(apiData.nodes);
             setEdges(apiData.edges);
           } else {
-            // Probably nested structure { fullName, children: [...] } OR a flat array
             const transformed = transformToNodesAndEdges(apiData);
             setNodes(transformed.nodes);
             setEdges(transformed.edges);
@@ -158,7 +156,6 @@ function TreeViewCanvas() {
     // Collect all members: root + all downlines
     const allMembers: any[] = [];
     const root = { ...data };
-    // Remove downlines from root copy to avoid confusion
     delete root.downlines;
     allMembers.push(root);
     if (data.downlines && Array.isArray(data.downlines)) {
@@ -186,7 +183,6 @@ function TreeViewCanvas() {
       if (sponsorMongoId && byMongoId[sponsorMongoId]) {
         byMongoId[sponsorMongoId].__children.push(byMongoId[key]);
       } else {
-        // No known sponsor → treat as root
         rootNodes.push(byMongoId[key]);
       }
     });

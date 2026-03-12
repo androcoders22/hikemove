@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
-import { checkMemberIdAPI } from "@/lib/api/member-topup";
+import { checkMemberIdAPI, PackageType } from "@/lib/api/member-topup";
 import { memberSignup } from "@/lib/api/member";
 
 export default function ManualRegistrationPage() {
@@ -35,6 +35,11 @@ export default function ManualRegistrationPage() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [isCheckingReferral, setIsCheckingReferral] = useState(false);
+    const [isCheckingMemberId, setIsCheckingMemberId] = useState(false);
+    const [memberIdStatus, setMemberIdStatus] = useState<{
+        isValid: boolean | null;
+        message: string;
+    }>({ isValid: null, message: "" });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -45,6 +50,7 @@ export default function ManualRegistrationPage() {
         setFormData((prev) => ({ ...prev, [id]: value }));
     };
 
+    // Referral ID check
     useEffect(() => {
         if (formData.referralId && formData.referralId.length >= 4) {
             const timer = setTimeout(async () => {
@@ -78,6 +84,40 @@ export default function ManualRegistrationPage() {
         }
     }, [formData.referralId]);
 
+    // Member ID check
+    useEffect(() => {
+        if (formData.memberId && formData.memberId.length >= 4) {
+            const timer = setTimeout(async () => {
+                setIsCheckingMemberId(true);
+                try {
+                    const res = await checkMemberIdAPI(formData.memberId);
+                    if (res.data?.status && res.data?.data) {
+                        setMemberIdStatus({
+                            isValid: true,
+                            message: "ID is valid",
+                        });
+                    } else {
+                        setMemberIdStatus({
+                            isValid: false,
+                            message: "ID does not exist",
+                        });
+                    }
+                } catch (error) {
+                    setMemberIdStatus({
+                        isValid: false,
+                        message: "ID does not exist",
+                    });
+                } finally {
+                    setIsCheckingMemberId(false);
+                }
+            }, 800);
+
+            return () => clearTimeout(timer);
+        } else {
+            setMemberIdStatus({ isValid: null, message: "" });
+        }
+    }, [formData.memberId]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -102,6 +142,11 @@ export default function ManualRegistrationPage() {
             }
         }
 
+        if (memberIdStatus.isValid === false) {
+          toast.error("Invalid Member ID");
+          return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -114,6 +159,21 @@ export default function ManualRegistrationPage() {
 
             if (res.status) {
                 toast.success("Member registered successfully!");
+                // Clear form
+                setFormData({
+                    referralId: "",
+                    referralName: "",
+                    memberId: "",
+                    fullName: "",
+                    phone: "",
+                    email: "",
+                    country: "United States",
+                    password: "",
+                    transactionPassword: "",
+                    package: "",
+                    joiningDate: "",
+                    activationDate: "",
+                });
             } else {
                 toast.error(res.message || "Registration failed");
             }
@@ -195,11 +255,16 @@ export default function ManualRegistrationPage() {
                                             placeholder="Enter member id"
                                             value={formData.memberId}
                                             onChange={handleInputChange}
-                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                            className={`h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10 ${memberIdStatus.isValid === true ? "border-green-500 focus:border-green-500 focus:ring-green-500/10" : memberIdStatus.isValid === false ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/10" : ""}`}
                                         />
+                                        {formData.memberId.length >= 4 && (
+                                            <p className={`text-[10px] font-bold ${memberIdStatus.isValid ? "text-green-600" : "text-rose-600"}`}>
+                                                {isCheckingMemberId ? "Checking..." : memberIdStatus.message}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    <div className="min-w-0 space-y-1.5">
+                                    <div className="min-w-0 space-y-1.5 md:col-span-2 xl:col-span-3">
                                         <Label
                                             htmlFor="fullName"
                                             className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
@@ -287,11 +352,11 @@ export default function ManualRegistrationPage() {
                                                 <SelectValue placeholder="Select Package" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="Basic">Basic</SelectItem>
-                                                <SelectItem value="Bronze">Bronze</SelectItem>
-                                                <SelectItem value="Silver">Silver</SelectItem>
-                                                <SelectItem value="Gold">Gold</SelectItem>
-                                                <SelectItem value="Diamond">Diamond</SelectItem>
+                                                {Object.entries(PackageType).map(([key, value]) => (
+                                                    <SelectItem key={value} value={value}>
+                                                        {value} $
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -379,4 +444,4 @@ export default function ManualRegistrationPage() {
             </div>
         </div>
     );
-}
+}

@@ -40,6 +40,7 @@ export const adminPaths: NavGroup[] = [
     title: "Overview",
     items: [
       { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+      { title: "Tree View", url: "/admin/tree-view", icon: Workflow },
     ],
   },
   {
@@ -155,7 +156,6 @@ export const memberPaths: NavGroup[] = [
     items: [
       { title: "My Sponsor", url: "/team/sponsor", icon: User },
       { title: "My Team", url: "/team/list", icon: Users },
-      { title: "Level Wise Team", url: "/team/level-wise", icon: Workflow },
     ],
   },
   {
