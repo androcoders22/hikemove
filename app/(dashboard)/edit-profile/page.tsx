@@ -181,7 +181,7 @@ export default function EditProfile() {
           </div>
 
           <div className="md:ml-auto flex gap-2">
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               className="font-bold text-xs h-9"
@@ -195,7 +195,7 @@ export default function EditProfile() {
               onClick={openUpdateDialog}
             >
               UPDATE PROFILE
-            </Button>
+            </Button> */}
           </div>
         </div>
 
