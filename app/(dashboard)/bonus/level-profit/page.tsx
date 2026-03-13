@@ -2,7 +2,14 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
-import { TrendingUp, Search, Filter, Calendar, Layers, Loader2 } from "lucide-react";
+import {
+  TrendingUp,
+  Search,
+  Filter,
+  Calendar,
+  Layers,
+  Loader2,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -68,10 +75,10 @@ export default function LevelProfitBonus() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -111,14 +118,14 @@ export default function LevelProfitBonus() {
                 />
               </div>
 
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="h-8 text-[10px] font-bold"
               >
                 <Filter className="h-3.5 w-3.5 mr-2" />
                 FILTER
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -197,4 +204,4 @@ export default function LevelProfitBonus() {
       </div>
     </div>
   );
-}
+}

@@ -35,7 +35,7 @@ export default function SidebarLayout({
       const token = localStorage.getItem("accessToken");
       const userType =
         (localStorage.getItem("userType") as "member" | "admin" | null) ||
-        "admin";
+        "member";
       const loginPath =
         userType === "member" ? "/member-login" : "/admin-login";
 

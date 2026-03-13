@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -51,25 +50,35 @@ export default function MyTeam() {
         if (response.data?.status && response.data.data) {
           const rawTree = response.data.data;
           const flattened = flattenTree(rawTree);
-          
+
           // Create a lookup map for MongoID -> Member Details
-          const idMap: Record<string, { memberId: string, fullName: string }> = {};
-          flattened.forEach(m => {
+          const idMap: Record<string, { memberId: string; fullName: string }> =
+            {};
+          flattened.forEach((m) => {
             idMap[m._id] = { memberId: m.memberId, fullName: m.fullName };
           });
 
           // Enrich data with sponsor's human-readable info
-          const enriched = flattened.map(m => {
-            const sponsorInfo = typeof m.sponsorId === 'string' ? idMap[m.sponsorId] : null;
+          const enriched = flattened.map((m) => {
+            const sponsorInfo =
+              typeof m.sponsorId === "string" ? idMap[m.sponsorId] : null;
             return {
               ...m,
-              sponsorMemberId: sponsorInfo ? sponsorInfo.memberId : (typeof m.sponsorId === 'object' ? m.sponsorId?.memberId : null),
-              sponsorFullName: sponsorInfo ? sponsorInfo.fullName : (typeof m.sponsorId === 'object' ? m.sponsorId?.fullName : "N/A"),
+              sponsorMemberId: sponsorInfo
+                ? sponsorInfo.memberId
+                : typeof m.sponsorId === "object"
+                  ? m.sponsorId?.memberId
+                  : null,
+              sponsorFullName: sponsorInfo
+                ? sponsorInfo.fullName
+                : typeof m.sponsorId === "object"
+                  ? m.sponsorId?.fullName
+                  : "N/A",
             };
           });
 
           // Exclude the root member (the current user) from "My Team" list
-          setTeamData(enriched.slice(1)); 
+          setTeamData(enriched.slice(1));
         } else {
           setError("Failed to load team data");
         }
@@ -92,13 +101,15 @@ export default function MyTeam() {
     return result;
   };
 
-  const activeCount = useMemo(() => 
-    teamData.filter(m => m.status.toLowerCase() === "active").length, 
-  [teamData]);
-  
-  const inactiveCount = useMemo(() => 
-    teamData.filter(m => m.status.toLowerCase() !== "active").length, 
-  [teamData]);
+  const activeCount = useMemo(
+    () => teamData.filter((m) => m.status.toLowerCase() === "active").length,
+    [teamData],
+  );
+
+  const inactiveCount = useMemo(
+    () => teamData.filter((m) => m.status.toLowerCase() !== "active").length,
+    [teamData],
+  );
 
   const totalBusiness = useMemo(() => {
     return teamData.reduce((acc, curr) => {
@@ -153,17 +164,23 @@ export default function MyTeam() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
   if (loading) {
     return (
       <div className="flex flex-col min-h-screen bg-background">
-        <PageHeader title="My Team" breadcrumbs={[{ title: "My Team", href: "#" }, { title: "Team List" }]} />
+        <PageHeader
+          title="My Team"
+          breadcrumbs={[
+            { title: "My Team", href: "#" },
+            { title: "Team List" },
+          ]}
+        />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -230,14 +247,14 @@ export default function MyTeam() {
                 />
               </div>
 
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="h-8 text-[10px] font-bold"
               >
                 <Filter className="h-3.5 w-3.5 mr-2" />
                 FILTER
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -310,7 +327,9 @@ export default function MyTeam() {
                         {formatDate(row.createdAt)}
                       </TableCell>
                       <TableCell className="text-[10px] font-medium text-muted-foreground">
-                        {row.activationDate ? formatDate(row.activationDate) : "No Active"}
+                        {row.activationDate
+                          ? formatDate(row.activationDate)
+                          : "No Active"}
                       </TableCell>
                       <TableCell className="text-right">
                         <span
