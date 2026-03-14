@@ -87,14 +87,14 @@ export default function RewardBonus() {
                 />
               </div>
 
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="h-8 text-[10px] font-bold"
               >
                 <Filter className="h-3.5 w-3.5 mr-2" />
                 FILTER
-              </Button>
+              </Button> */}
             </div>
           </div>
 

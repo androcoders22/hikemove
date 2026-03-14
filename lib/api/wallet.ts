@@ -5,5 +5,5 @@ export const getWalletAPI = async () => {
 };
 
 export const getWalletHistoryAPI = async () => {
-  return await api.get("/wallet");
+  return await api.get("/wallet/me");
 };

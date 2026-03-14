@@ -68,10 +68,10 @@ export default function TeamLevelBonus() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -93,7 +93,6 @@ export default function TeamLevelBonus() {
         )}
 
         <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">
-
           {/* Header */}
           <div className="p-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/10">
             <h2 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
@@ -102,7 +101,6 @@ export default function TeamLevelBonus() {
             </h2>
 
             <div className="flex items-center gap-2">
-
               {/* SEARCH INPUT */}
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -116,14 +114,14 @@ export default function TeamLevelBonus() {
               </div>
 
               {/* FILTER BUTTON (no functionality) */}
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="h-8 text-[10px] font-bold"
               >
                 <Filter className="h-3.5 w-3.5 mr-2" />
                 FILTER
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -200,7 +198,6 @@ export default function TeamLevelBonus() {
                     </TableRow>
                   )}
                 </TableBody>
-
               </Table>
             )}
           </div>
@@ -208,4 +205,4 @@ export default function TeamLevelBonus() {
       </div>
     </div>
   );
-}
+}

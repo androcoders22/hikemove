@@ -183,14 +183,14 @@ export default function WithdrawalPage() {
                 />
               </div>
 
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="h-9 px-4 text-xs font-bold bg-white text-muted-foreground hover:bg-muted/50 border-input"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 FILTER
-              </Button>
+              </Button> */}
 
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
