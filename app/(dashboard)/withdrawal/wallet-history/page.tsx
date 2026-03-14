@@ -130,9 +130,9 @@ export default function WalletHistory() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#8a927e]">Main Balance</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#8a927e]">Deposit Balance</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-lg font-black text-[#5c634f]">$ {walletInfo?.activationBalance || 0}</span>
+                    <span className="text-lg font-black text-[#5c634f]">$ {walletInfo?.depositBalance || 0}</span>
                   </div>
                 </div>
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary ring-1 ring-primary/20 group-hover:scale-110 transition-transform">
