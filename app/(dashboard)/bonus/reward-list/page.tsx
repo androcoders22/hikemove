@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Medal, Search, Filter, BarChart3 } from "lucide-react";
+import { Medal, Search, BarChart3 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface BusinessSummary {
@@ -161,15 +160,6 @@ export default function RewardList() {
                   className="h-8 pl-8 pr-3 text-xs"
                 />
               </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Filter className="h-3.5 w-3.5 mr-2" />
-                FILTER
-              </Button>
             </div>
           </div>
 
@@ -177,23 +167,26 @@ export default function RewardList() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-border">
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest w-[80px]">
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest w-20">
                     Sr. No.
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Rank
+                    Type
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Reward Name
+                    Entry Type
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Reward Amount
+                    Remarks
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Target Business
+                    Status
+                  </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                    Amount
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">
-                    Current Business
+                    Date
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -209,50 +202,39 @@ export default function RewardList() {
                         {row.srNo}
                       </TableCell>
 
-                      <TableCell>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-black uppercase">
-                          {row.rank}
+                      <TableCell className="text-xs font-black text-primary tracking-tight">
+                        rewardList
+                      </TableCell>
+
+                      <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest bg-emerald-500/10 text-emerald-500">
+                          credit
                         </span>
                       </TableCell>
 
                       <TableCell className="text-xs font-bold text-foreground">
-                        {row.rewardName}
+                        {row.rank} - {row.rewardName}
+                      </TableCell>
+
+                      <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest bg-emerald-500/10 text-emerald-500">
+                          active
+                        </span>
                       </TableCell>
 
                       <TableCell className="text-xs font-black text-emerald-600">
                         {row.rewardAmount}
                       </TableCell>
 
-                      <TableCell className="text-xs font-black text-rose-600/80">
-                        {row.targetBusiness}
-                      </TableCell>
-
-                      <TableCell className="text-right">
-                        <div className="flex flex-col items-end gap-1">
-                          <span className="text-xs font-black text-primary">
-                            {row.currentBusiness}
-                          </span>
-                          <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary"
-                              style={{
-                                width: `${Math.min(
-                                  100,
-                                  (parseFloat(row.currentBusiness) /
-                                    parseFloat(row.targetBusiness)) *
-                                    100
-                                )}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
+                      <TableCell className="text-right text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+                        N/A
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No reward found.

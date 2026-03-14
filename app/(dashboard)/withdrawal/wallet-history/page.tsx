@@ -5,11 +5,8 @@ import { PageHeader } from "@/components/page-header";
 import {
   WalletCards,
   Search,
-  Clock,
   CheckCircle2,
-  ArrowUpRight,
   Loader2,
-  Calendar,
 } from "lucide-react";
 import {
   Table,
@@ -19,33 +16,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { getLedgerAPI, LedgerType } from "@/lib/api/ledger";
+import { getLedgerMeAPI } from "@/lib/api/ledger";
 import { getWalletHistoryAPI } from "@/lib/api/wallet";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
-  IndianRupee, 
   ArrowDownLeft, 
-  ArrowUpRight as ArrowUpRightIcon, 
-  History as HistoryIcon 
+  ArrowUpRight as ArrowUpRightIcon
 } from "lucide-react";
 
 interface LedgerRow {
   _id: string;
   amount: number;
-  type: string;
-  description?: string;
-  remark?: string;
+  ledgerType: string;
+  entryType: string;
+  remarks?: string;
   createdAt: string;
-  transactionType?: string;
   status?: string;
 }
 
@@ -55,7 +41,6 @@ export default function WalletHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState<string>(LedgerType.WITHDRAWAL);
 
   useEffect(() => {
     const fetchWalletDetails = async () => {
@@ -76,7 +61,7 @@ export default function WalletHistory() {
       setLoading(true);
       setError(null);
       try {
-        const response = await getLedgerAPI(selectedType);
+        const response = await getLedgerMeAPI();
         if (response.data?.status && Array.isArray(response.data.data)) {
           setHistoryData(response.data.data);
         } else {
@@ -89,7 +74,7 @@ export default function WalletHistory() {
       }
     };
     fetchData();
-  }, [selectedType]);
+  }, []);
 
   const filteredData = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
@@ -97,13 +82,15 @@ export default function WalletHistory() {
     if (!query) return historyData;
 
     return historyData.filter((row) => {
-      const desc = (row.description || row.remark || "").toLowerCase();
-      const type = (row.type || "").toLowerCase();
-      const txnType = (row.transactionType || "").toLowerCase();
+      const remarks = (row.remarks || "").toLowerCase();
+      const type = (row.ledgerType || "").toLowerCase();
+      const entryType = (row.entryType || "").toLowerCase();
+      const status = (row.status || "").toLowerCase();
       return (
-        desc.includes(query) ||
+        remarks.includes(query) ||
         type.includes(query) ||
-        txnType.includes(query) ||
+        entryType.includes(query) ||
+        status.includes(query) ||
         row.amount.toString().includes(query)
       );
     });
@@ -222,28 +209,10 @@ export default function WalletHistory() {
                   className="h-8 pl-8 pr-3 text-xs"
                 />
               </div>
-
-              <div className="w-full md:w-56">
-                <Select
-                  value={selectedType}
-                  onValueChange={(val) => setSelectedType(val)}
-                >
-                  <SelectTrigger className="h-8 text-xs font-bold w-full bg-background border-border">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(LedgerType).map(([key, value]) => (
-                      <SelectItem key={value} value={value} className="text-xs font-bold uppercase tracking-widest">
-                        {key.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto min-h-[100px]">
+          <div className="overflow-x-auto min-h-25">
             {loading ? (
               <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
                 <Loader2 className="h-8 w-8 animate-spin mb-4 text-primary" />
@@ -253,17 +222,20 @@ export default function WalletHistory() {
               <Table>
                 <TableHeader className="bg-muted/30">
                   <TableRow className="border-border">
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest w-[80px]">
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest w-20">
                       Sr. No.
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
                       Type
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                      Description
+                      Entry Type
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                      Txn Type
+                      Remarks
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                      Status
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
                       Amount
@@ -285,30 +257,29 @@ export default function WalletHistory() {
                           {idx + 1}
                         </TableCell>
 
-                        <TableCell className="text-xs font-black text-primary uppercase tracking-tight">
-                          {row.type?.replace(/([A-Z])/g, " $1").trim() || "N/A"}
+                        <TableCell className="text-xs font-black text-primary tracking-tight">
+                          {row.ledgerType || "N/A"}
                         </TableCell>
 
-                        <TableCell className="text-xs font-medium text-slate-500 italic max-w-[300px]">
-                          {row.description || row.remark || "N/A"}
+                        <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest ${(row.entryType?.toLowerCase() === "credit")
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-rose-500/10 text-rose-500"
+                            }`}>
+                            {row.entryType || "N/A"}
+                          </span>
                         </TableCell>
 
-                        <TableCell>
-                          <span
-                            className={`text-[10px] font-black uppercase tracking-tight px-2 py-0.5 rounded flex items-center gap-1 w-fit ${
-                              row.transactionType?.toLowerCase() === "credit"
-                                ? "bg-emerald-500/10 text-emerald-600"
-                                : "bg-rose-500/10 text-rose-600"
-                            }`}
-                          >
-                            <ArrowUpRight
-                              className={`h-3 w-3 ${
-                                row.transactionType?.toLowerCase() === "credit"
-                                  ? ""
-                                  : "rotate-90"
-                              }`}
-                            />
-                            {row.transactionType || "N/A"}
+                        <TableCell className="text-xs font-bold text-foreground max-w-75">
+                          {row.remarks || "N/A"}
+                        </TableCell>
+
+                        <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest ${(row.status?.toLowerCase() === "approved")
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-rose-500/10 text-rose-500"
+                            }`}>
+                            {row.status || "N/A"}
                           </span>
                         </TableCell>
 
@@ -324,10 +295,10 @@ export default function WalletHistory() {
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         className="text-center py-8 text-sm text-muted-foreground"
                       >
-                        No records found for the selected type.
+                        No wallet history records found.
                       </TableCell>
                     </TableRow>
                   )}
@@ -339,4 +310,4 @@ export default function WalletHistory() {
       </div>
     </div>
   );
-}
+}
