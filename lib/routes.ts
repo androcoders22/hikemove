@@ -132,7 +132,7 @@ export const adminPaths: NavGroup[] = [
         icon: KeyRound,
       },
       {
-        title: "Coin Setting",
+        title: "App Setting",
         url: "/admin/configuration/coin-setting",
         icon: CircleDollarSign,
       },
