@@ -154,7 +154,7 @@ export const memberPaths: NavGroup[] = [
   {
     title: "My Team",
     items: [
-      { title: "My Sponsor", url: "/team/sponsor", icon: User },
+      { title: "Direct Members", url: "/team/sponsor", icon: User },
       { title: "My Team", url: "/team/list", icon: Users },
     ],
   },
