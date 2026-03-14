@@ -132,7 +132,7 @@ export default function SidebarLayout({
     <SidebarProvider>
       <AppSidebar />
       {!isAuthRoute && currentUserType === "member" ? (
-        <div className="fixed top-2 right-4 z-50">
+        <div className="fixed top-2 right-4 z-50 pt-2">
           <div className="rounded-full border border-primary/30 bg-background px-3 py-1.5 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-widest text-primary leading-none">
               Live Coin Value

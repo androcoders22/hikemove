@@ -332,7 +332,6 @@ export default function MemberTopUp() {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormMessage className="text-[10px]" />
                         </FormItem>
                       )}
                     />
@@ -380,20 +379,30 @@ export default function MemberTopUp() {
                       </span>
                     </div>
                   </div>
-
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full h-11 font-black text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 "
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : null}
-                    {isSubmitting ? "Processing..." : "Confirm Transaction"}
-                    {!isSubmitting && <ArrowRight className="h-4 w-4 ml-2" />}
-                  </Button>
                 </form>
               </Form>
+
+              <div className="px-5 pb-5">
+                {form.formState.errors.package && (
+                  <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-[10px] font-bold text-destructive">
+                      {form.formState.errors.package.message}
+                    </p>
+                  </div>
+                )}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  onClick={form.handleSubmit(onSubmit)}
+                  className="w-full h-11 font-black text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 "
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : null}
+                  {isSubmitting ? "Processing..." : "Confirm Transaction"}
+                  {!isSubmitting && <ArrowRight className="h-4 w-4 ml-2" />}
+                </Button>
+              </div>
             </DialogContent>
           </Dialog>
         </div>

@@ -132,12 +132,12 @@ export default function DashboardPage() {
       />
 
       {/* Referral Link & Actions Bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-y border-border bg-muted/20">
-        <div className="flex items-center gap-3 overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-2 border-y border-border bg-muted/20 gap-2 sm:gap-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 overflow-hidden min-w-0 flex-1">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight whitespace-nowrap">
             Referral link:
           </span>
-          <div className="flex items-center bg-background border border-border px-2 py-0.5 rounded gap-2 min-w-0">
+          <div className="flex items-center bg-background border border-border px-2 py-1 sm:py-0.5 rounded gap-2 min-w-0 flex-1 sm:flex-initial">
             <span className="text-[11px] font-mono text-foreground truncate select-all">
               {referralLink}
             </span>
@@ -154,15 +154,15 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-[10px] font-bold"
+            className="h-7 text-[10px] font-bold flex-1 sm:flex-initial"
           >
             EXPORT
           </Button>
-          <Button size="sm" className="h-7 text-[10px] font-bold px-3">
+          <Button size="sm" className="h-7 text-[10px] font-bold px-3 flex-1 sm:flex-initial">
             SHARE
           </Button>
         </div>
@@ -171,16 +171,16 @@ export default function DashboardPage() {
       <div className="flex flex-col">
         {/* Large Data Graph Section */}
         <div className="w-full bg-muted/30 border-b border-border">
-          <div className="p-4 flex items-end justify-between">
+          <div className="p-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">
                 Total Profits
               </p>
-              <h2 className="text-3xl font-black tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
                 ${(data as any).totalBalance ? (data as any).totalBalance.toLocaleString() : "1,224.75"}
               </h2>
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               {["1D", "7D", "1M", "1Y", "ALL"].map((range) => (
                 <button
                   key={range}
@@ -191,7 +191,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-          <div className="h-[280px] w-full px-2">
+          <div className="h-[200px] sm:h-[280px] w-full px-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={data.charts.weeklyIncome}
@@ -268,18 +268,18 @@ export default function DashboardPage() {
             return (
               <div
                 key={stat.id}
-                className={`p-4 group hover:bg-accent transition-colors border-r border-border last:border-r-0 ${idx >= 6 ? "hidden lg:block" : ""}`}
+                className={`p-3 sm:p-4 group hover:bg-accent transition-colors border-r border-border last:border-r-0 ${idx >= 6 ? "hidden md:block" : ""}`}
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
                   <div className="p-1.5 rounded-md bg-background text-muted-foreground border border-border group-hover:text-primary group-hover:border-primary/30 transition-colors">
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
                   </div>
                   <ArrowUpRight className="h-3 w-3 text-muted/20 group-hover:text-primary transition-colors" />
                 </div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 truncate">
+                <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1 truncate">
                   {stat.label}
                 </p>
-                <p className="text-lg font-black text-foreground leading-none">
+                <p className="text-base sm:text-lg font-black text-foreground leading-none">
                   {formatValue(stat)}
                 </p>
               </div>
