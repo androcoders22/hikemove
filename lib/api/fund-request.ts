@@ -17,5 +17,23 @@ export const approveFundRequestAPI = async (id: string) => {
 };
 
 export const rejectFundRequestAPI = async (id: string) => {
-  return await api.patch(`/fund-request/${id}/reject`);
+  try {
+    return await api.patch(`/fund-request/${id}/reject`);
+  } catch (error: any) {
+    if (error?.response?.status !== 404) {
+      throw error;
+    }
+
+    try {
+      return await api.patch(`/fund-request/${id}`, { status: "rejected" });
+    } catch (fallbackError: any) {
+      if (fallbackError?.response?.status !== 404) {
+        throw fallbackError;
+      }
+
+      return await api.patch(`/fund-request/status/${id}`, {
+        status: "rejected",
+      });
+    }
+  }
 };

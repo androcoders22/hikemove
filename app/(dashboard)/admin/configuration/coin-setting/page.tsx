@@ -271,14 +271,14 @@ export default function CoinSettingPage() {
                                         />
                                     </div>
 
-                                    <div className="min-w-0 space-y-1.5">
+                                    {/* <div className="min-w-0 space-y-1.5">
                                         <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">
                                             Created At
                                         </Label>
                                         <div className="flex h-8 w-full min-w-0 items-center rounded-md border border-[#dce8d3] bg-[#f3f7ef] px-3 text-[13px] font-mono text-[#6f7664] shadow-sm">
                                             <span className="truncate">{formatDateTime(formData.createdAt)}</span>
                                         </div>
-                                    </div>
+                                    </div> */}
 
                                     <div className="min-w-0 space-y-1.5">
                                         <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">
@@ -292,7 +292,7 @@ export default function CoinSettingPage() {
                             </div>
 
                             <div className="flex flex-col-reverse gap-2 border-t border-[#edf3e7] pt-3 sm:flex-row sm:items-center sm:justify-end">
-                                <Button
+                                {/* <Button
                                     type="button"
                                     variant="outline"
                                     className="h-8 w-full rounded-md border-[#dce8d3] bg-white px-3 text-[10px] font-bold uppercase tracking-[0.04em] text-[#5b624f] shadow-sm hover:bg-[#f1f7eb] sm:w-auto"
@@ -308,7 +308,7 @@ export default function CoinSettingPage() {
                                 >
                                     <X className="mr-1.5 h-3.5 w-3.5" />
                                     Cancel
-                                </Button>
+                                </Button> */}
 
                                 <Button
                                     type="submit"
@@ -332,7 +332,7 @@ export default function CoinSettingPage() {
 
                             <div className="min-w-0">
                                 <CardTitle className="text-base leading-tight font-extrabold uppercase tracking-[0.05em] text-[#4d553d] sm:text-lg">
-                                    Payment Card
+                                    Payment Setting
                                 </CardTitle>
                                 <p className="mt-0.5 text-[11px] font-medium text-[#7a8270] sm:text-xs">
                                     Manage payment QR and wallet address values.
@@ -395,14 +395,14 @@ export default function CoinSettingPage() {
                                     />
                                 </div>
 
-                                <div className="min-w-0 space-y-1.5">
+                                {/* <div className="min-w-0 space-y-1.5">
                                     <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">
                                         Created At
                                     </Label>
                                     <div className="flex h-8 w-full min-w-0 items-center rounded-md border border-[#dce8d3] bg-[#f3f7ef] px-3 text-[13px] font-mono text-[#6f7664] shadow-sm">
                                         <span className="truncate">{formatDateTime(paymentData.createdAt)}</span>
                                     </div>
-                                </div>
+                                </div> */}
 
                                 <div className="min-w-0 space-y-1.5">
                                     <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">

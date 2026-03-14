@@ -42,6 +42,7 @@ import {
 } from "@/lib/api/fund-request";
 import { api, BASE_URL } from "@/lib/axios";
 import { uploadImageAPI } from "@/lib/api/aws";
+import { getCoinPaymentSettingsAPI } from "@/lib/api/configuration";
 
 const fundRequestSchema = z.object({
   amount: z.string().min(1, "Amount is required"),
@@ -64,6 +65,9 @@ interface DepositRow {
 
 export default function DepositActivity() {
   const [deposits, setDeposits] = useState<DepositRow[]>([]);
+  const [paymentAddress, setPaymentAddress] = useState("");
+  const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
+  const [isPaymentInfoLoading, setIsPaymentInfoLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddFundOpen, setIsAddFundOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,11 +112,46 @@ export default function DepositActivity() {
     }
   };
 
+  const resolveAwsImageUrl = async (value?: string | null) => {
+    if (!value || !value.trim()) return null;
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+      return value;
+    }
+
+    try {
+      const res = await api.get(`/aws/${encodeURIComponent(value)}`);
+      if (res.data?.status && res.data?.data) {
+        return res.data.data;
+      }
+    } catch {
+      // fallback to direct URL format when presigned resolution is unavailable
+    }
+
+    return `${BASE_URL}/aws/${encodeURIComponent(value)}`;
+  };
+
+  const fetchAppSetting = async () => {
+    try {
+      setIsPaymentInfoLoading(true);
+      const response = await getCoinPaymentSettingsAPI();
+      const paymentSetting = response.data?.data?.paymentSetting;
+
+      setPaymentAddress(String(paymentSetting?.paymentAddress ?? ""));
+      const resolvedQr = await resolveAwsImageUrl(paymentSetting?.paymentQr || "");
+      setPaymentQrUrl(resolvedQr);
+    } catch (error) {
+      console.error("Failed to load app settings:", error);
+      setPaymentAddress("");
+      setPaymentQrUrl(null);
+    } finally {
+      setIsPaymentInfoLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDeposits();
+    fetchAppSetting();
   }, []);
-
-  const walletAddress = "0xD245B223250F9b7f7AF76cB189f5b19C11f336cb";
 
   const buildScreenshotUrl = (value?: string | null) => {
     if (!value || !value.trim()) return null;
@@ -215,14 +254,27 @@ export default function DepositActivity() {
                   <div className="flex flex-col lg:flex-row gap-6">
                     {/* LEFT QR SECTION */}
                     <div className="w-full lg:w-[420px] lg:flex-shrink-0 border border-[#dcf0c5] rounded-xl p-8 flex flex-col items-center justify-center bg-white min-h-[360px]">
-                      <img
-                        src="/qr.png"
-                        alt="QR Code"
-                        className="w-56 h-56 object-contain"
-                      />
+                      {isPaymentInfoLoading ? (
+                        <div className="flex flex-col items-center justify-center gap-3 min-h-[224px]">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                          <p className="text-[10px] font-black text-[#56684f] uppercase tracking-widest">
+                            Loading payment info...
+                          </p>
+                        </div>
+                      ) : paymentQrUrl ? (
+                        <img
+                          src={paymentQrUrl}
+                          alt="QR Code"
+                          className="w-56 h-56 object-contain"
+                        />
+                      ) : (
+                        <div className="w-56 h-56 border border-dashed border-[#dcf0c5] rounded-lg flex items-center justify-center text-[#8ba27d] text-xs font-bold uppercase tracking-widest text-center px-4">
+                          QR Not Available
+                        </div>
+                      )}
 
                       <p className="mt-5 text-sm font-medium text-black text-center break-all max-w-[320px]">
-                        {walletAddress}
+                        {paymentAddress || "Payment address not available"}
                       </p>
                     </div>
 

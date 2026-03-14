@@ -337,7 +337,7 @@ export default function ManualRegistrationPage() {
                                         </Select>
                                     </div>
 
-                                    <div className="min-w-0 space-y-1.5">
+                                    {/* <div className="min-w-0 space-y-1.5">
                                         <Label
                                             htmlFor="package"
                                             className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
@@ -359,7 +359,7 @@ export default function ManualRegistrationPage() {
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                    </div>
+                                    </div> */}
 
                                     <div className="min-w-0 space-y-1.5">
                                         <Label
@@ -411,7 +411,7 @@ export default function ManualRegistrationPage() {
                                         />
                                     </div>
 
-                                    <div className="min-w-0 space-y-1.5">
+                                    {/* <div className="min-w-0 space-y-1.5">
                                         <Label
                                             htmlFor="activationDate"
                                             className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
@@ -425,7 +425,7 @@ export default function ManualRegistrationPage() {
                                             onChange={handleInputChange}
                                             className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] text-slate-600 shadow-sm transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
                                         />
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
 
@@ -444,4 +444,4 @@ export default function ManualRegistrationPage() {
             </div>
         </div>
     );
-}
+}
