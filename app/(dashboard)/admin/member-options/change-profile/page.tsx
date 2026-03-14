@@ -7,14 +7,78 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
-import { UserCog, Search, Save, User, Mail, Phone, Calendar, ShieldCheck, MailPlus } from "lucide-react";
+import { UserCog, Search, Save } from "lucide-react";
 import { checkMemberIdAPI } from "@/lib/api/member";
-import { api } from "@/lib/axios";
+
+const toTitleCase = (key: string) => {
+    return key
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[_-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const shouldRenderField = (key: string) => {
+    const normalizedKey = key.toLowerCase();
+    return normalizedKey !== "path";
+};
+
+const getDisplayValue = (key: string, value: unknown, fullData: Record<string, unknown>) => {
+    const normalizedKey = key.toLowerCase();
+
+    // Prefer member-facing sponsor id over internal DB ids.
+    if (normalizedKey === "sponsorid" || normalizedKey === "sponsor") {
+        const sponsorObject = fullData.sponsor as { memberId?: string } | undefined;
+        const sponsorMemberId =
+            (typeof fullData.sponsorMemberId === "string" && fullData.sponsorMemberId) ||
+            sponsorObject?.memberId ||
+            (typeof value === "object" && value !== null && "memberId" in (value as Record<string, unknown>)
+                ? String((value as Record<string, unknown>).memberId || "")
+                : "");
+
+        return sponsorMemberId || "N/A";
+    }
+
+    return formatValue(value);
+};
+
+const getDisplayLabel = (key: string) => {
+    const normalizedKey = key.toLowerCase();
+    if (normalizedKey === "sponsorid" || normalizedKey === "sponsor") {
+        return "Sponsor Member ID";
+    }
+    return toTitleCase(key);
+};
+
+const formatValue = (value: unknown) => {
+    if (value === null || value === undefined || value === "") return "N/A";
+
+    if (typeof value === "object") {
+        try {
+            return JSON.stringify(value, null, 2);
+        } catch {
+            return String(value);
+        }
+    }
+
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+        return new Date(value).toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    }
+
+    return String(value);
+};
 
 export default function ChangeProfilePage() {
     const [memberId, setMemberId] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
     const [memberData, setMemberData] = useState<any>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -41,21 +105,6 @@ export default function ChangeProfilePage() {
             // Error toast usually handled by interceptor
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const handleUpdateProfile = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsUpdating(true);
-
-        try {
-            // Placeholder for update API - typically part of profile management
-            await new Promise(r => setTimeout(r, 1000));
-            toast.success("Profile updated successfully");
-        } catch (error) {
-            toast.error("Failed to update profile");
-        } finally {
-            setIsUpdating(false);
         }
     };
 
@@ -124,75 +173,37 @@ export default function ChangeProfilePage() {
 
                         {memberData && (
                             <div className="mt-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                                <form onSubmit={handleUpdateProfile} className="max-w-4xl space-y-6">
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        {/* Full Name */}
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Full Name</Label>
-                                            <div className="relative group">
-                                                <User className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
-                                                <Input
-                                                    defaultValue={memberData.fullName}
-                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 text-[13px] shadow-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                                />
-                                            </div>
-                                        </div>
+                                <div className="max-w-5xl space-y-4">
+                                    <div className="rounded-md border border-[#dce8d3] bg-[#fafcf8] p-3">
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            {Object.entries(memberData)
+                                                .filter(([key]) => shouldRenderField(key))
+                                                .map(([key, value]) => (
+                                                <div key={key} className="space-y-1.5">
+                                                    <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">
+                                                        {getDisplayLabel(key)}
+                                                    </Label>
 
-                                        {/* Email */}
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Email Address</Label>
-                                            <div className="relative group">
-                                                <Mail className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
-                                                <Input
-                                                    defaultValue={memberData.email}
-                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 text-[13px] shadow-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Phone */}
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Phone Number</Label>
-                                            <div className="relative group">
-                                                <Phone className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
-                                                <Input
-                                                    defaultValue={memberData.phone}
-                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 text-[13px] shadow-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Status */}
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-bold uppercase tracking-wider text-[#5f6851]">Current Status</Label>
-                                            <div className="relative group">
-                                                <ShieldCheck className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e]" />
-                                                <Input
-                                                    readOnly
-                                                    value={memberData.status}
-                                                    className="h-9 w-full rounded-md border-[#dce8d3] bg-muted/30 pl-9 text-[13px] font-semibold text-primary shadow-sm"
-                                                />
-                                            </div>
+                                                    {typeof getDisplayValue(key, value, memberData as Record<string, unknown>) === "string" && typeof value !== "object" ? (
+                                                        <div className="flex min-h-9 w-full items-center rounded-md border border-[#dce8d3] bg-white px-3 text-[13px] text-[#4d553d] shadow-sm break-all">
+                                                            {getDisplayValue(key, value, memberData as Record<string, unknown>)}
+                                                        </div>
+                                                    ) : typeof value === "object" && value !== null ? (
+                                                        <pre className="max-h-36 overflow-auto rounded-md border border-[#dce8d3] bg-white p-2 text-[12px] text-[#5f6851] shadow-sm whitespace-pre-wrap wrap-break-word">
+                                                            {typeof getDisplayValue(key, value, memberData as Record<string, unknown>) === "string"
+                                                                ? getDisplayValue(key, value, memberData as Record<string, unknown>)
+                                                                : formatValue(value)}
+                                                        </pre>
+                                                    ) : (
+                                                        <div className="flex min-h-9 w-full items-center rounded-md border border-[#dce8d3] bg-white px-3 text-[13px] text-[#4d553d] shadow-sm break-all">
+                                                            {getDisplayValue(key, value, memberData as Record<string, unknown>)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-
-                                    <div className="flex justify-end pt-2">
-                                        <Button
-                                            type="submit"
-                                            disabled={isUpdating}
-                                            className="h-9 rounded-md bg-primary px-6 text-xs font-bold uppercase tracking-widest text-white shadow-md transition-all hover:bg-primary/90 hover:shadow-lg"
-                                        >
-                                            {isUpdating ? (
-                                                <span className="flex items-center gap-2">
-                                                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                                    Updating...
-                                                </span>
-                                            ) : (
-                                                "Save Changes"
-                                            )}
-                                        </Button>
-                                    </div>
-                                </form>
+                                </div>
                             </div>
                         )}
                     </CardContent>

@@ -72,7 +72,7 @@ export const adminPaths: NavGroup[] = [
         icon: Users,
       },
       {
-        title: "Change Profile",
+        title: "View Profile",
         url: "/admin/member-options/change-profile",
         icon: Crosshair,
       },
