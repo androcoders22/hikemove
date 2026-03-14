@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Gift, Search, Calendar, Loader2 } from "lucide-react";
+import { Gift, Search, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -24,12 +23,15 @@ import { getLedgerAPI, LedgerType } from "@/lib/api/ledger";
 
 interface LedgerRow {
   _id: string;
+  member: {
+    memberId: string;
+  };
   amount: number;
-  type: string;
+  ledgerType: string;
+  entryType: string;
   description?: string;
-  remark?: string;
+  remarks?: string;
   createdAt: string;
-  transactionType?: string;
   status?: string;
 }
 
@@ -64,11 +66,11 @@ export default function SponsorBonus() {
     if (!query) return ledgerData;
 
     return ledgerData.filter((row) => {
-      const desc = (row.description || row.remark || "").toLowerCase();
-      const tType = (row.transactionType || "").toLowerCase();
+      const desc = (row.description || row.remarks || "").toLowerCase();
+      const lType = (row.ledgerType || "").toLowerCase();
       return (
         desc.includes(query) ||
-        tType.includes(query) ||
+        lType.includes(query) ||
         row.amount.toString().includes(query)
       );
     });
@@ -76,17 +78,13 @@ export default function SponsorBonus() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  };
-
-  const getLabelForType = (typeValue: string) => {
-    return Object.keys(LedgerType).find(key => (LedgerType as any)[key] === typeValue)?.replace(/_/g, " ") || typeValue.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
   };
 
   return (
@@ -145,7 +143,7 @@ export default function SponsorBonus() {
             </div>
           </div>
 
-          <div className="overflow-x-auto min-h-[100px]">
+          <div className="overflow-x-auto min-h-25">
             {loading ? (
               <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
                 <Loader2 className="h-8 w-8 animate-spin mb-4 text-primary" />
@@ -155,17 +153,23 @@ export default function SponsorBonus() {
               <Table>
                 <TableHeader className="bg-muted/30">
                   <TableRow className="border-border">
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest w-[80px]">
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest w-20">
                       Sr. No.
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                      Member ID
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
                       Type
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                      Description
+                      Entry Type
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                      Txn Type
+                      Remarks
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                      Status
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
                       Amount
@@ -186,18 +190,29 @@ export default function SponsorBonus() {
                         <TableCell className="text-xs font-bold text-muted-foreground">
                           {idx + 1}
                         </TableCell>
-                        <TableCell className="text-xs font-black text-primary uppercase tracking-tight">
-                          {row.type || selectedType}
+                        <TableCell className="text-xs font-bold text-muted-foreground">
+                          {row.member.memberId}
                         </TableCell>
-                        <TableCell className="text-xs font-bold text-foreground">
-                          {row.description || row.remark || "N/A"}
+                        <TableCell className="text-xs font-black text-primary tracking-tight">
+                          {row.ledgerType || "N/A"}
                         </TableCell>
                         <TableCell className="text-xs font-bold text-muted-foreground uppercase">
-                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest ${(row.transactionType?.toLowerCase() === 'credit')
-                            ? 'bg-emerald-500/10 text-emerald-500'
-                            : 'bg-rose-500/10 text-rose-500'
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest ${(row.entryType?.toLowerCase() === "credit")
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-rose-500/10 text-rose-500"
                             }`}>
-                            {row.transactionType || "N/A"}
+                            {row.entryType || "N/A"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-xs font-bold text-foreground">
+                          {row.remarks || "N/A"}
+                        </TableCell>
+                        <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest ${(row.status?.toLowerCase() === "approved")
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-rose-500/10 text-rose-500"
+                            }`}>
+                            {row.status || "N/A"}
                           </span>
                         </TableCell>
                         <TableCell className="text-xs font-black text-foreground">
@@ -211,7 +226,7 @@ export default function SponsorBonus() {
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={7}
                         className="text-center py-8 text-sm text-muted-foreground"
                       >
                         No records found for the selected type.
