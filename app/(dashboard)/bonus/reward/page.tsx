@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Trophy, Search, Filter, Calendar } from "lucide-react";
+import { Trophy, Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,32 +11,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface RewardBonusRow {
-  srNo: number;
+  _id: string;
   memberId: string;
   memberName: string;
-  amount: string;
-  date: string;
+  amount: number;
+  createdAt: string;
 }
 
 export default function RewardBonus() {
   const [bonusData] = useState<RewardBonusRow[]>([
     {
-      srNo: 1,
+      _id: "1",
       memberId: "HM123456",
       memberName: "John Doe",
-      amount: "100 $",
-      date: "24/01/2026",
+      amount: 100,
+      createdAt: "2026-01-24T10:30:00.000Z",
     },
     {
-      srNo: 2,
+      _id: "2",
       memberId: "HM654321",
       memberName: "Jane Smith",
-      amount: "250 $",
-      date: "23/01/2026",
+      amount: 250,
+      createdAt: "2026-01-23T09:15:00.000Z",
     },
   ]);
 
@@ -51,11 +50,22 @@ export default function RewardBonus() {
       return (
         row.memberId.toLowerCase().includes(query) ||
         row.memberName.toLowerCase().includes(query) ||
-        row.amount.toLowerCase().includes(query) ||
-        row.date.toLowerCase().includes(query)
+        row.amount.toString().includes(query) ||
+        row.createdAt.toLowerCase().includes(query)
       );
     });
   }, [bonusData, searchTerm]);
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -86,30 +96,27 @@ export default function RewardBonus() {
                   className="h-8 pl-8 pr-3 text-xs"
                 />
               </div>
-
-              {/* <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Filter className="h-3.5 w-3.5 mr-2" />
-                FILTER
-              </Button> */}
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-h-25">
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-border">
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest w-[80px]">
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest w-20">
                     Sr. No.
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Member Id
+                    Type
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Member Name
+                    Entry Type
+                  </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                    Remarks
+                  </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                    Status
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Amount
@@ -122,35 +129,48 @@ export default function RewardBonus() {
 
               <TableBody>
                 {filteredData.length > 0 ? (
-                  filteredData.map((row) => (
+                  filteredData.map((row, idx) => (
                     <TableRow
-                      key={row.srNo}
+                      key={row._id}
                       className="border-border hover:bg-muted/20 transition-colors group"
                     >
                       <TableCell className="text-xs font-bold text-muted-foreground">
-                        {row.srNo}
+                        {idx + 1}
                       </TableCell>
-                      <TableCell className="text-xs font-black text-primary">
-                        {row.memberId}
+
+                      <TableCell className="text-xs font-black text-primary tracking-tight">
+                        rewardBonus
                       </TableCell>
+
+                      <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest bg-emerald-500/10 text-emerald-500">
+                          credit
+                        </span>
+                      </TableCell>
+
                       <TableCell className="text-xs font-bold text-foreground">
-                        {row.memberName}
+                        Reward bonus for {row.memberName} ({row.memberId})
                       </TableCell>
+
+                      <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                        <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest bg-emerald-500/10 text-emerald-500">
+                          approved
+                        </span>
+                      </TableCell>
+
                       <TableCell className="text-xs font-black text-emerald-600">
-                        {row.amount}
+                        $ {row.amount}
                       </TableCell>
-                      <TableCell className="text-right text-xs font-medium text-muted-foreground">
-                        <div className="flex items-center justify-end gap-2">
-                          <Calendar className="h-3 w-3 opacity-50" />
-                          {row.date}
-                        </div>
+
+                      <TableCell className="text-right text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+                        {formatDate(row.createdAt)}
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={7}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No reward bonus record found.

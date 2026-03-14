@@ -12,20 +12,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { getLedgerAPI, LedgerType } from "@/lib/api/ledger";
+import { getSponsorBonusAPI } from "@/lib/api/ledger";
 
 interface LedgerRow {
   _id: string;
-  member: {
-    memberId: string;
-  };
+  member?: {
+    memberId?: string;
+  } | string;
   amount: number;
   ledgerType: string;
   entryType: string;
@@ -40,13 +33,12 @@ export default function SponsorBonus() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState<string>(LedgerType.WITHDRAWAL);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getLedgerAPI(selectedType);
+        const response = await getSponsorBonusAPI();
         if (response.data?.status && Array.isArray(response.data.data)) {
           setLedgerData(response.data.data);
         } else {
@@ -59,7 +51,7 @@ export default function SponsorBonus() {
       }
     };
     fetchData();
-  }, [selectedType]);
+  }, []);
 
   const filteredData = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
@@ -68,9 +60,14 @@ export default function SponsorBonus() {
     return ledgerData.filter((row) => {
       const desc = (row.description || row.remarks || "").toLowerCase();
       const lType = (row.ledgerType || "").toLowerCase();
+      const memberId =
+        typeof row.member === "string"
+          ? row.member.toLowerCase()
+          : (row.member?.memberId || "").toLowerCase();
       return (
         desc.includes(query) ||
         lType.includes(query) ||
+        memberId.includes(query) ||
         row.amount.toString().includes(query)
       );
     });
@@ -123,23 +120,6 @@ export default function SponsorBonus() {
                 />
               </div>
 
-              <div className="w-full md:w-56">
-                <Select
-                  value={selectedType}
-                  onValueChange={(val) => setSelectedType(val)}
-                >
-                  <SelectTrigger className="h-8 text-xs font-bold w-full bg-background border-border">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(LedgerType).map(([key, value]) => (
-                      <SelectItem key={value} value={value} className="text-xs font-bold uppercase tracking-widest">
-                        {key.replace(/_/g, " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </div>
 
@@ -155,9 +135,6 @@ export default function SponsorBonus() {
                   <TableRow className="border-border">
                     <TableHead className="text-[10px] font-black uppercase tracking-widest w-20">
                       Sr. No.
-                    </TableHead>
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                      Member ID
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
                       Type
@@ -189,9 +166,6 @@ export default function SponsorBonus() {
                       >
                         <TableCell className="text-xs font-bold text-muted-foreground">
                           {idx + 1}
-                        </TableCell>
-                        <TableCell className="text-xs font-bold text-muted-foreground">
-                          {row.member.memberId}
                         </TableCell>
                         <TableCell className="text-xs font-black text-primary tracking-tight">
                           {row.ledgerType || "N/A"}
@@ -229,7 +203,7 @@ export default function SponsorBonus() {
                         colSpan={7}
                         className="text-center py-8 text-sm text-muted-foreground"
                       >
-                        No records found for the selected type.
+                        No sponsor bonus records found.
                       </TableCell>
                     </TableRow>
                   )}

@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Gift, Search, Filter, Calendar, Layers, Loader2 } from "lucide-react";
+import { Gift, Search, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,18 +11,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getTeamLevelBonusAPI } from "@/lib/api/ledger";
 
 interface LedgerRow {
   _id: string;
   amount: number;
-  type: string;
+  ledgerType: string;
+  entryType: string;
   description?: string;
-  remark?: string;
+  remarks?: string;
   createdAt: string;
-  transactionType?: string;
   status?: string;
 }
 
@@ -57,9 +56,11 @@ export default function TeamLevelBonus() {
     if (!query) return bonusData;
 
     return bonusData.filter((row) => {
-      const desc = (row.description || row.remark || "").toLowerCase();
+      const desc = (row.description || row.remarks || "").toLowerCase();
+      const lType = (row.ledgerType || "").toLowerCase();
       return (
         desc.includes(query) ||
+        lType.includes(query) ||
         row.amount.toString().includes(query) ||
         row.createdAt.toLowerCase().includes(query)
       );
@@ -72,6 +73,8 @@ export default function TeamLevelBonus() {
       day: "numeric",
       month: "short",
       year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -101,7 +104,6 @@ export default function TeamLevelBonus() {
             </h2>
 
             <div className="flex items-center gap-2">
-              {/* SEARCH INPUT */}
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
@@ -112,21 +114,10 @@ export default function TeamLevelBonus() {
                   className="h-8 pl-8 pr-3 text-xs"
                 />
               </div>
-
-              {/* FILTER BUTTON (no functionality) */}
-              {/* <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-[10px] font-bold"
-              >
-                <Filter className="h-3.5 w-3.5 mr-2" />
-                FILTER
-              </Button> */}
             </div>
           </div>
 
-          {/* TABLE */}
-          <div className="overflow-x-auto min-h-[100px]">
+          <div className="overflow-x-auto min-h-25">
             {loading ? (
               <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
                 <Loader2 className="h-8 w-8 animate-spin mb-4 text-primary" />
@@ -136,17 +127,23 @@ export default function TeamLevelBonus() {
               <Table>
                 <TableHeader className="bg-muted/30">
                   <TableRow className="border-border">
-                    <TableHead className="text-[10px] font-black uppercase tracking-widest w-[80px]">
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest w-20">
                       Sr. No.
                     </TableHead>
-                    <TableHead className="text-[10px) font-black uppercase tracking-widest">
-                      Description
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                      Type
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                      Amount
+                      Entry Type
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                      Remarks
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
                       Status
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                      Amount
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">
                       Date
@@ -165,32 +162,45 @@ export default function TeamLevelBonus() {
                           {idx + 1}
                         </TableCell>
 
-                        <TableCell className="text-xs font-bold text-foreground max-w-[300px]">
-                          {row.description || row.remark || "N/A"}
+                        <TableCell className="text-xs font-black text-primary tracking-tight">
+                          {row.ledgerType || "N/A"}
                         </TableCell>
 
-                        <TableCell className="text-xs font-black text-emerald-600">
-                          $ {row.amount || 0}
-                        </TableCell>
-
-                        <TableCell>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-black uppercase">
-                            {row.status || "Completed"}
+                        <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest ${(row.entryType?.toLowerCase() === "credit")
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-rose-500/10 text-rose-500"
+                            }`}>
+                            {row.entryType || "N/A"}
                           </span>
                         </TableCell>
 
-                        <TableCell className="text-right text-xs font-medium text-muted-foreground">
-                          <div className="flex items-center justify-end gap-2">
-                            <Calendar className="h-3 w-3 opacity-50" />
-                            {formatDate(row.createdAt)}
-                          </div>
+                        <TableCell className="text-xs font-bold text-foreground max-w-75">
+                          {row.remarks || row.description || "N/A"}
+                        </TableCell>
+
+                        <TableCell className="text-xs font-bold text-muted-foreground uppercase">
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] tracking-widest ${(row.status?.toLowerCase() === "approved")
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-rose-500/10 text-rose-500"
+                            }`}>
+                            {row.status || "N/A"}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="text-xs font-black text-foreground">
+                          $ {row.amount || 0}
+                        </TableCell>
+
+                        <TableCell className="text-right text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+                          {formatDate(row.createdAt)}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={5}
+                        colSpan={7}
                         className="text-center py-8 text-sm text-muted-foreground"
                       >
                         No team level bonus record found.
