@@ -28,7 +28,6 @@ interface DirectRow {
     _id: string;
     memberId: string;
     fullName: string;
-    phone: string;
     package: string;
     sponsorId?: {
         _id: string;

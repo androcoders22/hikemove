@@ -27,7 +27,6 @@ interface TeamRow {
   _id: string;
   memberId: string;
   fullName: string;
-  phone: string;
   package: string;
   sponsorId: any;
   sponsorMemberId?: string;
@@ -153,7 +152,6 @@ export default function MyTeam() {
       return (
         row.memberId.toLowerCase().includes(query) ||
         row.fullName.toLowerCase().includes(query) ||
-        row.phone.toLowerCase().includes(query) ||
         (row.package || "").toLowerCase().includes(query) ||
         sId.toLowerCase().includes(query) ||
         sName.toLowerCase().includes(query) ||
@@ -272,9 +270,6 @@ export default function MyTeam() {
                     Member Name
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Contact No.
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Current Package
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
@@ -311,9 +306,7 @@ export default function MyTeam() {
                       <TableCell className="text-xs font-bold text-foreground">
                         {row.fullName}
                       </TableCell>
-                      <TableCell className="text-xs font-medium text-muted-foreground">
-                        {row.phone}
-                      </TableCell>
+
                       <TableCell className="text-xs font-black text-foreground">
                         {row.package ? `$ ${row.package}` : "N/A"}
                       </TableCell>
@@ -347,7 +340,7 @@ export default function MyTeam() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={10}
+                      colSpan={9}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No team member found.
