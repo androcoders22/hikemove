@@ -35,7 +35,6 @@ interface MemberRow {
   _id: string;
   memberId: string;
   fullName: string;
-  phone: string;
   package: string;
   sponsorId?: {
     _id: string;
@@ -144,7 +143,6 @@ export default function MySponsor() {
       return (
         row.memberId.toLowerCase().includes(query) ||
         row.fullName.toLowerCase().includes(query) ||
-        row.phone.toLowerCase().includes(query) ||
         (row.package || "").toLowerCase().includes(query) ||
         sId.toLowerCase().includes(query) ||
         sName.toLowerCase().includes(query) ||
@@ -282,9 +280,6 @@ export default function MySponsor() {
                     Member Name
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Contact No.
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Current Package
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
@@ -321,9 +316,7 @@ export default function MySponsor() {
                       <TableCell className="text-xs font-bold text-foreground">
                         {row.fullName}
                       </TableCell>
-                      <TableCell className="text-xs font-medium text-muted-foreground">
-                        {row.phone}
-                      </TableCell>
+
                       <TableCell className="text-xs font-black text-foreground">
                         {row.package || "N/A"}
                       </TableCell>
@@ -362,7 +355,7 @@ export default function MySponsor() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={10}
+                      colSpan={9}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No members found.
