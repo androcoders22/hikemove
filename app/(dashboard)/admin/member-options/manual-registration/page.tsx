@@ -21,25 +21,18 @@ export default function ManualRegistrationPage() {
     const [formData, setFormData] = useState({
         referralId: "",
         referralName: "",
-        memberId: "",
         fullName: "",
         phone: "",
         email: "",
+        gender: "male",
         country: "United States",
         password: "",
         transactionPassword: "",
-        package: "",
-        joiningDate: "",
-        activationDate: "",
     });
 
     const [isLoading, setIsLoading] = useState(false);
     const [isCheckingReferral, setIsCheckingReferral] = useState(false);
-    const [isCheckingMemberId, setIsCheckingMemberId] = useState(false);
-    const [memberIdStatus, setMemberIdStatus] = useState<{
-        isValid: boolean | null;
-        message: string;
-    }>({ isValid: null, message: "" });
+    const [sponsorObjectId, setSponsorObjectId] = useState<string>("");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -62,17 +55,20 @@ export default function ManualRegistrationPage() {
                             ...prev,
                             referralName: res.data.data.fullName || "User Found",
                         }));
+                        setSponsorObjectId(res.data.data._id || "");
                     } else {
                         setFormData((prev) => ({
                             ...prev,
                             referralName: "Invalid Referral ID",
                         }));
+                        setSponsorObjectId("");
                     }
                 } catch (error) {
                     setFormData((prev) => ({
                         ...prev,
                         referralName: "Not Found",
                     }));
+                    setSponsorObjectId("");
                 } finally {
                     setIsCheckingReferral(false);
                 }
@@ -81,56 +77,21 @@ export default function ManualRegistrationPage() {
             return () => clearTimeout(timer);
         } else {
             setFormData((prev) => ({ ...prev, referralName: "" }));
+            setSponsorObjectId("");
         }
     }, [formData.referralId]);
-
-    // Member ID check
-    useEffect(() => {
-        if (formData.memberId && formData.memberId.length >= 4) {
-            const timer = setTimeout(async () => {
-                setIsCheckingMemberId(true);
-                try {
-                    const res = await checkMemberIdAPI(formData.memberId);
-                    if (res.data?.status && res.data?.data) {
-                        setMemberIdStatus({
-                            isValid: true,
-                            message: "ID is valid",
-                        });
-                    } else {
-                        setMemberIdStatus({
-                            isValid: false,
-                            message: "ID does not exist",
-                        });
-                    }
-                } catch (error) {
-                    setMemberIdStatus({
-                        isValid: false,
-                        message: "ID does not exist",
-                    });
-                } finally {
-                    setIsCheckingMemberId(false);
-                }
-            }, 800);
-
-            return () => clearTimeout(timer);
-        } else {
-            setMemberIdStatus({ isValid: null, message: "" });
-        }
-    }, [formData.memberId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const requiredFields = [
             "referralId",
-            "memberId",
             "fullName",
             "phone",
             "password",
             "transactionPassword",
-            "package",
-            "joiningDate",
-            "activationDate",
+            "gender",
+            "country"
         ];
 
         for (const field of requiredFields) {
@@ -142,9 +103,9 @@ export default function ManualRegistrationPage() {
             }
         }
 
-        if (memberIdStatus.isValid === false) {
-          toast.error("Invalid Member ID");
-          return;
+        if (!sponsorObjectId) {
+            toast.error("Invalid Sponsor ID. Please verify Referral ID.");
+            return;
         }
 
         setIsLoading(true);
@@ -152,7 +113,8 @@ export default function ManualRegistrationPage() {
         try {
             const payload = {
                 ...formData,
-                sponsorId: formData.referralId,
+                sponsorId: sponsorObjectId,
+                status: "active",
             };
 
             const res = await memberSignup(payload);
@@ -163,17 +125,15 @@ export default function ManualRegistrationPage() {
                 setFormData({
                     referralId: "",
                     referralName: "",
-                    memberId: "",
                     fullName: "",
                     phone: "",
                     email: "",
+                    gender: "male",
                     country: "United States",
                     password: "",
                     transactionPassword: "",
-                    package: "",
-                    joiningDate: "",
-                    activationDate: "",
                 });
+                setSponsorObjectId("");
             } else {
                 toast.error(res.message || "Registration failed");
             }
@@ -202,7 +162,7 @@ export default function ManualRegistrationPage() {
                                 Manual Registration
                             </CardTitle>
                             <p className="mt-0.5 text-[11px] font-medium text-[#7a8270] sm:text-xs">
-                                Create a new member account with referral and package details.
+                                Create a new member account with referral and profile details.
                             </p>
                         </div>
                     </CardHeader>
@@ -244,27 +204,6 @@ export default function ManualRegistrationPage() {
                                     </div>
 
                                     <div className="min-w-0 space-y-1.5">
-                                        <Label
-                                            htmlFor="memberId"
-                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
-                                        >
-                                            Member Id<span className="ml-0.5 text-rose-500">*</span>
-                                        </Label>
-                                        <Input
-                                            id="memberId"
-                                            placeholder="Enter member id"
-                                            value={formData.memberId}
-                                            onChange={handleInputChange}
-                                            className={`h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10 ${memberIdStatus.isValid === true ? "border-green-500 focus:border-green-500 focus:ring-green-500/10" : memberIdStatus.isValid === false ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/10" : ""}`}
-                                        />
-                                        {formData.memberId.length >= 4 && (
-                                            <p className={`text-[10px] font-bold ${memberIdStatus.isValid ? "text-green-600" : "text-rose-600"}`}>
-                                                {isCheckingMemberId ? "Checking..." : memberIdStatus.message}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="min-w-0 space-y-1.5 md:col-span-2 xl:col-span-3">
                                         <Label
                                             htmlFor="fullName"
                                             className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
@@ -315,10 +254,32 @@ export default function ManualRegistrationPage() {
 
                                     <div className="min-w-0 space-y-1.5">
                                         <Label
+                                            htmlFor="gender"
+                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
+                                        >
+                                            Gender<span className="ml-0.5 text-rose-500">*</span>
+                                        </Label>
+                                        <Select
+                                            value={formData.gender}
+                                            onValueChange={(v) => handleSelectChange("gender", v)}
+                                        >
+                                            <SelectTrigger className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white text-[11px] shadow-sm focus:ring-2 focus:ring-primary/10">
+                                                <SelectValue placeholder="Select Gender" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="male">Male</SelectItem>
+                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="other">Other</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="min-w-0 space-y-1.5">
+                                        <Label
                                             htmlFor="country"
                                             className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
                                         >
-                                            Country
+                                            Country<span className="ml-0.5 text-rose-500">*</span>
                                         </Label>
                                         <Select
                                             value={formData.country}
@@ -337,95 +298,41 @@ export default function ManualRegistrationPage() {
                                         </Select>
                                     </div>
 
-                                    {/* <div className="min-w-0 space-y-1.5">
-                                        <Label
-                                            htmlFor="package"
-                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
-                                        >
-                                            Select Package<span className="ml-0.5 text-rose-500">*</span>
-                                        </Label>
-                                        <Select
-                                            value={formData.package}
-                                            onValueChange={(v) => handleSelectChange("package", v)}
-                                        >
-                                            <SelectTrigger className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white text-[11px] shadow-sm focus:ring-2 focus:ring-primary/10">
-                                                <SelectValue placeholder="Select Package" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {Object.entries(PackageType).map(([key, value]) => (
-                                                    <SelectItem key={value} value={value}>
-                                                        {value} $
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div> */}
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:col-span-2 xl:col-span-3">
+                                        <div className="min-w-0 space-y-1.5">
+                                            <Label
+                                                htmlFor="password"
+                                                className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
+                                            >
+                                                Login Password<span className="ml-0.5 text-rose-500">*</span>
+                                            </Label>
+                                            <Input
+                                                id="password"
+                                                type="password"
+                                                placeholder="Enter login password"
+                                                value={formData.password}
+                                                onChange={handleInputChange}
+                                                className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                            />
+                                        </div>
 
-                                    <div className="min-w-0 space-y-1.5">
-                                        <Label
-                                            htmlFor="password"
-                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
-                                        >
-                                            Login Password<span className="ml-0.5 text-rose-500">*</span>
-                                        </Label>
-                                        <Input
-                                            id="password"
-                                            type="password"
-                                            placeholder="Enter login password"
-                                            value={formData.password}
-                                            onChange={handleInputChange}
-                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                        />
+                                        <div className="min-w-0 space-y-1.5">
+                                            <Label
+                                                htmlFor="transactionPassword"
+                                                className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
+                                            >
+                                                Transaction Password<span className="ml-0.5 text-rose-500">*</span>
+                                            </Label>
+                                            <Input
+                                                id="transactionPassword"
+                                                type="password"
+                                                placeholder="Enter transaction password"
+                                                value={formData.transactionPassword}
+                                                onChange={handleInputChange}
+                                                className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                            />
+                                        </div>
                                     </div>
-
-                                    <div className="min-w-0 space-y-1.5">
-                                        <Label
-                                            htmlFor="transactionPassword"
-                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
-                                        >
-                                            Transaction Password<span className="ml-0.5 text-rose-500">*</span>
-                                        </Label>
-                                        <Input
-                                            id="transactionPassword"
-                                            type="password"
-                                            placeholder="Enter transaction password"
-                                            value={formData.transactionPassword}
-                                            onChange={handleInputChange}
-                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                        />
-                                    </div>
-
-                                    <div className="min-w-0 space-y-1.5">
-                                        <Label
-                                            htmlFor="joiningDate"
-                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
-                                        >
-                                            Joining Date<span className="ml-0.5 text-rose-500">*</span>
-                                        </Label>
-                                        <Input
-                                            id="joiningDate"
-                                            type="date"
-                                            value={formData.joiningDate}
-                                            onChange={handleInputChange}
-                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] text-slate-600 shadow-sm transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                        />
-                                    </div>
-
-                                    {/* <div className="min-w-0 space-y-1.5">
-                                        <Label
-                                            htmlFor="activationDate"
-                                            className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]"
-                                        >
-                                            Activation Date<span className="ml-0.5 text-rose-500">*</span>
-                                        </Label>
-                                        <Input
-                                            id="activationDate"
-                                            type="date"
-                                            value={formData.activationDate}
-                                            onChange={handleInputChange}
-                                            className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] text-slate-600 shadow-sm transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                        />
-                                    </div> */}
                                 </div>
                             </div>
 
