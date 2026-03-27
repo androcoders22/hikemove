@@ -64,8 +64,6 @@ export default function SidebarLayout({
         if (parts.length === 3) {
           const payload = JSON.parse(atob(parts[1]));
           const isExpired = payload.exp * 1000 < Date.now();
-          console.log(payload.exp * 1000);
-          console.log(Date.now());
 
           if (isExpired) {
             const refreshFn =
@@ -101,11 +99,17 @@ export default function SidebarLayout({
   }, [pathname, router]);
 
   useEffect(() => {
+    if (currentUserType !== "member") {
+      return;
+    }
+
+    let isMounted = true;
+
     const fetchCoinSetting = async () => {
       try {
         const appSettingRes = await getCoinPaymentSettingsAPI();
         const coinSetting = appSettingRes?.data?.data?.coinSetting;
-        if (coinSetting) {
+        if (coinSetting && isMounted) {
           setCoinDisplay({
             coinName: coinSetting.coinName || "Coin",
             coinSymbol: coinSetting.coinSymbol || "",
@@ -118,7 +122,11 @@ export default function SidebarLayout({
     };
 
     fetchCoinSetting();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUserType]);
 
   if (isInitializing) {
     return (

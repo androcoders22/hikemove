@@ -11,7 +11,7 @@ export enum PackageType {
 }
 
 export const checkMemberIdAPI = async (memberId: string) => {
-  return await api.get(`/member/check-member-id/${memberId}`);
+  return await api.get(`/member/check-member-id/${memberId}/`);
 };
 
 export const createMemberTopupAPI = async (data: {

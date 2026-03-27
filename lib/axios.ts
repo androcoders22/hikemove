@@ -48,7 +48,8 @@ const processQueue = (error: any, token: string | null = null) => {
 api.interceptors.response.use(
   (response) => {
     const { status, message } = response.data || {};
-    if (message && status === false) {
+    const isAppSetting = response.config?.url?.includes("/app-setting");
+    if (message && status === false && !isAppSetting) {
       if (Array.isArray(message)) {
         message.forEach((msg: string) => toast.error(msg));
       } else if (typeof message === "string") {
@@ -60,8 +61,13 @@ api.interceptors.response.use(
   async (error) => {
     const data = error.response?.data;
 
+    // Check if we should skip error toast for specific endpoints (like app-setting 404)
+    const skipToast =
+      error.response?.status === 404 &&
+      error.config?.url?.includes("/app-setting");
+
     // Global Error Toaster
-    if (data && data.message) {
+    if (data && data.message && !skipToast) {
       if (Array.isArray(data.message)) {
         data.message.forEach((msg: string) => toast.error(msg));
       } else if (typeof data.message === "string") {
@@ -70,7 +76,8 @@ api.interceptors.response.use(
     } else if (
       error.message &&
       error.response?.status !== 401 &&
-      error.response?.status !== 403
+      error.response?.status !== 403 &&
+      !skipToast
     ) {
       toast.error(error.message);
     }

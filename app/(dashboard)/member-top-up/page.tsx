@@ -81,10 +81,11 @@ export default function MemberTopUp() {
     const fetchWallet = async () => {
       try {
         const res = await getWalletAPI();
-        if (res.data?.status) {
-          setIncomeBalance(res.data.data.incomeBalance || 0);
-          setDepositBalance(res.data.data.depositBalance || 0);
-          setMyMemberId(res.data.data.member || "");
+        const walletData = res.data?.data;
+        if (res.data?.status && walletData) {
+          setIncomeBalance(walletData.incomeBalance ?? 0);
+          setDepositBalance(walletData.depositBalance ?? 0);
+          setMyMemberId(walletData.member ?? "");
         }
       } catch (err) {
         console.error("Failed to fetch wallet", err);
@@ -145,7 +146,7 @@ export default function MemberTopUp() {
           }),
         memberId: z.string().min(1, { message: "Member Id is required" }),
       }),
-    [incomeBalance],
+    [depositBalance],
   );
 
   const form = useForm<z.infer<typeof formSchema>>({

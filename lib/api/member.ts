@@ -38,5 +38,5 @@ export const getDirectMembersAPI = async () => {
 };
 
 export const checkMemberIdAPI = async (memberId: string) => {
-  return await api.get(`/member/check-member-id/${memberId}`);
+  return await api.get(`/member/check-member-id/${memberId}/`);
 };

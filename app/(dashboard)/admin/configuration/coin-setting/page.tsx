@@ -60,7 +60,9 @@ export default function CoinSettingPage() {
                     updatedAt: data.paymentSetting?.updatedAt || "",
                 });
             } catch (error: any) {
-                toast.error(error.response?.data?.message || "Failed to load settings");
+                if (error.response?.status !== 404) {
+                    toast.error(error.response?.data?.message || "Failed to load settings");
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -106,6 +108,10 @@ export default function CoinSettingPage() {
     };
 
     const handlePaymentSubmit = async () => {
+        if (!ensurePaymentFields()) {
+            return;
+        }
+
         setIsPaymentSaving(true);
         try {
             await updateCoinPaymentSettingsAPI({
@@ -167,6 +173,11 @@ export default function CoinSettingPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!ensurePaymentFields()) {
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -187,6 +198,20 @@ export default function CoinSettingPage() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const ensurePaymentFields = () => {
+        if (!paymentData.paymentQr?.trim()) {
+            toast.error("Please upload a payment QR before saving.");
+            return false;
+        }
+
+        if (!paymentData.paymentAddress?.toString().trim()) {
+            toast.error("Enter a payment address before saving.");
+            return false;
+        }
+
+        return true;
     };
 
     return (
@@ -271,15 +296,6 @@ export default function CoinSettingPage() {
                                         />
                                     </div>
 
-                                    {/* <div className="min-w-0 space-y-1.5">
-                                        <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">
-                                            Created At
-                                        </Label>
-                                        <div className="flex h-8 w-full min-w-0 items-center rounded-md border border-[#dce8d3] bg-[#f3f7ef] px-3 text-[13px] font-mono text-[#6f7664] shadow-sm">
-                                            <span className="truncate">{formatDateTime(formData.createdAt)}</span>
-                                        </div>
-                                    </div> */}
-
                                     <div className="min-w-0 space-y-1.5">
                                         <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">
                                             Updated At
@@ -292,23 +308,7 @@ export default function CoinSettingPage() {
                             </div>
 
                             <div className="flex flex-col-reverse gap-2 border-t border-[#edf3e7] pt-3 sm:flex-row sm:items-center sm:justify-end">
-                                {/* <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="h-8 w-full rounded-md border-[#dce8d3] bg-white px-3 text-[10px] font-bold uppercase tracking-[0.04em] text-[#5b624f] shadow-sm hover:bg-[#f1f7eb] sm:w-auto"
-                                    onClick={() =>
-                                        setFormData({
-                                            coinName: "",
-                                            coinSymbol: "",
-                                            coinPrice: "",
-                                            createdAt: "",
-                                            updatedAt: "",
-                                        })
-                                    }
-                                >
-                                    <X className="mr-1.5 h-3.5 w-3.5" />
-                                    Cancel
-                                </Button> */}
+
 
                                 <Button
                                     type="submit"
@@ -395,14 +395,7 @@ export default function CoinSettingPage() {
                                     />
                                 </div>
 
-                                {/* <div className="min-w-0 space-y-1.5">
-                                    <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">
-                                        Created At
-                                    </Label>
-                                    <div className="flex h-8 w-full min-w-0 items-center rounded-md border border-[#dce8d3] bg-[#f3f7ef] px-3 text-[13px] font-mono text-[#6f7664] shadow-sm">
-                                        <span className="truncate">{formatDateTime(paymentData.createdAt)}</span>
-                                    </div>
-                                </div> */}
+
 
                                 <div className="min-w-0 space-y-1.5">
                                     <Label className="text-[10px] font-bold uppercase tracking-[0.06em] text-[#5f6851]">

@@ -1,6 +1,6 @@
 import { api } from "../axios";
 
-const CONFIG_ENDPOINT = "/app-setting";
+const CONFIG_ENDPOINT = "/app-setting/";
 
 export interface CoinPaymentSettingsPayload {
   coinSetting: {
@@ -21,5 +21,17 @@ export const getCoinPaymentSettingsAPI = async () => {
 export const updateCoinPaymentSettingsAPI = async (
   payload: CoinPaymentSettingsPayload,
 ) => {
-  return await api.patch(CONFIG_ENDPOINT, payload);
+  try {
+    return await api.patch(CONFIG_ENDPOINT, payload);
+  } catch (error: any) {
+    const statusCode = error?.response?.status;
+    const message = error?.response?.data?.message;
+    const notFound = statusCode === 404 && message === "App setting not found";
+
+    if (notFound) {
+      return await api.post(CONFIG_ENDPOINT, payload);
+    }
+
+    throw error;
+  }
 };
