@@ -63,21 +63,22 @@ export default function DashboardPage() {
 
         let finalData = dashboardRes;
 
-        if (walletRes?.data?.status) {
-          const wallet = walletRes.data.data;
+        const wallet = walletRes?.data?.data;
+
+        if (walletRes?.data?.status && wallet) {
           finalData = {
             ...dashboardRes,
             stats: dashboardRes.stats.map((stat: any) => {
               if (stat.id === "credit-wallet") {
-                return { ...stat, value: wallet.depositBalance };
+                return { ...stat, value: wallet.depositBalance ?? 0 };
               }
               if (stat.id === "income-wallet") {
-                return { ...stat, value: wallet.incomeBalance };
+                return { ...stat, value: wallet.incomeBalance ?? 0 };
               }
               return stat;
             }),
             // Use depositBalance as the "Total Profits" for this demo as per user's request focus
-            totalBalance: wallet.depositBalance
+            totalBalance: wallet.depositBalance ?? 0
           };
         }
 
