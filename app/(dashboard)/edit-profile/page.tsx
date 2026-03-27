@@ -33,6 +33,7 @@ interface UserProfile {
   role: string;
   country: string;
   memberId: string;
+  package?: string;
   sponsorId: {
     _id: string;
     fullName: string;
@@ -76,6 +77,7 @@ export default function EditProfile() {
             sponsorName: rawData.sponsorId?.fullName || "N/A",
             // For display purposes, we'll store the memberId string if it's an object
             sponsorId: typeof rawData.sponsorId === 'object' ? rawData.sponsorId?.memberId : rawData.sponsorId,
+            package: rawData.package || rawData.packageName || rawData.packageAmount || "",
             joiningDate: rawData.createdAt ? new Date(rawData.createdAt).toLocaleDateString('en-GB', {
               day: 'numeric',
               month: 'short',
@@ -139,7 +141,7 @@ export default function EditProfile() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <PageHeader
-        title="Edit Profile"
+        title="View Profile"
         breadcrumbs={[{ title: "App", href: "#" }, { title: "Profile" }]}
       />
 
@@ -239,6 +241,11 @@ export default function EditProfile() {
                 label="Activation Date"
                 value={profile.activationDate}
                 icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+              />
+              <InfoRow
+                label="Package"
+                value={profile.package || "N/A"}
+                icon={<Wallet className="h-3.5 w-3.5" />}
               />
             </div>
           </div>
