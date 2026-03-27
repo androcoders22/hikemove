@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 // import { updateWalletAPI } from "@/lib/api/withdrawal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
 import { Wallet } from "lucide-react";
+import { checkMemberIdAPI } from "@/lib/api/member";
+import { addFundByAdminAPI } from "@/lib/api/fund-request";
 
 export default function WalletUpdatePage() {
   const [memberId, setMemberId] = useState("");
@@ -23,12 +25,57 @@ export default function WalletUpdatePage() {
   const [amount, setAmount] = useState("");
   const [remark, setRemark] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [memberName, setMemberName] = useState("");
+  const [memberObjectId, setMemberObjectId] = useState("");
+  const [isCheckingMember, setIsCheckingMember] = useState(false);
+
+  useEffect(() => {
+    const id = memberId.trim();
+    if (id.length < 3) {
+      setMemberName("");
+      setMemberObjectId("");
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsCheckingMember(true);
+      try {
+        const res = await checkMemberIdAPI(id.toUpperCase());
+        if (res.data?.status && res.data.data) {
+          setMemberName(res.data.data.fullName || res.data.data.memberId || id.toUpperCase());
+          setMemberObjectId(res.data.data._id || "");
+        } else {
+          setMemberName("");
+          setMemberObjectId("");
+        }
+      } catch {
+        setMemberName("");
+        setMemberObjectId("");
+      } finally {
+        setIsCheckingMember(false);
+      }
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [memberId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const numericAmount = Number(amount);
+
     if (!memberId || !action || !amount || !remark) {
       toast.error("Please fill all fields");
+      return;
+    }
+
+    if (!memberObjectId) {
+      toast.error("Please enter a valid Member ID");
+      return;
+    }
+
+    if (Number.isNaN(numericAmount) || numericAmount <= 0) {
+      toast.error("Amount must be greater than zero");
       return;
     }
 
@@ -36,25 +83,30 @@ export default function WalletUpdatePage() {
 
     try {
       const payload = {
-        memberId,
-        action,
-        amount: Number(amount),
-        remark,
+        member: memberObjectId,
+        entryType: action,
+        depositBalance: numericAmount,
+        remarks: remark.trim(),
       };
 
-      // const res = await updateWalletAPI(payload);
+      const res = await addFundByAdminAPI(payload);
 
-      // if (res.data?.status) {
-      //     toast.success(res.data?.message || "Wallet updated successfully!");
-      //     setMemberId("");
-      //     setAction("");
-      //     setAmount("");
-      //     setRemark("");
-      // } else {
-      //     toast.error(res.data?.message || "Failed to update wallet");
-      // }
+      if (res.data?.status) {
+        toast.success(res.data?.message || "Wallet updated successfully!");
+        setMemberId("");
+        setAction("");
+        setAmount("");
+        setRemark("");
+        setMemberName("");
+        setMemberObjectId("");
+      } else {
+        toast.error(res.data?.message || "Failed to update wallet");
+      }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      const message =
+        error?.response?.data?.message ||
+        (error instanceof Error ? error.message : "Something went wrong");
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -107,6 +159,23 @@ export default function WalletUpdatePage() {
                       onChange={(e) => setMemberId(e.target.value)}
                       className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
                     />
+                    {memberId && (
+                      <p
+                        className={`text-[10px] font-semibold ${
+                          isCheckingMember
+                            ? "text-[#7a8270]"
+                            : memberObjectId
+                              ? "text-emerald-600"
+                              : "text-rose-600"
+                        }`}
+                      >
+                        {isCheckingMember
+                          ? "Validating member..."
+                          : memberObjectId
+                            ? `Member verified: ${memberName}`
+                            : "Member not found"}
+                      </p>
+                    )}
                   </div>
 
                   <div className="min-w-0 space-y-1.5">
@@ -186,6 +255,8 @@ export default function WalletUpdatePage() {
                     setAction("");
                     setAmount("");
                     setRemark("");
+                    setMemberName("");
+                    setMemberObjectId("");
                   }}
                   className="h-8 w-full rounded-md border-[#dce8d3] bg-white px-3 text-[10px] font-bold uppercase tracking-[0.05em] text-[#5b624f] shadow-sm transition-all hover:bg-[#f7fbf3] sm:w-auto"
                 >
