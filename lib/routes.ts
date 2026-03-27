@@ -132,7 +132,7 @@ export const memberPaths: NavGroup[] = [
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
       { title: "Tree View", url: "/tree-view", icon: Workflow },
-      { title: "Edit Profile", url: "/edit-profile", icon: User },
+      { title: "View Profile", url: "/edit-profile", icon: User },
       { title: "Deposit Activity", url: "/deposit-activity", icon: PiggyBank },
       { title: "Member Top Up", url: "/member-top-up", icon: ArrowUpCircle },
     ],
