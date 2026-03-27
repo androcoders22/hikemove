@@ -6,8 +6,6 @@ import {
     Search,
     History,
     CheckCircle2,
-    SlidersHorizontal,
-    Save,
     UserCircle2,
     CalendarClock,
 } from "lucide-react";
@@ -24,15 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
 import { checkMemberIdAPI } from "@/lib/api/member-topup";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface WalletHistoryRow {
     srNo: number;
@@ -52,18 +42,6 @@ export default function WalletHistoryPage() {
     const [currentBalance, setCurrentBalance] = useState(0);
     const [historyData, setHistoryData] = useState<WalletHistoryRow[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [openFilterModal, setOpenFilterModal] = useState(false);
-
-    const [filters, setFilters] = useState({
-        remark: "",
-        date: "",
-        type: "",
-        total: "",
-        adminCharge: "",
-        tdsCharge: "",
-        activity: "",
-        status: "",
-    });
 
     const handleFetchHistory = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -110,30 +88,11 @@ export default function WalletHistoryPage() {
             ]);
 
             toast.success("Wallet history retrieved successfully");
-            setOpenFilterModal(false);
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to fetch wallet history");
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const handleFilterChange = (key: keyof typeof filters, value: string) => {
-        setFilters((prev) => ({ ...prev, [key]: value }));
-    };
-
-    const resetPopupFields = () => {
-        setWalletId("");
-        setFilters({
-            remark: "",
-            date: "",
-            type: "",
-            total: "",
-            adminCharge: "",
-            tdsCharge: "",
-            activity: "",
-            status: "",
-        });
     };
 
     return (
@@ -149,7 +108,7 @@ export default function WalletHistoryPage() {
             <div className="w-full min-w-0 flex-1 p-3 pt-0 sm:p-4 sm:pt-0 lg:p-5 lg:pt-0">
                 <Card className="min-w-0 overflow-hidden rounded-lg border border-[#dce8d3] bg-white shadow-sm pt-0">
                     <CardHeader className="border-b border-[#dce8d3] bg-[#fafcf8] px-3 py-3 sm:px-4 sm:py-4">
-                        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <div className="flex min-w-0 items-center gap-2.5">
                                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/15 text-primary">
                                     <History className="h-4 w-4" />
@@ -164,157 +123,27 @@ export default function WalletHistoryPage() {
                                     </p>
                                 </div>
                             </div>
-
-                            <Dialog open={openFilterModal} onOpenChange={setOpenFilterModal}>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        className="h-8 w-full rounded-md bg-primary px-3 text-[10px] font-bold uppercase tracking-[0.05em] text-white shadow-sm transition-all hover:bg-primary/90 sm:w-auto"
-                                    >
-                                        <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
-                                        Search / Filter
-                                    </Button>
-                                </DialogTrigger>
-
-                                <DialogContent
-                                    showCloseButton={false}
-                                    className="w-[96vw] max-w-[980px] border-0 bg-transparent p-0 shadow-none"
+                            <form
+                                onSubmit={handleFetchHistory}
+                                className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-end"
+                            >
+                                <div className="relative group w-full min-w-0 sm:max-w-xs">
+                                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8a927e] transition-colors group-focus-within:text-primary" />
+                                    <Input
+                                        placeholder="Enter Member Id"
+                                        value={walletId}
+                                        onChange={(e) => setWalletId(e.target.value)}
+                                        className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="h-9 shrink-0 rounded-md bg-primary px-4 text-[10px] font-bold uppercase tracking-[0.05em] text-white shadow-sm transition-all hover:bg-primary/90"
                                 >
-                                    <DialogTitle className="sr-only">Wallet History Filters</DialogTitle>
-                                    <div className="mx-auto flex max-h-[85vh] w-full flex-col overflow-hidden rounded-xl border border-[#dce8d3] bg-[#f8fbf5] shadow-xl">
-                                        <div className="flex items-center justify-between border-b border-[#e4eddc] bg-[#f7fbf3] px-4 py-3 sm:px-5 sm:py-4">
-                                            <h2 className="text-[13px] font-extrabold uppercase tracking-[0.06em] text-[#4d553d] sm:text-[15px]">
-                                                Wallet Search Panel
-                                            </h2>
-
-                                            <DialogClose asChild>
-                                                <button
-                                                    type="button"
-                                                    className="rounded-md p-1.5 text-[#8a927e] transition hover:bg-[#eef5e7] hover:text-[#4d553d]"
-                                                >
-                                                    ✕
-                                                </button>
-                                            </DialogClose>
-                                        </div>
-
-                                        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-                                            <div className="space-y-6">
-                                                <section>
-                                                    <div className="mb-4 flex items-center gap-3">
-                                                        <h3 className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                                                            Wallet Search
-                                                        </h3>
-                                                        <div className="h-px flex-1 bg-[#e4eddc]" />
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-                                                        <div className="space-y-1.5">
-                                                            <Label className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#5f6851]">
-                                                                Member Id
-                                                            </Label>
-                                                            <Input
-                                                                placeholder="Enter Member Id"
-                                                                value={walletId}
-                                                                onChange={(e) => setWalletId(e.target.value)}
-                                                                className="h-8 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                                            />
-                                                        </div>
-
-                                                        <div className="space-y-1.5">
-                                                            <Label className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#5f6851]">
-                                                                Current Balance
-                                                            </Label>
-                                                            <Input
-                                                                value={`$${currentBalance.toFixed(2)}`}
-                                                                readOnly
-                                                                className="h-8 rounded-md border-[#dce8d3] bg-[#f3f7ef] px-3 text-[13px] text-[#6f7664] shadow-sm"
-                                                            />
-                                                        </div>
-
-                                                        <div className="space-y-1.5">
-                                                            <Label className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#5f6851]">
-                                                                Search Action
-                                                            </Label>
-                                                            <Button
-                                                                type="button"
-                                                                onClick={() => handleFetchHistory()}
-                                                                disabled={isLoading}
-                                                                className="h-8 w-full rounded-md bg-primary text-[10px] font-bold uppercase tracking-[0.05em] text-white hover:bg-primary/90"
-                                                            >
-                                                                {isLoading ? "Processing..." : "Submit Search"}
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </section>
-
-                                                <section>
-                                                    <div className="mb-4 flex items-center gap-3">
-                                                        <h3 className="whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                                                            Filter Fields
-                                                        </h3>
-                                                        <div className="h-px flex-1 bg-[#e4eddc]" />
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                                                        {(Object.keys(filters) as Array<keyof typeof filters>).map((key) => (
-                                                            <div key={key} className="min-w-0 space-y-1.5">
-                                                                <Label className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#5f6851]">
-                                                                    {key
-                                                                        .replace(/([A-Z])/g, " $1")
-                                                                        .replace(/^./, (str) => str.toUpperCase())}
-                                                                </Label>
-                                                                <Input
-                                                                    placeholder={`Enter ${key
-                                                                        .replace(/([A-Z])/g, " $1")
-                                                                        .toLowerCase()}`}
-                                                                    value={filters[key]}
-                                                                    onChange={(e) =>
-                                                                        handleFilterChange(key, e.target.value)
-                                                                    }
-                                                                    className="h-8 rounded-md border-[#dce8d3] bg-white px-3 text-[13px] shadow-sm placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </section>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col-reverse gap-2 border-t border-[#e4eddc] bg-[#f7fbf3] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={resetPopupFields}
-                                                className="h-8 rounded-md border-[#dce8d3] bg-white px-3 text-[10px] font-bold uppercase tracking-[0.04em] text-[#5b624f] shadow-sm hover:bg-[#f1f7eb]"
-                                            >
-                                                Reset
-                                            </Button>
-
-                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                                <DialogClose asChild>
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        className="h-8 px-3 text-[10px] font-semibold text-[#4b5563] hover:bg-[#eef5e7]"
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                </DialogClose>
-
-                                                <Button
-                                                    type="button"
-                                                    onClick={() => handleFetchHistory()}
-                                                    disabled={isLoading}
-                                                    className="h-8 rounded-md bg-primary px-4 text-[10px] font-bold text-white hover:bg-primary/90"
-                                                >
-                                                    <Save className="mr-1.5 h-3.5 w-3.5" />
-                                                    Apply
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </DialogContent>
-                            </Dialog>
+                                    {isLoading ? "Searching..." : "Search"}
+                                </Button>
+                            </form>
                         </div>
                     </CardHeader>
 
@@ -329,7 +158,7 @@ export default function WalletHistoryPage() {
                                         No history available
                                     </p>
                                     <p className="mt-1 max-w-md text-xs text-[#7a8270] sm:text-sm">
-                                        Click the search button above to open wallet search and filters.
+                                        Enter a member ID above and submit to view wallet history.
                                     </p>
                                 </div>
                             </div>

@@ -288,7 +288,7 @@ export default function FundRequestManagementPage() {
                                             <div className="grid grid-cols-2 gap-3 pb-3 border-b border-[#e7efdf] mb-3">
                                                 <div className="rounded-lg bg-white p-2">
                                                     <p className="text-[9px] font-bold uppercase tracking-widest text-[#8a927e]">Amount</p>
-                                                    <p className="text-sm font-black text-emerald-600">₹{req.amount.toLocaleString()}</p>
+                                                    <p className="text-sm font-black text-emerald-600">${req.amount.toLocaleString()}</p>
                                                 </div>
                                                 <div className="rounded-lg bg-white p-2 flex flex-col items-center justify-center">
                                                     <p className="text-[9px] font-bold uppercase tracking-widest text-[#8a927e] mb-1">Receipt</p>
@@ -357,7 +357,7 @@ export default function FundRequestManagementPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-2 text-xs font-black text-emerald-600">
-                                                        ₹{req.amount.toLocaleString()}
+                                                        ${req.amount.toLocaleString()}
                                                     </TableCell>
                                                     <TableCell className="px-4 py-2">
                                                         {req.screenshot ? (

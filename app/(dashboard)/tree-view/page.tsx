@@ -15,7 +15,6 @@ import ReactFlow, {
   Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { Phone } from "lucide-react";
 import { getMemberTreeAPI } from "@/lib/api/member";
 
 interface PersonData {
@@ -69,17 +68,13 @@ const PersonNode = ({ data }: { data: PersonData }) => {
         </div>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-border flex items-center justify-between transition-colors">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Phone size={14} className="text-primary/70" />
-          <span className="text-xs font-mono">{data.phone}</span>
-        </div>
+      <div className="mt-3 pt-3 border-t border-border flex items-center justify-end transition-colors min-h-[22px]">
         {data.status && (
-          <span 
+          <span
             className={`px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-md ${
-              data.status.toLowerCase() === 'active' 
-                ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' 
-                : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+              data.status.toLowerCase() === "active"
+                ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                : "bg-rose-500/10 text-rose-600 border border-rose-500/20"
             }`}
           >
             {data.status}

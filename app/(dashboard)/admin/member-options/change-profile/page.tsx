@@ -19,9 +19,21 @@ const toTitleCase = (key: string) => {
         .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
+const hiddenFields = new Set([
+    "path",
+    "id",
+    "_id",
+    "expirationdate",
+    "expiration_date",
+    "updatedat",
+    "updated_at",
+    "__v",
+    "v",
+]);
+
 const shouldRenderField = (key: string) => {
     const normalizedKey = key.toLowerCase();
-    return normalizedKey !== "path";
+    return !hiddenFields.has(normalizedKey);
 };
 
 const getDisplayValue = (key: string, value: unknown, fullData: Record<string, unknown>) => {
