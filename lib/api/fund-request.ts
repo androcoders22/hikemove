@@ -37,3 +37,12 @@ export const rejectFundRequestAPI = async (id: string) => {
     }
   }
 };
+
+export const addFundByAdminAPI = async (payload: {
+  member: string;
+  entryType: string;
+  depositBalance: number;
+  remarks: string;
+}) => {
+  return await api.post("/fund-request/add-fund", payload);
+};

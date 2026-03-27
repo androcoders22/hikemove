@@ -13,11 +13,70 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { api } from "@/lib/axios";
 
 export default function IncomeCheckPage() {
   const [memberId, setMemberId] = useState("");
   const [date, setDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [walletData, setWalletData] = useState<any | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const formatCurrency = (value: unknown) => {
+    if (value === null || value === undefined || value === "") return "N/A";
+    const num = Number(value);
+    if (Number.isNaN(num)) return String(value);
+    return `$${num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  const walletDetails = walletData?.data ?? walletData;
+  const resolvedMember: any | undefined = walletDetails
+    ? walletDetails.member ??
+      walletDetails.memberDetails ??
+      walletDetails.memberInfo ??
+      walletDetails.user ??
+      undefined
+    : undefined;
+
+  const memberIdFromPayload =
+    walletDetails?.memberId ||
+    (typeof resolvedMember === "string"
+      ? resolvedMember
+      : resolvedMember?.memberId ||
+        resolvedMember?.member_id ||
+        resolvedMember?.member?.memberId) ||
+    memberId;
+
+  const packageSource = walletDetails?.package ??
+    (resolvedMember && typeof resolvedMember === "object"
+      ? resolvedMember.package ??
+        resolvedMember.packageName ??
+        resolvedMember.packageDetails ??
+        resolvedMember.package_info
+      : null);
+
+  const packageName =
+    typeof packageSource === "string"
+      ? packageSource
+      : packageSource?.name ??
+        packageSource?.title ??
+        packageSource?.packageName ??
+        packageSource?.package ??
+        null;
+
+  const summaryItems = walletDetails
+    ? [
+        { label: "Credit Wallet", value: walletDetails?.depositBalance },
+        { label: "Income Wallet", value: walletDetails?.incomeBalance },
+        { label: "Total Balance", value: walletDetails?.totalBalance ?? walletDetails?.depositBalance },
+        { label: "Member Id", value: memberIdFromPayload },
+        { label: "Package", value: packageName },
+        { label: "Updated", value: walletDetails?.updatedAt },
+      ].filter((item) => item.value !== undefined && item.value !== null && item.value !== "")
+    : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +87,21 @@ export default function IncomeCheckPage() {
     }
 
     setIsLoading(true);
+    setWalletData(null);
+    setApiError(null);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const { data } = await api.get(
+        `/wallet/${encodeURIComponent(memberId.trim())}`,
+      );
+      setWalletData(data);
       toast.success("Income data retrieved successfully");
-    } catch (error) {
-      toast.error("Failed to fetch income data");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        (error instanceof Error ? error.message : "Failed to fetch income data");
+      setApiError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -132,6 +200,45 @@ export default function IncomeCheckPage() {
                 </Button>
               </div>
             </form>
+
+            {apiError && (
+              <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">
+                {apiError}
+              </div>
+            )}
+
+            {walletDetails && (
+              <div className="mt-4 space-y-4">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                  {summaryItems.map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-lg border border-[#dce8d3] bg-white p-3 shadow-sm"
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#7a8270]">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 text-base font-black text-[#374151]">
+                        {typeof item.value === "number"
+                          ? formatCurrency(item.value)
+                          : typeof item.value === "string"
+                            ? item.value
+                            : formatCurrency(item.value)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* <div className="rounded-lg border border-[#dce8d3] bg-white p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#7a8270] mb-2">
+                    Raw Response
+                  </p>
+                  <pre className="max-h-80 overflow-auto rounded-md bg-[#f6f8f4] p-3 text-xs text-[#374151]">
+                    {JSON.stringify(walletData, null, 2)}
+                  </pre>
+                </div> */}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
