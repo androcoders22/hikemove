@@ -201,77 +201,61 @@ export default function EditProfile() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="space-y-4">
-            <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-              Account & Sponsorship
-            </h3>
-            <div className="bg-background border border-border rounded-xl divide-y divide-border">
-              <InfoRow
-                label="Member ID"
-                value={profile.memberId}
-                icon={<Fingerprint className="h-3.5 w-3.5" />}
-                onCopy
-              />
-              <InfoRow
-                label="Sponsor ID"
-                value={typeof profile.sponsorId === 'object' ? (profile.sponsorId as any).memberId : profile.sponsorId}
-                icon={<ShieldCheck className="h-3.5 w-3.5" />}
-                onCopy
-              />
-              <InfoRow
-                label="Sponsor Name"
-                value={profile.sponsorName}
-                icon={<User className="h-3.5 w-3.5" />}
-              />
-            </div>
-          </div>
+        <div className="bg-background border border-border rounded-2xl shadow-sm overflow-hidden">
+          <SectionHeading title="Account Details" isFirst />
+          <InfoRow
+            label="Member ID"
+            value={profile.memberId}
+            icon={<Fingerprint className="h-3.5 w-3.5" />}
+            onCopy
+          />
+          {/*
+          <InfoRow
+            label="Sponsor ID"
+            value={typeof profile.sponsorId === 'object' ? (profile.sponsorId as any).memberId : profile.sponsorId}
+            icon={<ShieldCheck className="h-3.5 w-3.5" />}
+            onCopy
+          />
+          <InfoRow
+            label="Sponsor Name"
+            value={profile.sponsorName}
+            icon={<User className="h-3.5 w-3.5" />}
+          />
+          */}
 
-          <div className="space-y-4">
-            <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-              Activity Status
-            </h3>
-            <div className="bg-background border border-border rounded-xl divide-y divide-border">
-              <InfoRow
-                label="Joining Date"
-                value={profile.joiningDate}
-                icon={<Calendar className="h-3.5 w-3.5" />}
-              />
-              <InfoRow
-                label="Activation Date"
-                value={profile.activationDate}
-                icon={<CheckCircle2 className="h-3.5 w-3.5" />}
-              />
-              <InfoRow
-                label="Package"
-                value={profile.package || "N/A"}
-                icon={<Wallet className="h-3.5 w-3.5" />}
-              />
-            </div>
-          </div>
+          <SectionHeading title="Activity Status" />
+          <InfoRow
+            label="Joining Date"
+            value={profile.joiningDate}
+            icon={<Calendar className="h-3.5 w-3.5" />}
+          />
+          <InfoRow
+            label="Activation Date"
+            value={profile.activationDate}
+            icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+          />
+          <InfoRow
+            label="Package"
+            value={profile.package || "N/A"}
+            icon={<Wallet className="h-3.5 w-3.5" />}
+          />
 
-          <div className="space-y-4">
-            <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-              Contact Information
-            </h3>
-            <div className="bg-background border border-border rounded-xl divide-y divide-border">
-              <InfoRow
-                label="Phone"
-                value={profile.phone}
-                icon={<Phone className="h-3.5 w-3.5" />}
-              />
-              <InfoRow
-                label="Email Id"
-                value={profile.email}
-                icon={<Mail className="h-3.5 w-3.5" />}
-              />
-              <InfoRow
-                label="Gender"
-                value={profile.gender}
-                icon={<User className="h-3.5 w-3.5" />}
-              />
-            </div>
-          </div>
+          <SectionHeading title="Contact Information" />
+          <InfoRow
+            label="Phone"
+            value={profile.phone}
+            icon={<Phone className="h-3.5 w-3.5" />}
+          />
+          <InfoRow
+            label="Email Id"
+            value={profile.email}
+            icon={<Mail className="h-3.5 w-3.5" />}
+          />
+          <InfoRow
+            label="Gender"
+            value={profile.gender}
+            icon={<User className="h-3.5 w-3.5" />}
+          />
         </div>
       </div>
 
@@ -457,30 +441,47 @@ function InfoRow({
   onCopy?: boolean;
 }) {
   return (
-    <div className="p-3 flex items-center justify-between group hover:bg-muted/30 transition-colors">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="text-muted-foreground shrink-0">{icon}</div>
-        <div className="min-w-0">
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest leading-tight">
-            {label}
-          </p>
-          <p className="text-sm font-bold text-foreground truncate">{value}</p>
-        </div>
+    <div className="grid grid-cols-[150px_minmax(0,1fr)] border-b border-border/70 last:border-b-0">
+      <div className="flex items-center gap-2 bg-muted/40 px-3 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="text-muted-foreground/80">{icon}</span>
+        <span className="truncate">{label}</span>
       </div>
+      <div className="flex items-center justify-between px-4 py-3 gap-3">
+        <p className="text-sm font-semibold text-foreground truncate">
+          {value || "N/A"}
+        </p>
+        {onCopy && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 shrink-0 text-muted-foreground"
+            onClick={() => {
+              navigator.clipboard.writeText(value);
+              toast.success(`${label} copied!`);
+            }}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
 
-      {onCopy && (
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={() => {
-            navigator.clipboard.writeText(value);
-            toast.success(`${label} copied!`);
-          }}
-        >
-          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-        </Button>
-      )}
+function SectionHeading({
+  title,
+  isFirst = false,
+}: {
+  title: string;
+  isFirst?: boolean;
+}) {
+  return (
+    <div
+      className={`bg-muted/40 px-6 py-3 text-[10px] font-black uppercase tracking-[0.35em] text-muted-foreground border-y border-border/70 ${
+        isFirst ? "border-t-0" : ""
+      }`}
+    >
+      {title}
     </div>
   );
 }

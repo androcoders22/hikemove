@@ -116,6 +116,13 @@ export default function MemberLoginPage() {
               {loading ? "Signing in..." : "Sign in"}
             </Button>
 
+            <p className="text-center text-sm text-muted-foreground">
+              Forgot password?{" "}
+              <Link href="/member-forgot-password" className="text-primary font-semibold">
+                Reset here
+              </Link>
+            </p>
+
             <div className="text-center text-sm text-muted-foreground mt-4">
               Don't have an account?{" "}
               <Link

@@ -195,7 +195,7 @@ export default function SupportTicketsPage() {
             <PageHeader
                 title="Support Tickets"
                 breadcrumbs={[
-                    { title: "Admin", href: "/admin/dashboard" },
+                    { title: "Admin", href: "/admin/tree-view" },
                     { title: "Support Tickets" },
                 ]}
             />

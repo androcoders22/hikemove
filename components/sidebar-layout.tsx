@@ -10,13 +10,21 @@ import { useAuthStore } from "@/lib/store/useAuthStore";
 import { adminPaths, memberPaths } from "@/lib/routes";
 import { getCoinPaymentSettingsAPI } from "@/lib/api/configuration";
 
+const ADMIN_HOME_PATH = "/admin/tree-view";
+const MEMBER_HOME_PATH = "/dashboard";
+
 const isPathAllowed = (pathname: string, userType: "admin" | "member") => {
   const allowedPaths = userType === "admin" ? adminPaths : memberPaths;
+  const extraAllowed =
+    userType === "admin"
+      ? [ADMIN_HOME_PATH]
+      : [MEMBER_HOME_PATH, "/edit-profile"];
+
   return (
     allowedPaths.some((group) =>
       group.items.some((item) => pathname.startsWith(item.url)),
-    ) || pathname === "/edit-profile"
-  ); // Allow edit-profile unconditionally or rely on startsWith
+    ) || extraAllowed.some((path) => pathname.startsWith(path)) || pathname === "/edit-profile"
+  );
 };
 
 export default function SidebarLayout({
@@ -88,7 +96,7 @@ export default function SidebarLayout({
         setCurrentUserType(userType as "admin" | "member");
         setUserType(userType as "admin" | "member");
         if (!isPathAllowed(pathname, userType as "admin" | "member")) {
-          router.push(userType === "admin" ? "/admin/dashboard" : "/dashboard");
+          router.push(userType === "admin" ? ADMIN_HOME_PATH : MEMBER_HOME_PATH);
         } else {
           setIsInitializing(false);
         }

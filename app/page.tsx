@@ -16,7 +16,7 @@ export default function HomePage() {
 
     if (token) {
       if (userType === "admin") {
-        router.replace("/admin/dashboard");
+        router.replace("/admin/tree-view");
       } else {
         router.replace("/dashboard");
       }

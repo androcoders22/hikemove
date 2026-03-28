@@ -54,6 +54,7 @@ const COUNTRIES = [
 export default function MemberSignupPage() {
   const params = useParams();
   const router = useRouter();
+  const isReferralSignup = Boolean(params?.memberId);
 
   const [loading, setLoading] = useState(false);
   const [sponsorLoading, setSponsorLoading] = useState(true);
@@ -175,16 +176,18 @@ export default function MemberSignupPage() {
             <UserPlus className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold">Member Sign Up</CardTitle>
-          <CardDescription>
-            {sponsor ? (
-              <span>
-                Your sponsor is <strong>{sponsor.fullName}</strong> (
-                {sponsor.memberId})
-              </span>
-            ) : (
-              <span className="text-red-500">Could not identify sponsor</span>
-            )}
-          </CardDescription>
+          {!isReferralSignup && (
+            <CardDescription>
+              {sponsor ? (
+                <span>
+                  Your sponsor is <strong>{sponsor.fullName}</strong> (
+                  {sponsor.memberId})
+                </span>
+              ) : (
+                <span className="text-red-500">Could not identify sponsor</span>
+              )}
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">

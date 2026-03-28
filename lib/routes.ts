@@ -39,7 +39,6 @@ export const adminPaths: NavGroup[] = [
   {
     title: "Overview",
     items: [
-      { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
       { title: "Tree View", url: "/admin/tree-view", icon: Workflow },
     ],
   },
@@ -166,7 +165,7 @@ export const memberPaths: NavGroup[] = [
   {
     title: "Withdrawal Wallet",
     items: [
-      { title: "Withdrawal", url: "/withdrawal", icon: Wallet },
+      // { title: "Withdrawal", url: "/withdrawal", icon: Wallet },
       {
         title: "Wallet History",
         url: "/withdrawal/wallet-history",
