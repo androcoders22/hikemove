@@ -36,6 +36,10 @@ export const getLedgerMeAPI = async () => {
   return await api.get("/ledger/me");
 };
 
+export const getLedgerByMemberIdAPI = async (memberId: string) => {
+  return await api.get(`/ledger/member/${encodeURIComponent(memberId)}`);
+};
+
 export const getAllLedgerEntriesAPI = async () => {
   const types = Object.values(LedgerType);
 

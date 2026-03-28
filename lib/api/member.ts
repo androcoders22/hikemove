@@ -11,6 +11,40 @@ export const memberSignup = async (data: any) => {
   return response.data;
 };
 
+export const requestMemberPasswordOtp = async (data: {
+  memberId: string;
+  email?: string;
+}) => {
+  const payload = data.email ? { email: data.email } : undefined;
+  const config = data.email
+    ? {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    : undefined;
+
+  const response = await api.post(
+    `/member/forgot-password/${encodeURIComponent(data.memberId)}`,
+    payload,
+    config,
+  );
+  return response.data;
+};
+
+export const resetMemberPassword = async (data: {
+  memberId: string;
+  otp: string;
+  newPassword: string;
+}) => {
+  const response = await api.post("/member/reset-password", data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
 export const getMember = async (memberId: string) => {
   const response = await api.get(`/member/member/${memberId}`);
   return response.data;

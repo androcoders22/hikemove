@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import toast from "react-hot-toast";
 import { ShieldQuestion, Loader2 } from "lucide-react";
+import { requestMemberPasswordOtp, resetMemberPassword } from "@/lib/api/member";
 
 export default function MemberForgotPasswordPage() {
   const [memberId, setMemberId] = useState("");
@@ -27,17 +28,38 @@ export default function MemberForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const cleanedMemberId = memberId.trim().toUpperCase();
+    const normalizedEmail = email.trim().toLowerCase();
+
     if (!otpStep) {
-      if (!memberId || !email) {
+      if (!cleanedMemberId || !normalizedEmail) {
         toast.error("Please enter both Member ID and email");
         return;
       }
 
       setIsSubmitting(true);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        toast.success("OTP sent to your registered email");
+        const response = await requestMemberPasswordOtp({
+          memberId: cleanedMemberId,
+          email: normalizedEmail,
+        });
+
+        if (response?.status !== true) {
+          toast.error(response?.message || "Failed to send OTP");
+          return;
+        }
+
+        toast.success(response?.message || "OTP sent to your registered email");
         setOtpStep(true);
+      } catch (error: any) {
+        const serverMessage = error?.response?.data?.message;
+        if (Array.isArray(serverMessage)) {
+          serverMessage.forEach((msg: string) => toast.error(msg));
+        } else if (typeof serverMessage === "string") {
+          toast.error(serverMessage);
+        } else {
+          toast.error("Unable to send OTP");
+        }
       } finally {
         setIsSubmitting(false);
       }
@@ -56,8 +78,22 @@ export default function MemberForgotPasswordPage() {
 
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      toast.success("Password reset request submitted");
+      const response = await resetMemberPassword({
+        memberId: cleanedMemberId,
+        otp: otp.trim(),
+        newPassword,
+      });
+
+      if (response?.status !== true) {
+        toast.error(response?.message || "Password reset failed");
+        return;
+      }
+
+      toast.success(response?.message || "Password reset successfully");
+      setOtpStep(false);
+      setOtp("");
+      setNewPassword("");
+      setConfirmPassword("");
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +143,9 @@ export default function MemberForgotPasswordPage() {
                   id="otp"
                   placeholder="Enter OTP"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                  inputMode="numeric"
+                  maxLength={6}
                   required
                 />
               </div>

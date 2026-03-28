@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
-import { checkMemberIdAPI } from "@/lib/api/member-topup";
+import { getLedgerByMemberIdAPI } from "@/lib/api/ledger";
 import { Badge } from "@/components/ui/badge";
 
 interface WalletHistoryRow {
@@ -31,7 +31,6 @@ interface WalletHistoryRow {
     type: string;
     total: number;
     adminCharge: number;
-    tdsCharge: number;
     activity: string;
     netAmount: number;
     status: string;
@@ -46,50 +45,66 @@ export default function WalletHistoryPage() {
     const handleFetchHistory = async (e?: React.FormEvent) => {
         e?.preventDefault();
 
-        if (!walletId) {
-            toast.error("Please enter a Wallet Id");
+        const normalizedId = walletId.trim().toUpperCase();
+
+        if (!normalizedId) {
+            toast.error("Please enter a Member Id");
             return;
         }
 
         setIsLoading(true);
 
         try {
-            const memberRes = await checkMemberIdAPI(walletId);
+            const response = await getLedgerByMemberIdAPI(normalizedId);
+            const payload = response.data?.data;
 
-            if (memberRes.data?.status) {
-                setCurrentBalance(0);
+            if (response.data?.status !== true) {
+                throw new Error(response.data?.message || "Failed to fetch wallet history");
             }
 
-            setHistoryData([
-                {
-                    srNo: 1,
-                    remark: "Wallet Credit by Admin",
-                    date: "2026-03-02 14:20:11",
-                    type: "Credit",
-                    total: 100.0,
-                    adminCharge: 0.0,
-                    tdsCharge: 0.0,
-                    activity: "Manual Update",
-                    netAmount: 100.0,
-                    status: "Completed",
-                },
-                {
-                    srNo: 2,
-                    remark: "Service Fee Deduction",
-                    date: "2026-03-01 10:15:45",
-                    type: "Debit",
-                    total: 10.0,
-                    adminCharge: 0.0,
-                    tdsCharge: 0.0,
-                    activity: "System Charge",
-                    netAmount: 10.0,
-                    status: "Completed",
-                },
-            ]);
+            const ledgerEntries = Array.isArray(payload)
+                ? payload
+                : Array.isArray(payload?.ledger)
+                    ? payload.ledger
+                    : Array.isArray(payload?.records)
+                        ? payload.records
+                        : [];
 
-            toast.success("Wallet history retrieved successfully");
+            const derivedBalance =
+                typeof payload === "object" && !Array.isArray(payload)
+                    ? payload.walletBalance ?? payload.currentBalance ?? payload.balance ?? 0
+                    : 0;
+
+            setCurrentBalance(Number(derivedBalance) || 0);
+
+            const formattedRows: WalletHistoryRow[] = ledgerEntries.map((entry: any, index: number) => {
+                const entryType = (entry.entryType || entry.type || "credit").toString().toLowerCase();
+                const amount = Number(entry.amount ?? entry.total ?? entry.netAmount ?? 0);
+                const adminCharge = Number(entry.adminCharge ?? 0);
+                const netAmount = Number(entry.netAmount ?? amount - adminCharge);
+
+                return {
+                    srNo: index + 1,
+                    remark: entry.remarks || entry.remark || entry.description || "No remark provided",
+                    date: entry.createdAt
+                        ? new Date(entry.createdAt).toLocaleString()
+                        : entry.date || "--",
+                    type: entryType === "debit" ? "Debit" : "Credit",
+                    total: amount,
+                    adminCharge,
+                    activity: entry.ledgerType || entry.activity || "--",
+                    netAmount,
+                    status: entry.status || "Pending",
+                };
+            });
+
+            setHistoryData(formattedRows);
+            toast.success(response.data?.message || "Wallet history retrieved successfully");
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to fetch wallet history");
+            const serverMessage = error.response?.data?.message || error.message;
+            toast.error(serverMessage || "Failed to fetch wallet history");
+            setHistoryData([]);
+            setCurrentBalance(0);
         } finally {
             setIsLoading(false);
         }
@@ -132,7 +147,7 @@ export default function WalletHistoryPage() {
                                     <Input
                                         placeholder="Enter Member Id"
                                         value={walletId}
-                                        onChange={(e) => setWalletId(e.target.value)}
+                                        onChange={(e) => setWalletId(e.target.value.toUpperCase())}
                                         className="h-9 w-full rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
                                     />
                                 </div>
@@ -242,15 +257,6 @@ export default function WalletHistoryPage() {
                                                             -${row.adminCharge.toFixed(2)}
                                                         </p>
                                                     </div>
-
-                                                    <div className="rounded-md bg-white p-2 text-center">
-                                                        <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
-                                                            TDS Charge
-                                                        </p>
-                                                        <p className="mt-1 text-xs text-rose-600">
-                                                            -${row.tdsCharge.toFixed(2)}
-                                                        </p>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -280,9 +286,6 @@ export default function WalletHistoryPage() {
                                                     </TableHead>
                                                     <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
                                                         Admin Charge
-                                                    </TableHead>
-                                                    <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
-                                                        TDS Charge
                                                     </TableHead>
                                                     <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
                                                         Activity
@@ -338,12 +341,6 @@ export default function WalletHistoryPage() {
                                                         <TableCell className="px-3 py-2.5">
                                                             <div className="text-xs text-rose-600">
                                                                 -${row.adminCharge.toFixed(2)}
-                                                            </div>
-                                                        </TableCell>
-
-                                                        <TableCell className="px-3 py-2.5">
-                                                            <div className="text-xs text-rose-600">
-                                                                -${row.tdsCharge.toFixed(2)}
                                                             </div>
                                                         </TableCell>
 
