@@ -18,7 +18,6 @@ import { requestMemberPasswordOtp, resetMemberPassword } from "@/lib/api/member"
 
 export default function MemberForgotPasswordPage() {
   const [memberId, setMemberId] = useState("");
-  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,11 +28,10 @@ export default function MemberForgotPasswordPage() {
     e.preventDefault();
 
     const cleanedMemberId = memberId.trim().toUpperCase();
-    const normalizedEmail = email.trim().toLowerCase();
 
     if (!otpStep) {
-      if (!cleanedMemberId || !normalizedEmail) {
-        toast.error("Please enter both Member ID and email");
+      if (!cleanedMemberId) {
+        toast.error("Please enter your Member ID");
         return;
       }
 
@@ -41,7 +39,6 @@ export default function MemberForgotPasswordPage() {
       try {
         const response = await requestMemberPasswordOtp({
           memberId: cleanedMemberId,
-          email: normalizedEmail,
         });
 
         if (response?.status !== true) {
@@ -108,7 +105,7 @@ export default function MemberForgotPasswordPage() {
           </div>
           <CardTitle className="text-2xl font-bold">Member Password Reset</CardTitle>
           <CardDescription>
-            Provide your Member ID and registered email to request a reset OTP when mail service is configured.
+            Provide your Member ID to request a reset OTP.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -121,18 +118,7 @@ export default function MemberForgotPasswordPage() {
                 value={memberId}
                 onChange={(e) => setMemberId(e.target.value.toUpperCase())}
                 required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Registered Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                disabled={otpStep}
               />
             </div>
 

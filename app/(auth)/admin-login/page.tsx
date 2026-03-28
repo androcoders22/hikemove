@@ -224,25 +224,40 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleSendOtp}
-              disabled={(isOtpFieldVisible && otpTimer > 0) || isSendingOtp}
-            >
-              {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isOtpFieldVisible
-                ? otpTimer > 0
-                  ? `Resend OTP in ${otpTimer}s`
-                  : "Resend OTP"
-                : "Send OTP"}
-            </Button>
+            {!isOtpFieldVisible && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleSendOtp}
+                disabled={isSendingOtp}
+              >
+                {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSendingOtp ? "Sending..." : "Send OTP"}
+              </Button>
+            )}
 
-            <Button type="submit" className="w-full mt-4" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? "Signing in..." : "Sign in"}
-            </Button>
+            {isOtpFieldVisible && (
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleSendOtp}
+                  disabled={(otpTimer > 0) || isSendingOtp}
+                >
+                  {isSendingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {otpTimer > 0
+                    ? `Resend OTP in ${otpTimer}s`
+                    : "Resend OTP"}
+                </Button>
+
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loading ? "Signing in..." : "Sign in"}
+                </Button>
+              </div>
+            )}
 
             <p className="text-center text-sm text-muted-foreground">
               {/* Reset password?{" "} */}
