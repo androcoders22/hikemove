@@ -23,6 +23,9 @@ const fontMono = Fira_Code({
 export const metadata: Metadata = {
   title: "HikeMove Dashboard",
   description: "Wealth Creation Management",
+  icons: {
+    icon: "/hikemovefavicon.jpg",
+  },
 };
 
 export default function RootLayout({
@@ -33,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" style={{ colorScheme: "light" }}>
       <head>
+        <link rel="icon" href="/hikemovefavicon.jpg" />
         <script src="https://tweakcn.com/live-preview.min.js"></script>
       </head>
       <body
