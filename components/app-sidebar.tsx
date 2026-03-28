@@ -27,21 +27,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="lg" asChild className="h-14">
               <a
                 href={userType === "admin" ? "/admin/tree-view" : "/dashboard"}
+                className="flex items-center gap-3 px-2"
               >
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Command className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
-                    HikeMove Dashboard
-                  </span>
-                  <span className="truncate text-xs">
-                    Wealth Creation Management
-                  </span>
-                </div>
+                <img 
+                  src="/logo.png" 
+                  alt="HikeMove Logo" 
+                  className="h-8 w-auto object-contain brightness-110" 
+                />
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
