@@ -108,7 +108,7 @@ function TreeView() {
     <div className="h-screen flex flex-col">
       <PageHeader
         title="Admin Tree View"
-        breadcrumbs={[{ title: "Admin", href: "/admin/dashboard" }, { title: "Tree View" }]}
+        breadcrumbs={[{ title: "Admin", href: "/admin/tree-view" }, { title: "Tree View" }]}
       />
       <TreeViewCanvas />
     </div>

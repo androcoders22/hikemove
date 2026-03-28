@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,17 @@ export default function LoginPage() {
     email: "",
     password: "",
   });
+  const [otp, setOtp] = useState("");
+  const [isOtpFieldVisible, setIsOtpFieldVisible] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+
+  useEffect(() => {
+    if (!otpTimer) return;
+    const timer = setInterval(() => {
+      setOtpTimer((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [otpTimer]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,6 +42,17 @@ export default function LoginPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleSendOtp = () => {
+    if (!credentials.email.trim()) {
+      toast.error("Enter the admin email first");
+      return;
+    }
+    setIsOtpFieldVisible(true);
+    setOtp("");
+    setOtpTimer(60);
+    toast.success("Demo OTP sent—API hookup coming soon");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -63,7 +86,7 @@ export default function LoginPage() {
           }),
         );
 
-        router.push("/admin/dashboard");
+        router.push("/admin/tree-view");
       } else {
         toast.error(res?.message || "Invalid credentials");
       }
@@ -123,10 +146,50 @@ export default function LoginPage() {
               />
             </div>
 
+            {isOtpFieldVisible && (
+              <div className="space-y-2">
+                <Label htmlFor="otp">One-Time Password</Label>
+                <Input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Enter 6 digit OTP"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  OTP verification will activate once the mail API is connected.
+                </p>
+              </div>
+            )}
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleSendOtp}
+              disabled={isOtpFieldVisible && otpTimer > 0}
+            >
+              {isOtpFieldVisible
+                ? otpTimer > 0
+                  ? `Resend OTP in ${otpTimer}s`
+                  : "Resend OTP"
+                : "Send OTP"}
+            </Button>
+
             <Button type="submit" className="w-full mt-4" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {loading ? "Signing in..." : "Sign in"}
             </Button>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Forgot password?{" "}
+              <Link href="/admin-forgot-password" className="text-primary font-semibold">
+                Reset here
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>
