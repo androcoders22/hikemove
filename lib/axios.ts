@@ -9,14 +9,20 @@ export const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-  const skipAuthUrls = [
+  const skipAuthPrefixes = [
     "/admin/login",
     "/admin/refresh",
+    "/admin/forgot-password",
+    "/admin/reset-password",
+    "/admin/verify-otp",
     "/member/login",
     "/member/refresh",
+    "/member/forgot-password",
+    "/member/reset-password",
   ];
 
-  if (config.url && skipAuthUrls.includes(config.url)) {
+  const requestUrl = config.url || "";
+  if (skipAuthPrefixes.some((prefix) => requestUrl.startsWith(prefix))) {
     return config;
   }
 
@@ -106,11 +112,17 @@ api.interceptors.response.use(
     const skipUrls = [
       "/admin/login",
       "/admin/refresh",
+      "/admin/forgot-password",
+      "/admin/reset-password",
+      "/admin/verify-otp",
       "/member/login",
       "/member/refresh",
+      "/member/forgot-password",
+      "/member/reset-password",
     ];
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (skipUrls.includes(originalRequest.url)) {
+      const originalUrl = originalRequest.url || "";
+      if (skipUrls.some((prefix) => originalUrl.startsWith(prefix))) {
         return Promise.reject(error);
       }
 
