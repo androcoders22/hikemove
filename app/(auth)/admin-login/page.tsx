@@ -153,7 +153,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto flex h-16 w-auto items-center justify-center">
-            <img src="/logo.png" alt="HikeMove Logo" className="h-12 w-auto object-contain" />
+            <img src="/hikemovelogo.png" alt="HikeMove Logo" className="h-26 w-auto object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold">
             Sign in to HikeMove Dashboard
