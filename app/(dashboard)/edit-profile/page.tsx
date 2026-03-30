@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { api } from "@/lib/axios";
+import { getMemberStatus } from "@/lib/utils/member-status";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,7 @@ interface UserProfile {
   level: number;
   gender: string;
   status: string;
+  expirationDate?: string | null;
   createdAt?: string;
 }
 
@@ -88,6 +90,7 @@ export default function EditProfile() {
               month: 'short',
               year: 'numeric'
             }) : "No Active",
+            status: getMemberStatus(rawData),
           };
           setProfile(userData);
           setFormData(userData);

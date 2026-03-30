@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getMemberTreeAPI } from "@/lib/api/member";
+import { getMemberStatus } from "@/lib/utils/member-status";
 
 interface TeamRow {
   _id: string;
@@ -33,6 +34,7 @@ interface TeamRow {
   sponsorFullName?: string;
   createdAt: string;
   activationDate: string | null;
+  expirationDate?: string | null;
   status: string;
 }
 
@@ -101,12 +103,12 @@ export default function MyTeam() {
   };
 
   const activeCount = useMemo(
-    () => teamData.filter((m) => m.status.toLowerCase() === "active").length,
+    () => teamData.filter((m) => getMemberStatus(m) === "active").length,
     [teamData],
   );
 
   const inactiveCount = useMemo(
-    () => teamData.filter((m) => m.status.toLowerCase() !== "active").length,
+    () => teamData.filter((m) => getMemberStatus(m) !== "active").length,
     [teamData],
   );
 
@@ -155,7 +157,7 @@ export default function MyTeam() {
         (row.package || "").toLowerCase().includes(query) ||
         sId.toLowerCase().includes(query) ||
         sName.toLowerCase().includes(query) ||
-        row.status.toLowerCase().includes(query)
+        getMemberStatus(row).includes(query)
       );
     });
   }, [teamData, searchTerm]);
@@ -325,15 +327,20 @@ export default function MyTeam() {
                           : "No Active"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${
-                            row.status.toLowerCase() === "active"
-                              ? "bg-emerald-500/10 text-emerald-500"
-                              : "bg-rose-500/10 text-rose-500"
-                          }`}
-                        >
-                          {row.status}
-                        </span>
+                        {(() => {
+                           const calculatedStatus = getMemberStatus(row);
+                           return (
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${
+                                calculatedStatus === "active"
+                                  ? "bg-emerald-500/10 text-emerald-500"
+                                  : "bg-rose-500/10 text-rose-500"
+                              }`}
+                            >
+                              {calculatedStatus}
+                            </span>
+                           );
+                        })()}
                       </TableCell>
                     </TableRow>
                   ))

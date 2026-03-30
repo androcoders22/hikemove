@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDirectMembersAPI } from "@/lib/api/member";
+import { getMemberStatus } from "@/lib/utils/member-status";
 
 interface MemberRow {
   _id: string;
@@ -43,6 +44,7 @@ interface MemberRow {
   };
   createdAt: string;
   activationDate: string | null;
+  expirationDate?: string | null;
   status: string;
   sponsor?: { memberId?: string; fullName?: string } | string;
 }
@@ -90,11 +92,11 @@ export default function MySponsor() {
   }, []);
 
   const activeCount = useMemo(() =>
-    memberData.filter(m => m.status.toLowerCase() === "active").length,
+    memberData.filter(m => getMemberStatus(m) === "active").length,
     [memberData]);
 
   const inactiveCount = useMemo(() =>
-    memberData.filter(m => m.status.toLowerCase() !== "active").length,
+    memberData.filter(m => getMemberStatus(m) !== "active").length,
     [memberData]);
 
   const stats = [
@@ -126,7 +128,7 @@ export default function MySponsor() {
 
     return memberData.filter((row) => {
       // Status filter
-      if (statusFilter !== "all" && row.status.toLowerCase() !== statusFilter) {
+      if (statusFilter !== "all" && getMemberStatus(row) !== statusFilter) {
         return false;
       }
 
@@ -341,14 +343,19 @@ export default function MySponsor() {
                         {row.activationDate ? formatDate(row.activationDate) : "No Active"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${row.status.toLowerCase() === "active"
-                              ? "bg-emerald-500/10 text-emerald-500"
-                              : "bg-rose-500/10 text-rose-500"
-                            }`}
-                        >
-                          {row.status}
-                        </span>
+                        {(() => {
+                           const calculatedStatus = getMemberStatus(row);
+                           return (
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${calculatedStatus === "active"
+                                  ? "bg-emerald-500/10 text-emerald-500"
+                                  : "bg-rose-500/10 text-rose-500"
+                                }`}
+                            >
+                              {calculatedStatus}
+                            </span>
+                           );
+                        })()}
                       </TableCell>
                     </TableRow>
                   ))

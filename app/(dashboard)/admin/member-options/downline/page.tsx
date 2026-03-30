@@ -29,7 +29,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
+import { api } from "@/lib/axios";
 import { getMemberTreeAPI } from "@/lib/api/member";
+import { getMemberStatus } from "@/lib/utils/member-status";
 import { useMemo } from "react";
 
 interface DownlineRow {
@@ -40,6 +42,7 @@ interface DownlineRow {
   package: string;
   createdAt: string;
   activationDate: string | null;
+  expirationDate?: string | null;
   status: string;
   level?: number;
 }
@@ -111,11 +114,11 @@ export default function MemberDownlinePage() {
   const filteredData = useMemo(() => {
     return downlineData.filter((row) => {
       const mName = (row.fullName || "").toLowerCase();
-      const mStatus = (row.status || "").toLowerCase();
+      const calculatedStatus = getMemberStatus(row);
 
       return (
         mName.includes(filters.memberName.toLowerCase()) &&
-        (filters.status === "all" || mStatus === filters.status.toLowerCase())
+        (filters.status === "all" || calculatedStatus === filters.status.toLowerCase())
       );
     });
   }, [downlineData, filters]);
@@ -257,13 +260,14 @@ export default function MemberDownlinePage() {
                         </div>
 
                         <span
-                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${
-                            row.status?.toLowerCase() === "active"
+                          className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${(() => {
+                            const calculatedStatus = getMemberStatus(row);
+                            return calculatedStatus === "active"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                              : "border-amber-200 bg-amber-50 text-amber-700"
-                          }`}
+                              : "border-amber-200 bg-amber-50 text-amber-700";
+                          })()}`}
                         >
-                          {row.status}
+                          {getMemberStatus(row)}
                         </span>
                       </div>
 
@@ -383,13 +387,14 @@ export default function MemberDownlinePage() {
 
                             <TableCell className="px-3 py-2.5 text-right">
                               <span
-                                className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${
-                                  row.status?.toLowerCase() === "active"
+                                className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${(() => {
+                                  const calculatedStatus = getMemberStatus(row);
+                                  return calculatedStatus === "active"
                                     ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                    : "border-amber-200 bg-amber-50 text-amber-700"
-                                }`}
+                                    : "border-amber-200 bg-amber-50 text-amber-700";
+                                })()}`}
                               >
-                                {row.status}
+                                {getMemberStatus(row)}
                               </span>
                             </TableCell>
                           </TableRow>
