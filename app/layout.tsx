@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: "HikeMove Dashboard",
   description: "Wealth Creation Management",
   icons: {
-    icon: "/hikemovefavicon.jpg",
+    icon: "/hikemovefavicon-removebg-preview.png",
   },
 };
 
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" style={{ colorScheme: "light" }}>
       <head>
-        <link rel="icon" href="/hikemovefavicon.jpg" />
+        <link rel="icon" href="/hikemovefavicon-removebg-preview.png" />
         <script src="https://tweakcn.com/live-preview.min.js"></script>
       </head>
       <body

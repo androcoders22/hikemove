@@ -172,8 +172,8 @@ export default function MemberSignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <UserPlus className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto flex h-20 w-auto items-center justify-center">
+            <img src="/hikemovelogo.png" alt="HikeMove Logo" className="h-26 w-auto object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold">Member Sign Up</CardTitle>
           {!isReferralSignup && (

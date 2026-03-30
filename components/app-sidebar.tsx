@@ -27,15 +27,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="h-14">
+            <SidebarMenuButton size="lg" asChild className="h-24 hover:bg-transparent active:bg-transparent">
               <a
                 href={userType === "admin" ? "/admin/tree-view" : "/dashboard"}
                 className="flex items-center gap-3 px-2"
               >
-                <img 
-                  src="/logo.png" 
-                  alt="HikeMove Logo" 
-                  className="h-8 w-auto object-contain brightness-110" 
+                <img
+                  src="/hikemovelogo.png"
+                  alt="HikeMove Logo"
+                  className="h-32 w-full object-contain brightness-100"
                 />
               </a>
             </SidebarMenuButton>
