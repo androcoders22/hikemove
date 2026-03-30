@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   ArrowRight,
   Loader2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -274,7 +275,7 @@ export default function MemberTopUp() {
                 ACTIVATE MEMBER
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[400px] p-0 border-border bg-background shadow-2xl overflow-hidden rounded-2xl [&>button]:top-3 [&>button]:right-3 [&>button]:text-primary-foreground [&>button]:opacity-70 [&>button]:hover:opacity-100">
+            <DialogContent className="!fixed !top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2 w-[90vw] sm:max-w-[400px] p-0 border-border bg-background shadow-2xl overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
               <div className="bg-primary p-4 pb-3 text-primary-foreground relative">
                 <div className="flex items-center gap-2 mb-1">
                   <ShieldCheck className="h-5 w-5 opacity-80" />
@@ -282,6 +283,14 @@ export default function MemberTopUp() {
                     New Activation
                   </DialogTitle>
                 </div>
+                
+                <button
+                  type="button"
+                  onClick={() => setIsActivationOpen(false)}
+                  className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
+                >
+                  <X className="h-4 w-4" />
+                </button>
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] uppercase font-bold tracking-widest opacity-70">
                     Secured transaction protocol
@@ -297,106 +306,107 @@ export default function MemberTopUp() {
                 </div>
               </div>
 
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="p-5 space-y-4"
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="package"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <FormLabel className="text-[10px] m-0 font-black uppercase tracking-widest text-muted-foreground">
-                            Select Package
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            value={field.value}
-                          >
+              <div className="flex-1 overflow-y-auto">
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="p-5 space-y-4"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="package"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[10px] m-0 font-black uppercase tracking-widest text-muted-foreground">
+                              Select Package
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="h-9 font-bold border-border bg-muted/30 focus:ring-0 rounded-lg w-full">
+                                  <SelectValue placeholder="Amount" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="rounded-xl border-border">
+                                {Object.values(PackageType).map((pkg) => (
+                                  <SelectItem
+                                    key={pkg}
+                                    value={pkg}
+                                    className="font-bold cursor-pointer"
+                                  >
+                                    ${pkg}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="memberId"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1.5">
+                            <FormLabel className="text-[10px] m-0 font-black uppercase tracking-widest text-muted-foreground">
+                              Member Id
+                            </FormLabel>
                             <FormControl>
-                              <SelectTrigger className="h-9 font-bold border-border bg-muted/30 focus:ring-0 rounded-lg w-full">
-                                <SelectValue placeholder="Amount" />
-                              </SelectTrigger>
+                              <Input
+                                placeholder="HM..."
+                                className="h-9 font-bold border-border bg-muted/30 focus:ring-0 rounded-lg uppercase"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(e.target.value.toUpperCase())
+                                }
+                              />
                             </FormControl>
-                            <SelectContent className="rounded-xl border-border">
-                              {Object.values(PackageType).map((pkg) => (
-                                <SelectItem
-                                  key={pkg}
-                                  value={pkg}
-                                  className="font-bold cursor-pointer"
-                                >
-                                  ${pkg}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="memberId"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1.5">
-                          <FormLabel className="text-[10px] m-0 font-black uppercase tracking-widest text-muted-foreground">
-                            Member Id
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="HM..."
-                              className="h-9 font-bold border-border bg-muted/30 focus:ring-0 rounded-lg uppercase"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(e.target.value.toUpperCase())
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage className="text-[10px]" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5 bg-muted/30 p-3 rounded-xl border border-border/50">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      Validated Name
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      {isCheckingMember ? (
-                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                      ) : (
-                        <div
-                          className={`h-2 w-2 rounded-full ${memberName ? "bg-emerald-500" : "bg-muted-foreground/30"} animate-pulse`}
-                        ></div>
-                      )}
-                      <span className="text-sm font-black text-foreground truncate">
-                        {isCheckingMember
-                          ? "Checking..."
-                          : memberName || "No member found..."}
-                      </span>
+                            <FormMessage className="text-[10px]" />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  </div>
-                </form>
-              </Form>
 
-              <div className="px-5 pb-5">
-                {form.formState.errors.package && (
-                  <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <p className="text-[10px] font-bold text-destructive">
-                      {form.formState.errors.package.message}
-                    </p>
-                  </div>
-                )}
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  onClick={form.handleSubmit(onSubmit)}
-                  className="w-full h-11 font-black text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 "
-                >
+                    <div className="space-y-1.5 bg-muted/30 p-3 rounded-xl border border-border/50">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        Validated Name
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        {isCheckingMember ? (
+                          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        ) : (
+                          <div
+                            className={`h-2 w-2 rounded-full ${memberName ? "bg-emerald-500" : "bg-muted-foreground/30"} animate-pulse`}
+                          ></div>
+                        )}
+                        <span className="text-sm font-black text-foreground truncate">
+                          {isCheckingMember
+                            ? "Checking..."
+                            : memberName || "No member found..."}
+                        </span>
+                      </div>
+                    </div>
+                  </form>
+                </Form>
+
+                <div className="px-5 pb-5">
+                  {form.formState.errors.package && (
+                    <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded-lg">
+                      <p className="text-[10px] font-bold text-destructive">
+                        {form.formState.errors.package.message}
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    onClick={form.handleSubmit(onSubmit)}
+                    className="w-full h-11 font-black text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 "
+                  >
                   {isSubmitting ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : null}
@@ -404,7 +414,8 @@ export default function MemberTopUp() {
                   {!isSubmitting && <ArrowRight className="h-4 w-4 ml-2" />}
                 </Button>
               </div>
-            </DialogContent>
+            </div>
+          </DialogContent>
           </Dialog>
         </div>
 
