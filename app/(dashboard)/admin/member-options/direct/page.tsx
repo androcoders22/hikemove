@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import toast from "react-hot-toast";
 import { api } from "@/lib/axios";
+import { getMemberStatus } from "@/lib/utils/member-status";
 import {
     Select,
     SelectContent,
@@ -36,6 +37,7 @@ interface DirectRow {
     };
     createdAt: string;
     activationDate: string | null;
+    expirationDate?: string | null;
     status: string;
 }
 
@@ -101,11 +103,11 @@ export default function MyDirectPage() {
         return directData.filter((row) => {
             const mId = (row.memberId || "").toLowerCase();
             const mName = (row.fullName || "").toLowerCase();
-            const mStatus = (row.status || "").toLowerCase();
+            const calculatedStatus = getMemberStatus(row);
 
             return (
                 mName.includes(filters.memberName.toLowerCase()) &&
-                (filters.status === "all" || mStatus === filters.status.toLowerCase())
+                (filters.status === "all" || calculatedStatus === filters.status.toLowerCase())
             );
         });
     }, [directData, filters]);
@@ -245,12 +247,14 @@ export default function MyDirectPage() {
                                                 </div>
 
                                                 <span
-                                                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${row.status?.toLowerCase() === "active"
-                                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                                        : "border-amber-200 bg-amber-50 text-amber-700"
-                                                        }`}
+                                                    className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${(() => {
+                                                        const calculatedStatus = getMemberStatus(row);
+                                                        return calculatedStatus === "active"
+                                                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                            : "border-amber-200 bg-amber-50 text-amber-700";
+                                                    })()}`}
                                                 >
-                                                    {row.status}
+                                                    {getMemberStatus(row)}
                                                 </span>
                                             </div>
 
@@ -364,12 +368,14 @@ export default function MyDirectPage() {
 
                                                         <TableCell className="px-3 py-2.5 text-right">
                                                             <span
-                                                                className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${row.status?.toLowerCase() === "active"
-                                                                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                                                                    : "border-amber-200 bg-amber-50 text-amber-700"
-                                                                    }`}
+                                                                className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${(() => {
+                                                                    const calculatedStatus = getMemberStatus(row);
+                                                                    return calculatedStatus === "active"
+                                                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                                        : "border-amber-200 bg-amber-50 text-amber-700";
+                                                                })()}`}
                                                             >
-                                                                {row.status}
+                                                                {getMemberStatus(row)}
                                                             </span>
                                                         </TableCell>
                                                     </TableRow>

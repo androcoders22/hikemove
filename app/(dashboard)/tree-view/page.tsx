@@ -16,6 +16,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { getMemberTreeAPI } from "@/lib/api/member";
+import { getMemberStatus } from "@/lib/utils/member-status";
 
 interface PersonData {
   name?: string;
@@ -221,7 +222,7 @@ function TreeViewCanvas() {
           role: nodeData.level !== undefined ? `Level ${nodeData.level}` : (nodeData.role || ""),
           phone: nodeData.phone || nodeData.mobile || nodeData.contactNo || "",
           avatar: nodeData.avatar || (nodeData.gender === "female" ? "/avatars/female_avatar.png" : "/avatars/male_avatar.png"),
-          status: nodeData.status || "Inactive",
+          status: getMemberStatus(nodeData),
         },
       });
 

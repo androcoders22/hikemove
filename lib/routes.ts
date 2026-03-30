@@ -21,6 +21,7 @@ import {
   CircleDollarSign,
   LogOut,
   LayoutGrid,
+  Package,
 } from "lucide-react";
 
 export interface NavItem {
@@ -134,6 +135,7 @@ export const memberPaths: NavGroup[] = [
       { title: "View Profile", url: "/edit-profile", icon: User },
       { title: "Deposit Activity", url: "/deposit-activity", icon: PiggyBank },
       { title: "Member Top Up", url: "/member-top-up", icon: ArrowUpCircle },
+      { title: "Member Package", url: "/member-package", icon: Package },
     ],
   },
   {

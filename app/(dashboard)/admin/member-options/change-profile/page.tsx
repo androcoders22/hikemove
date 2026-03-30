@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { UserCog, Search, Save } from "lucide-react";
 import { checkMemberIdAPI } from "@/lib/api/member";
+import { getMemberStatus } from "@/lib/utils/member-status";
 
 const toTitleCase = (key: string) => {
     return key
@@ -50,6 +51,10 @@ const getDisplayValue = (key: string, value: unknown, fullData: Record<string, u
                 : "");
 
         return sponsorMemberId || "N/A";
+    }
+
+    if (normalizedKey === "status") {
+        return getMemberStatus(fullData as any);
     }
 
     return formatValue(value);
