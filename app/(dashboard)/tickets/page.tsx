@@ -11,7 +11,8 @@ import {
   Image as ImageIcon,
   Loader2,
   XCircle,
-  Eye
+  Eye,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -197,27 +198,36 @@ export default function TicketSystem() {
                 CREATE TICKET
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[450px] rounded-2xl border-border bg-background p-0 overflow-hidden">
-              <DialogHeader className="p-3 bg-muted/30 border-b border-border">
-                <DialogTitle className="text-lg font-black uppercase tracking-tight">
+            <DialogContent className="!fixed !top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2 w-[90vw] sm:max-w-[450px] rounded-2xl border-border bg-background p-0 overflow-hidden relative flex flex-col max-h-[90vh] shadow-2xl">
+              <DialogHeader className="p-4 bg-muted/30 border-b border-border flex-shrink-0">
+                <DialogTitle className="text-lg font-black uppercase tracking-tight text-center sm:text-left">
                   New Support Ticket
                 </DialogTitle>
-                <DialogDescription className="text-xs font-bold text-muted-foreground uppercase opacity-70">
+                <DialogDescription className="text-xs font-bold text-muted-foreground uppercase opacity-70 text-center sm:text-left">
                   Select a category and describe your issue
                 </DialogDescription>
+                
+                <button
+                  type="button"
+                  onClick={() => setIsNewTicketOpen(false)}
+                  className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground transition hover:bg-muted"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-5">
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest">
-                    Choose Problem Type
-                  </Label>
-                  <Select
-                    onValueChange={(val) =>
-                      setFormData({ ...formData, problemType: val })
-                    }
-                    value={formData.problemType}
-                  >
+              <div className="overflow-y-auto p-4 md:p-6 pb-6">
+                <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest">
+                      Choose Problem Type
+                    </Label>
+                    <Select
+                      onValueChange={(val) =>
+                        setFormData({ ...formData, problemType: val })
+                      }
+                      value={formData.problemType}
+                    >
                     <SelectTrigger className="h-11 w-full font-bold">
                       <SelectValue placeholder="Select type..." />
                     </SelectTrigger>
@@ -292,7 +302,8 @@ export default function TicketSystem() {
                 >
                   {isSubmitting ? "Submitting..." : "Submit Ticket"}
                 </Button>
-              </form>
+                </form>
+              </div>
             </DialogContent>
           </Dialog>
         </div>

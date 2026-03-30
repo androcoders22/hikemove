@@ -226,13 +226,13 @@ export default function DepositActivity() {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="!max-w-[1100px] w-full p-0 overflow-hidden rounded-2xl border border-[#dcf0c5] bg-[#fdfefc] shadow-xl">
-              <div className="relative border-b border-[#dcf0c5] bg-[#f4faef] px-6 py-4">
-                <DialogHeader className="space-y-1 pr-12">
-                  <DialogTitle className="text-lg font-black uppercase tracking-tight text-[#42523d]">
+            <DialogContent className="!fixed !top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2 max-w-[1100px] w-[90vw] md:w-full p-0 overflow-hidden rounded-2xl border border-[#dcf0c5] bg-[#fdfefc] shadow-xl flex flex-col max-h-[90vh]">
+              <div className="relative border-b border-[#dcf0c5] bg-[#f4faef] px-4 py-3 md:px-6 md:py-4 flex-shrink-0">
+                <DialogHeader className="space-y-0.5 md:space-y-1 pr-10 md:pr-12">
+                  <DialogTitle className="text-base md:text-lg font-black uppercase tracking-tight text-[#42523d]">
                     ADD FUND
                   </DialogTitle>
-                  <DialogDescription className="text-[10px] font-bold text-[#8ba27d] uppercase tracking-wider opacity-100">
+                  <DialogDescription className="text-[9px] md:text-[10px] font-bold text-[#8ba27d] uppercase tracking-wider opacity-100">
                     Transfer USDT (BEP 20) to the address below
                   </DialogDescription>
                 </DialogHeader>
@@ -240,24 +240,24 @@ export default function DepositActivity() {
                 <button
                   type="button"
                   onClick={() => setIsAddFundOpen(false)}
-                  className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#dcf0c5] bg-white text-[#56684f] transition hover:bg-[#eef8e7]"
+                  className="absolute right-3 top-3 md:right-4 md:top-4 inline-flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-full border border-[#dcf0c5] bg-white text-[#56684f] transition hover:bg-[#eef8e7]"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3 md:h-4 md:w-4" />
                 </button>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 md:p-6 overflow-y-auto">
                 <form
                   onSubmit={handleSubmit(onSubmit)}
-                  className="flex flex-col gap-6"
+                  className="flex flex-col gap-4 md:gap-6"
                 >
                   <div className="flex flex-col lg:flex-row gap-6">
                     {/* LEFT QR SECTION */}
-                    <div className="w-full lg:w-[420px] lg:flex-shrink-0 border border-[#dcf0c5] rounded-xl p-8 flex flex-col items-center justify-center bg-white min-h-[360px]">
+                    <div className="w-full lg:w-[420px] lg:flex-shrink-0 border border-[#dcf0c5] rounded-xl p-4 md:p-6 flex flex-col items-center justify-center bg-white min-h-[260px] md:min-h-[360px]">
                       {isPaymentInfoLoading ? (
-                        <div className="flex flex-col items-center justify-center gap-3 min-h-[224px]">
-                          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                          <p className="text-[10px] font-black text-[#56684f] uppercase tracking-widest">
+                        <div className="flex flex-col items-center justify-center gap-2 min-h-[200px]">
+                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                          <p className="text-[9px] font-black text-[#56684f] uppercase tracking-widest">
                             Loading payment info...
                           </p>
                         </div>
@@ -265,25 +265,25 @@ export default function DepositActivity() {
                         <img
                           src={paymentQrUrl}
                           alt="QR Code"
-                          className="w-56 h-56 object-contain"
+                          className="w-32 h-32 md:w-52 md:h-52 object-contain"
                         />
                       ) : (
-                        <div className="w-56 h-56 border border-dashed border-[#dcf0c5] rounded-lg flex items-center justify-center text-[#8ba27d] text-xs font-bold uppercase tracking-widest text-center px-4">
+                        <div className="w-32 h-32 md:w-52 md:h-52 border border-dashed border-[#dcf0c5] rounded-lg flex items-center justify-center text-[#8ba27d] text-[10px] font-bold uppercase tracking-widest text-center px-4">
                           QR Not Available
                         </div>
                       )}
 
-                      <p className="mt-5 text-sm font-medium text-black text-center break-all max-w-[320px]">
+                      <p className="mt-4 text-[10px] md:text-sm font-medium text-black text-center break-all max-w-[280px] md:max-w-[320px]">
                         {paymentAddress || "Payment address not available"}
                       </p>
                     </div>
 
                     {/* RIGHT FORM SECTION */}
-                    <div className="flex-1 space-y-5">
-                      <div className="space-y-2">
+                    <div className="flex-1 space-y-3 md:space-y-5">
+                      <div className="space-y-1.5 md:space-y-2">
                         <Label
                           htmlFor="amount"
-                          className={`text-[10px] font-black uppercase tracking-widest ${
+                          className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${
                             errors.amount ? "text-red-500" : "text-[#56684f]"
                           }`}
                         >
@@ -294,21 +294,21 @@ export default function DepositActivity() {
                           type="number"
                           placeholder="0.00"
                           {...register("amount")}
-                          className={`h-12 bg-white border-[#dcf0c5] text-[#42523d] font-semibold focus-visible:ring-[#62b01a]/30 ${
+                          className={`h-11 md:h-12 bg-white border-[#dcf0c5] text-[#42523d] font-semibold focus-visible:ring-[#62b01a]/30 ${
                             errors.amount ? "border-red-500" : ""
                           }`}
                         />
                         {errors.amount && (
-                          <p className="text-xs text-red-500">
+                          <p className="text-[10px] text-red-500">
                             {errors.amount.message}
                           </p>
                         )}
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-1.5 md:space-y-2">
                         <Label
                           htmlFor="transactionHash"
-                          className={`text-[10px] font-black uppercase tracking-widest ${
+                          className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${
                             errors.transactionHash
                               ? "text-red-500"
                               : "text-[#56684f]"
@@ -320,23 +320,23 @@ export default function DepositActivity() {
                           id="transactionHash"
                           placeholder="6777997a5421f...."
                           {...register("transactionHash")}
-                          className={`h-12 bg-white border-[#dcf0c5] text-[#42523d] font-mono text-sm focus-visible:ring-[#62b01a]/30 ${
+                          className={`h-11 md:h-12 bg-white border-[#dcf0c5] text-[#42523d] font-mono text-sm focus-visible:ring-[#62b01a]/30 ${
                             errors.transactionHash ? "border-red-500" : ""
                           }`}
                         />
                         {errors.transactionHash && (
-                          <p className="text-xs text-red-500">
+                          <p className="text-[10px] text-red-500">
                             {errors.transactionHash.message}
                           </p>
                         )}
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#56684f]">
+                      <div className="space-y-1.5 md:space-y-2">
+                        <Label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#56684f]">
                           Transaction Screenshot
                         </Label>
 
-                        <div className="relative min-h-[170px] rounded-xl border-2 border-dashed border-[#dcf0c5] bg-[#fafdf8] p-4 text-center cursor-pointer hover:bg-[#f4faef] transition-colors flex items-center justify-center">
+                        <div className="relative min-h-[140px] md:min-h-[170px] rounded-xl border-2 border-dashed border-[#dcf0c5] bg-[#fafdf8] p-3 md:p-4 text-center cursor-pointer hover:bg-[#f4faef] transition-colors flex items-center justify-center">
                           <input
                             type="file"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
@@ -345,9 +345,9 @@ export default function DepositActivity() {
                             }
                           />
 
-                          <div className="flex flex-col items-center gap-2">
-                            <Upload className="h-5 w-5 text-[#62b01a]" />
-                            <span className="text-[10px] font-black text-[#56684f] uppercase tracking-widest text-center">
+                          <div className="flex flex-col items-center gap-1.5 md:gap-2">
+                            <Upload className="h-4 w-4 md:h-5 md:w-5 text-[#62b01a]" />
+                            <span className="text-[9px] md:text-[10px] font-black text-[#56684f] uppercase tracking-widest text-center">
                               {watchScreenshot
                                 ? watchScreenshot.name
                                 : "Click to upload screenshot"}
@@ -361,7 +361,7 @@ export default function DepositActivity() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 text-sm font-black uppercase tracking-widest bg-[#62b01a] hover:bg-[#539714] text-white shadow-lg shadow-[#62b01a]/20 rounded-lg"
+                    className="w-full h-11 md:h-12 text-sm font-black uppercase tracking-widest bg-[#62b01a] hover:bg-[#539714] text-white shadow-lg shadow-[#62b01a]/20 rounded-lg"
                   >
                     {isSubmitting ? "Submitting..." : "Verify & Submit"}
                   </Button>
