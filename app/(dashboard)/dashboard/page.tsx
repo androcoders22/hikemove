@@ -35,6 +35,8 @@ interface DashboardData {
   charts: {
     weeklyIncome: Array<{ day: string; amount: number }>;
   };
+  totalBalance?: number;
+  total_balance?: number;
 }
 
 const iconMap: Record<string, React.ElementType> = {
@@ -46,6 +48,7 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 import { PageHeader } from "@/components/page-header";
+import { getMemberDashboardAPI } from "@/lib/api/dashboard";
 import { getWalletAPI } from "@/lib/api/wallet";
 
 export default function DashboardPage() {
@@ -53,22 +56,116 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [referralLink, setReferralLink] = useState("");
 
+  const buildStatsFromPayload = (payload: any) => {
+    if (!payload) return [];
+
+    const stats = [
+      {
+        id: "total-package-amount",
+        label: "Total Package",
+        value: payload.totalPackageAmount ?? 0,
+        type: "currency",
+        icon: "dollar-sign",
+        color: "primary",
+      },
+      {
+        id: "my-sponsor",
+        label: "My Sponsor",
+        value: payload.mySponsor ?? 0,
+        type: "number",
+        icon: "users",
+        color: "primary",
+      },
+      {
+        id: "my-team",
+        label: "My Team",
+        value: payload.myTeam ?? 0,
+        type: "number",
+        icon: "users",
+        color: "primary",
+      },
+      {
+        id: "sponsor-bonus",
+        label: "Sponsor Bonus",
+        value: payload.sponsorBonus ?? 0,
+        type: "currency",
+        icon: "award",
+        color: "primary",
+      },
+      {
+        id: "team-level-bonus",
+        label: "Team Level Bonus",
+        value: payload.teamLevelBonus ?? 0,
+        type: "currency",
+        icon: "award",
+        color: "primary",
+      },
+      {
+        id: "weekly-income-bonus",
+        label: "Weekly Income",
+        value: payload.weeklyIncomeBonus ?? 0,
+        type: "currency",
+        icon: "award",
+        color: "primary",
+      },
+      {
+        id: "level-profit-bonus",
+        label: "Level Profit",
+        value: payload.levelProfitBonus ?? 0,
+        type: "currency",
+        icon: "award",
+        color: "primary",
+      },
+      {
+        id: "total-bonus",
+        label: "Total Bonus",
+        value: payload.totalBonus ?? 0,
+        type: "currency",
+        icon: "award",
+        color: "primary",
+      },
+      {
+        id: "deposit-balance",
+        label: "Deposit Balance",
+        value: payload.depositBalance ?? 0,
+        type: "currency",
+        icon: "wallet",
+        color: "primary",
+      },
+      {
+        id: "income-balance",
+        label: "Income Balance",
+        value: payload.incomeBalance ?? 0,
+        type: "currency",
+        icon: "wallet",
+        color: "primary",
+      },
+    ];
+
+    return stats;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [dashboardRes, walletRes] = await Promise.all([
-          fetch("/data/dashboard.json").then(res => res.json()),
-          getWalletAPI().catch(() => null)
+          getMemberDashboardAPI(),
+          getWalletAPI().catch(() => null),
         ]);
 
-        let finalData = dashboardRes;
+        const dashboardPayload = dashboardRes?.data?.data ?? dashboardRes?.data;
+        if (!dashboardPayload) {
+          throw new Error("Dashboard payload missing");
+        }
+
+        let finalData = dashboardPayload;
 
         const wallet = walletRes?.data?.data;
 
-        if (walletRes?.data?.status && wallet) {
+        if (walletRes?.data?.status && wallet && Array.isArray(finalData.stats)) {
           finalData = {
-            ...dashboardRes,
-            stats: dashboardRes.stats.map((stat: any) => {
+            ...finalData,
+            stats: finalData.stats.map((stat: any) => {
               if (stat.id === "credit-wallet") {
                 return { ...stat, value: wallet.depositBalance ?? 0 };
               }
@@ -77,12 +174,47 @@ export default function DashboardPage() {
               }
               return stat;
             }),
-            // Use depositBalance as the "Total Profits" for this demo as per user's request focus
-            totalBalance: wallet.depositBalance ?? 0
+            totalBalance:
+              finalData.totalBalance ??
+              finalData.total_balance ??
+              wallet.depositBalance ??
+              0,
           };
         }
 
-        setData(finalData);
+        if (finalData?.referralLink) {
+          setReferralLink(finalData.referralLink);
+        }
+
+        const weeklyIncomeHistory = Array.isArray(finalData?.weeklyIncomeHistory)
+          ? finalData.weeklyIncomeHistory
+          : [];
+
+        const normalizedWeeklyIncome = Array.isArray(finalData?.charts?.weeklyIncome)
+          ? finalData.charts.weeklyIncome
+          : weeklyIncomeHistory.map((amount: number, index: number) => ({
+              day: `D${index + 1}`,
+              amount,
+            }));
+
+        const normalizedData: DashboardData = {
+          referralLink: finalData?.referralLink ?? "",
+          stats: Array.isArray(finalData?.stats)
+            ? finalData.stats
+            : buildStatsFromPayload(finalData),
+          charts: {
+            weeklyIncome: normalizedWeeklyIncome,
+          },
+          totalBalance:
+            finalData?.totalBalance ??
+            finalData?.total_balance ??
+            finalData?.totalBonus ??
+            finalData?.incomeBalance ??
+            finalData?.depositBalance,
+          total_balance: finalData?.total_balance,
+        };
+
+        setData(normalizedData);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -195,7 +327,7 @@ export default function DashboardPage() {
           <div className="h-[200px] sm:h-[280px] w-full px-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
-                data={data.charts.weeklyIncome}
+                data={data.charts?.weeklyIncome ?? []}
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
                 <defs>
