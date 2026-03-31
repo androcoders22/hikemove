@@ -261,7 +261,7 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="flex flex-col selection:bg-primary/10 selection:text-primary">
+    <div className="flex flex-col min-h-screen w-full overflow-y-auto overflow-x-hidden bg-background pb-8 selection:bg-primary/10 selection:text-primary">
       <PageHeader
         title="Dashboard"
         breadcrumbs={[{ title: "App", href: "#" }, { title: "Dashboard" }]}
@@ -404,7 +404,7 @@ export default function DashboardPage() {
             return (
               <div
                 key={stat.id}
-                className={`p-3 sm:p-4 group hover:bg-accent transition-colors border-r border-border last:border-r-0 ${idx >= 6 ? "hidden md:block" : ""}`}
+                className="p-3 sm:p-4 group hover:bg-accent transition-colors border-r border-border last:border-r-0"
               >
                 <div className="flex items-center justify-between mb-2 sm:mb-3">
                   <div className="p-1.5 rounded-md bg-background text-muted-foreground border border-border group-hover:text-primary group-hover:border-primary/30 transition-colors">
