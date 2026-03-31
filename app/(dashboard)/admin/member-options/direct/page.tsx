@@ -29,7 +29,6 @@ interface DirectRow {
     _id: string;
     memberId: string;
     fullName: string;
-    package: string;
     sponsorId?: {
         _id: string;
         fullName: string;
@@ -259,16 +258,7 @@ export default function MyDirectPage() {
                                             </div>
 
                                             <div className="space-y-2 border-t border-[#e7efdf] pt-2">
-                                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                                                    <div className="rounded-md bg-white p-2 text-center">
-                                                        <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
-                                                            Package
-                                                        </p>
-                                                        <p className="mt-1 text-[11px] font-bold text-amber-700">
-                                                            {row.package || "N/A"}
-                                                        </p>
-                                                    </div>
-
+                                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                                     <div className="rounded-md bg-white p-2 text-center">
                                                         <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
                                                             Joining Date
@@ -310,9 +300,6 @@ export default function MyDirectPage() {
                                                         Member Name
                                                     </TableHead>
                                                     <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
-                                                        Package
-                                                    </TableHead>
-                                                    <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
                                                         Joining Date
                                                     </TableHead>
                                                     <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
@@ -340,18 +327,9 @@ export default function MyDirectPage() {
                                                             </div>
                                                         </TableCell>
 
-                                                        <TableCell className="px-3 py-2.5">
-                                                            <div className="text-xs font-medium text-[#5f6851]">
-                                                                {row.fullName}
-                                                            </div>
+                                                        <TableCell className="px-3 py-2.5 text-xs font-medium text-[#5f6851]">
+                                                            {row.fullName}
                                                         </TableCell>
-
-                                                        <TableCell className="px-3 py-2.5">
-                                                            <span className="inline-flex rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                                                                {row.package || "N/A"}
-                                                            </span>
-                                                        </TableCell>
-
                                                         <TableCell className="px-3 py-2.5">
                                                             <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
                                                                 <Clock className="h-3 w-3" />
