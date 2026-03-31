@@ -272,12 +272,6 @@ export default function MyTeam() {
                     Member Name
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Sponsor Id
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Sponsor Name
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Join Date
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest border-r border-border/10">
@@ -306,12 +300,6 @@ export default function MyTeam() {
                         {row.fullName}
                       </TableCell>
 
-                      <TableCell className="text-xs font-bold text-primary/80">
-                        {row.sponsorMemberId || "N/A"}
-                      </TableCell>
-                      <TableCell className="text-xs font-medium text-foreground/80">
-                        {row.sponsorFullName || "N/A"}
-                      </TableCell>
                       <TableCell className="text-[10px] font-medium text-muted-foreground">
                         {formatDate(row.createdAt)}
                       </TableCell>
