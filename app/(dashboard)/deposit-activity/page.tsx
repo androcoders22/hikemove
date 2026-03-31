@@ -226,8 +226,8 @@ export default function DepositActivity() {
               </Button>
             </DialogTrigger>
 
-            <DialogContent className="!fixed !top-1/2 !left-1/2 !-translate-x-1/2 !-translate-y-1/2 max-w-[1100px] w-[90vw] md:w-full p-0 overflow-hidden rounded-2xl border border-[#dcf0c5] bg-[#fdfefc] shadow-xl flex flex-col max-h-[90vh]">
-              <div className="relative border-b border-[#dcf0c5] bg-[#f4faef] px-4 py-3 md:px-6 md:py-4 flex-shrink-0">
+            <DialogContent className="fixed! top-1/2! left-1/2! -translate-x-1/2! -translate-y-1/2! max-w-275 w-[90vw] md:w-full md:max-w-6xl p-0 overflow-hidden rounded-2xl border border-[#dcf0c5] bg-[#fdfefc] shadow-xl flex flex-col max-h-[90vh]">
+              <div className="relative border-b border-[#dcf0c5] bg-[#f4faef] px-4 py-3 md:px-6 md:py-4 shrink-0">
                 <DialogHeader className="space-y-0.5 md:space-y-1 pr-10 md:pr-12">
                   <DialogTitle className="text-base md:text-lg font-black uppercase tracking-tight text-[#42523d]">
                     ADD FUND
