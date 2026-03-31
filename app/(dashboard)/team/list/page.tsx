@@ -272,9 +272,6 @@ export default function MyTeam() {
                     Member Name
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Current Package
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Sponsor Id
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
@@ -309,9 +306,6 @@ export default function MyTeam() {
                         {row.fullName}
                       </TableCell>
 
-                      <TableCell className="text-xs font-black text-foreground">
-                        {row.package ? `$ ${row.package}` : "N/A"}
-                      </TableCell>
                       <TableCell className="text-xs font-bold text-primary/80">
                         {row.sponsorMemberId || "N/A"}
                       </TableCell>
@@ -347,7 +341,7 @@ export default function MyTeam() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={9}
+                      colSpan={8}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No team member found.

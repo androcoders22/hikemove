@@ -33,7 +33,7 @@ interface DashboardData {
     color: string;
   }>;
   charts: {
-    weeklyIncome: Array<{ day: string; amount: number }>;
+    weeklyIncome: Array<{ week: string; amount: number }>;
   };
   totalBalance?: number;
   total_balance?: number;
@@ -191,11 +191,14 @@ export default function DashboardPage() {
           : [];
 
         const normalizedWeeklyIncome = Array.isArray(finalData?.charts?.weeklyIncome)
-          ? finalData.charts.weeklyIncome
+          ? finalData.charts.weeklyIncome.map((item: any) => ({
+            week: item.week || item.day || "",
+            amount: item.amount,
+          }))
           : weeklyIncomeHistory.map((amount: number, index: number) => ({
-              day: `D${index + 1}`,
-              amount,
-            }));
+            week: `W${index + 1}`,
+            amount,
+          }));
 
         const normalizedData: DashboardData = {
           referralLink: finalData?.referralLink ?? "",
@@ -238,7 +241,7 @@ export default function DashboardPage() {
           }
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
 
@@ -287,7 +290,7 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+        {/* <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
           <Button
             size="sm"
             variant="outline"
@@ -298,7 +301,7 @@ export default function DashboardPage() {
           <Button size="sm" className="h-7 text-[10px] font-bold px-3 flex-1 sm:flex-initial">
             SHARE
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="flex flex-col">
@@ -314,10 +317,10 @@ export default function DashboardPage() {
               </h2>
             </div>
             <div className="flex gap-1 flex-wrap">
-              {["1D", "7D", "1M", "1Y", "ALL"].map((range) => (
+              {["Weekly Income"].map((range) => (
                 <button
                   key={range}
-                  className={`px-2.5 py-1 text-[10px] font-bold rounded transition-colors ${range === "7D" ? "bg-background text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`px-2.5 py-1 text-[10px] font-bold rounded transition-colors ${range === "Weekly Income" ? "bg-background text-primary shadow-sm border border-border" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   {range}
                 </button>
@@ -350,7 +353,7 @@ export default function DashboardPage() {
                   stroke="var(--border)"
                 />
                 <XAxis
-                  dataKey="day"
+                  dataKey="week"
                   axisLine={false}
                   tickLine={false}
                   tick={{
