@@ -123,9 +123,8 @@ export default function WalletHistory() {
             {error}
           </div>
         )}
-
         {/* Wallet Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
           <Card className="border-[#dce8d3] bg-white shadow-sm overflow-hidden group">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -158,7 +157,7 @@ export default function WalletHistory() {
             </CardContent>
           </Card>
 
-          <Card className="border-emerald-100 bg-white shadow-sm overflow-hidden group">
+          {/* <Card className="border-emerald-100 bg-white shadow-sm overflow-hidden group">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -172,9 +171,9 @@ export default function WalletHistory() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
-          <Card className="border-[#dce8d3] bg-white shadow-sm overflow-hidden group">
+          {/* <Card className="border-[#dce8d3] bg-white shadow-sm overflow-hidden group">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -188,7 +187,7 @@ export default function WalletHistory() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">

@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getMemberTreeAPI } from "@/lib/api/member";
@@ -36,6 +37,7 @@ interface TeamRow {
   activationDate: string | null;
   expirationDate?: string | null;
   status: string;
+  level?: number;
 }
 
 export default function MyTeam() {
@@ -92,11 +94,13 @@ export default function MyTeam() {
     fetchData();
   }, []);
 
-  const flattenTree = (node: any): any[] => {
-    let result: any[] = [node];
+  const flattenTree = (node: any, currentLevel: number = 0): any[] => {
+    const resolvedLevel =
+      typeof node.level === "number" ? node.level : currentLevel;
+    let result: any[] = [{ ...node, level: resolvedLevel }];
     if (node.downlines && Array.isArray(node.downlines)) {
       node.downlines.forEach((child: any) => {
-        result = [...result, ...flattenTree(child)];
+        result = [...result, ...flattenTree(child, resolvedLevel + 1)];
       });
     }
     return result;
@@ -277,6 +281,9 @@ export default function MyTeam() {
                   <TableHead className="text-[10px] font-black uppercase tracking-widest border-r border-border/10">
                     Activation Date
                   </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">
+                    Level
+                  </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">
                     Status
                   </TableHead>
@@ -307,6 +314,11 @@ export default function MyTeam() {
                         {row.activationDate
                           ? formatDate(row.activationDate)
                           : "No Active"}
+                      </TableCell>
+                      <TableCell className="text-center font-black text-xs text-primary">
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold">
+                          Lvl {row.level || 0}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         {(() => {

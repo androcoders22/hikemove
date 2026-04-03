@@ -21,6 +21,7 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+import Link from "next/link";
 
 interface DashboardData {
   referralLink: string;
@@ -259,6 +260,19 @@ export default function DashboardPage() {
     return stat.value;
   };
 
+  const statLinks: Record<string, string> = {
+    "total-package-amount": "/member-package",
+    "my-sponsor": "/team/sponsor",
+    "my-team": "/team/level-wise",
+    "sponsor-bonus": "/bonus/sponsor",
+    "team-level-bonus": "/bonus/team-level",
+    "weekly-income-bonus": "/bonus/weekly-profit",
+    "level-profit-bonus": "/bonus/level-profit",
+    "total-bonus": "/withdrawal/wallet-history",
+    "deposit-balance": "/withdrawal/wallet-history",
+    "income-balance": "/member-request",
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen w-full overflow-y-auto overflow-x-hidden bg-background pb-8 selection:bg-primary/10 selection:text-primary">
@@ -313,7 +327,7 @@ export default function DashboardPage() {
                 Total Profits
               </p>
               <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-                ${(data as any).totalBalance ? (data as any).totalBalance.toLocaleString() : "1,224.75"}
+                ${(data as any).totalBalance ? (data as any).totalBalance.toLocaleString() : "0.00"}
               </h2>
             </div>
             <div className="flex gap-1 flex-wrap">
@@ -327,7 +341,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-          <div className="h-[200px] sm:h-[280px] w-full px-2">
+          <div className="h-50 sm:h-70 w-full px-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={data.charts?.weeklyIncome ?? []}
@@ -399,11 +413,13 @@ export default function DashboardPage() {
 
         {/* Dense Stats Grid (No Cards) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 border-b border-border">
-          {data.stats.map((stat, idx) => {
+          {data.stats.map((stat) => {
             const Icon = iconMap[stat.icon] || DollarSign;
+            const href = statLinks[stat.id];
             return (
-              <div
+              <Link
                 key={stat.id}
+                href={href || "#"}
                 className="p-3 sm:p-4 group hover:bg-accent transition-colors border-r border-border last:border-r-0"
               >
                 <div className="flex items-center justify-between mb-2 sm:mb-3">
@@ -418,7 +434,7 @@ export default function DashboardPage() {
                 <p className="text-base sm:text-lg font-black text-foreground leading-none">
                   {formatValue(stat)}
                 </p>
-              </div>
+              </Link>
             );
           })}
         </div>

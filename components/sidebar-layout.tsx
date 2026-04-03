@@ -10,7 +10,7 @@ import { useAuthStore } from "@/lib/store/useAuthStore";
 import { adminPaths, memberPaths } from "@/lib/routes";
 import { getCoinPaymentSettingsAPI } from "@/lib/api/configuration";
 
-const ADMIN_HOME_PATH = "/admin/tree-view";
+const ADMIN_HOME_PATH = "/admin/dashboard";
 const MEMBER_HOME_PATH = "/dashboard";
 
 const isPathAllowed = (pathname: string, userType: "admin" | "member") => {
@@ -48,6 +48,7 @@ export default function SidebarLayout({
     pathname.startsWith("/admin-login") ||
     pathname.startsWith("/member-login") ||
     pathname.startsWith("/member-signup");
+
 
   useEffect(() => {
     const initSession = async () => {

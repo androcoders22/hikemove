@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   FileText,
   User,
+  UserCheck,
   PiggyBank,
   ArrowUpCircle,
   Users,
@@ -40,6 +41,7 @@ export const adminPaths: NavGroup[] = [
   {
     title: "Overview",
     items: [
+      { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
       { title: "Tree View", url: "/admin/tree-view", icon: Workflow },
     ],
   },
@@ -61,6 +63,16 @@ export const adminPaths: NavGroup[] = [
   {
     title: "Member Options",
     items: [
+      {
+        title: "All Members",
+        url: "/admin/member-options/all-members",
+        icon: Users,
+      },
+      {
+        title: "Active Members",
+        url: "/admin/member-options/active-members",
+        icon: UserCheck,
+      },
       {
         title: "Member Direct",
         url: "/admin/member-options/direct",
@@ -141,8 +153,8 @@ export const memberPaths: NavGroup[] = [
   {
     title: "My Team",
     items: [
-      { title: "Direct Members", url: "/team/sponsor", icon: User },
-      { title: "My Team", url: "/team/list", icon: Users },
+      { title: "My Sponsors", url: "/team/sponsor", icon: User },
+      { title: "Level Wise Team", url: "/team/list", icon: Users },
     ],
   },
   {
@@ -167,6 +179,7 @@ export const memberPaths: NavGroup[] = [
   {
     title: "Withdrawal Wallet",
     items: [
+      { title: "Withhdrawal Request", url: "/member-request", icon: Wallet },
       // { title: "Withdrawal", url: "/withdrawal", icon: Wallet },
       {
         title: "Wallet History",

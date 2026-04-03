@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   XCircle,
   Plus,
+  Wallet,
 } from "lucide-react";
 import {
   Table,
@@ -132,6 +133,12 @@ export default function WithdrawalPage() {
   const onSubmit = async (values: WithdrawalFormValues) => {
     setIsLoading(true);
     try {
+      const availableBalance = memberInfo.balance || 0;
+      if (values.amount > availableBalance) {
+        toast.error("Balance not available");
+        setIsLoading(false);
+        return;
+      }
       const payload = {
         amount: values.amount,
         walletAddress: values.walletAddress,
@@ -164,6 +171,27 @@ export default function WithdrawalPage() {
       />
 
       <div className="flex-1 p-6 space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-background border border-border rounded-xl p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                <Wallet className="h-4 w-4" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Income Balance
+                </p>
+                <p className="text-2xl font-black text-foreground">
+                  {Number(memberInfo.balance || 0).toLocaleString()} $
+                </p>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Available for withdrawal
+            </p>
+          </div>
+        </div>
+
         <div className="bg-background border border-border rounded-xl overflow-hidden shadow-sm">
           <div className="p-4 border-b flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#f8fcf5] border-[#d8e5d0]">
             <h2 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
@@ -203,7 +231,7 @@ export default function WithdrawalPage() {
                   </Button>
                 </DialogTrigger>
 
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-106.25">
                   <DialogHeader>
                     <DialogTitle>Submit Request</DialogTitle>
                     <DialogDescription>
@@ -297,7 +325,7 @@ export default function WithdrawalPage() {
             <Table>
               <TableHeader className="bg-[#f8fcf5]">
                 <TableRow className="border-border">
-                  <TableHead className="text-xs font-black uppercase tracking-widest w-[80px] py-2 px-3">
+                  <TableHead className="text-xs font-black uppercase tracking-widest w-20 py-2 px-3">
                     Sr. No.
                   </TableHead>
                   <TableHead className="text-xs font-black uppercase tracking-widest py-2 px-3">

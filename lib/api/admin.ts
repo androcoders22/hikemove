@@ -53,3 +53,11 @@ export const adminRefresh = async () => {
   );
   return response.data;
 };
+
+export const getAllMembersAPI = async () => {
+  return await api.get("/member");
+};
+
+export const getActiveMembersAPI = async () => {
+  return await api.get("/member");
+};

@@ -12,6 +12,10 @@ export const getAllWithdrawalsAPI = async () => {
   return await api.get("/withdrawal");
 };
 
+export const getMemberRequestsAPI = async () => {
+  return await api.get("/withdrawal/me");
+};
+
 export const approveWithdrawalAPI = async (id: string) => {
   return await api.patch(`/withdrawal/${id}/approve`);
 };
@@ -20,6 +24,6 @@ export const rejectWithdrawalAPI = async (id: string, payload?: any) => {
   return await api.patch(`/withdrawal/${id}/reject`, payload || {});
 };
 
-export const updateWalletAPI = async (payload: any) => {
-  return await api.patch("/withdrawal", payload);
-};
+// export const updateWalletAPI = async (payload: any) => {
+//   return await api.patch("/withdrawal", payload);
+// };
