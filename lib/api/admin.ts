@@ -54,10 +54,20 @@ export const adminRefresh = async () => {
   return response.data;
 };
 
-export const getAllMembersAPI = async () => {
-  return await api.get("/member");
+type MemberQueryParams = {
+  page?: number;
+  limit?: number;
 };
 
-export const getActiveMembersAPI = async () => {
-  return await api.get("/member");
+export const getAllMembersAPI = async (params: MemberQueryParams = {}) => {
+  const { page = 1, limit = 1000 } = params;
+  return await api.get("/member/all/", { params: { page, limit } });
+};
+
+export const getActiveMembersAPI = async (params: MemberQueryParams = {}) => {
+  return await getAllMembersAPI(params);
+};
+
+export const getAdminDashboardAPI = async () => {
+  return await api.get("/dashboard/admin");
 };
