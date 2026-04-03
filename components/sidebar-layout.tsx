@@ -58,8 +58,12 @@ export default function SidebarLayout({
       const userType =
         (localStorage.getItem("userType") as "member" | "admin" | null) ||
         "member";
-      const loginPath =
-        userType === "member" ? "/member-login" : "/admin-login";
+      
+      // Fix: Determine redirect login path based on the current URL
+      // If user is trying to access /admin/*, redirect to /admin-login
+      // Otherwise, redirect to /member-login
+      const isAdminRoute = pathname.startsWith("/admin");
+      const loginPath = isAdminRoute ? "/admin-login" : "/member-login";
 
       if (!token) {
         setCurrentUserType(null);

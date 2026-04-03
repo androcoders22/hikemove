@@ -141,7 +141,7 @@ export default function WithdrawalApproveListPage() {
                                         placeholder="Search Member ID, Name, Wallet..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9da89f] focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/10 xl:w-[280px]"
+                                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9da89f] focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/10 xl:w-70"
                                     />
                                 </div>
 

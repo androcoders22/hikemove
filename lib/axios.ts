@@ -99,11 +99,16 @@ api.interceptors.response.use(
       toast.error(error.message);
     }
 
-    const userType =
-      typeof window !== "undefined"
-        ? localStorage.getItem("userType") || "admin"
-        : "admin";
-    const loginPath = userType === "member" ? "/member-login" : "/admin-login";
+    // Determine login path based on current window location or stored userType
+    let loginPath = "/member-login";
+    if (typeof window !== "undefined") {
+      const isCurrentlyOnAdminRoute = window.location.pathname.startsWith("/admin");
+      const storedUserType = localStorage.getItem("userType");
+      
+      if (isCurrentlyOnAdminRoute || storedUserType === "admin") {
+        loginPath = "/admin-login";
+      }
+    }
 
     const originalRequest = error.config;
 

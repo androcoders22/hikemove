@@ -131,7 +131,7 @@ export default function AdminDashboardPage() {
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-black tracking-tight flex items-center gap-2">
             System Overview 
-            <Badge variant="outline" className="ml-2 bg-background font-mono text-xs">v1.2.0</Badge>
+            {/* <Badge variant="outline" className="ml-2 bg-background font-mono text-xs">v1.2.0</Badge> */}
           </h2>
           <p className="text-muted-foreground text-sm font-medium">Real-time platform statistics and performance metrics.</p>
         </div>
