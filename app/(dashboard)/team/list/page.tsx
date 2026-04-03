@@ -22,7 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getMemberTreeAPI } from "@/lib/api/member";
+import { getMemberMyTeamAPI } from "@/lib/api/member";
 import { getMemberStatus } from "@/lib/utils/member-status";
 
 interface TeamRow {
@@ -46,45 +46,83 @@ export default function MyTeam() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const resolvePackage = (row: any) => {
+    const activePackages = Array.isArray(row?.activePackages)
+      ? row.activePackages.filter((pkg: any) => pkg !== null && pkg !== undefined)
+      : [];
+
+    if (activePackages.length > 0) {
+      return activePackages.map((pkg: any) => String(pkg)).join(", ");
+    }
+
+    const activeTopup = Array.isArray(row?.topups)
+      ? row.topups.find((topup: any) => topup?.status === "active")
+      : null;
+
+    if (activeTopup?.amount !== undefined && activeTopup?.amount !== null) {
+      return String(activeTopup.amount);
+    }
+
+    const directValue =
+      row?.package ??
+      row?.packageAmount ??
+      row?.currentPackage ??
+      row?.packageValue ??
+      row?.package_name ??
+      row?.packageName ??
+      row?.packageDetails?.amount ??
+      row?.packageDetails?.name;
+
+    return directValue !== undefined && directValue !== null
+      ? String(directValue)
+      : "0";
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getMemberTreeAPI();
-        if (response.data?.status && response.data.data) {
-          const rawTree = response.data.data;
-          const flattened = flattenTree(rawTree);
-
-          // Create a lookup map for MongoID -> Member Details
-          const idMap: Record<string, { memberId: string; fullName: string }> =
-            {};
-          flattened.forEach((m) => {
-            idMap[m._id] = { memberId: m.memberId, fullName: m.fullName };
-          });
-
-          // Enrich data with sponsor's human-readable info
-          const enriched = flattened.map((m) => {
-            const sponsorInfo =
-              typeof m.sponsorId === "string" ? idMap[m.sponsorId] : null;
-            return {
-              ...m,
-              sponsorMemberId: sponsorInfo
-                ? sponsorInfo.memberId
-                : typeof m.sponsorId === "object"
-                  ? m.sponsorId?.memberId
-                  : null,
-              sponsorFullName: sponsorInfo
-                ? sponsorInfo.fullName
-                : typeof m.sponsorId === "object"
-                  ? m.sponsorId?.fullName
-                  : "N/A",
-            };
-          });
-
-          // Exclude the root member (the current user) from "My Team" list
-          setTeamData(enriched.slice(1));
-        } else {
+        const response = await getMemberMyTeamAPI();
+        const payload = response.data?.data ?? response.data;
+        if (!payload) {
           setError("Failed to load team data");
+          return;
         }
+
+        const asArray = Array.isArray(payload) ? payload : null;
+        const flattened = asArray ? asArray : flattenTree(payload);
+
+        // Create a lookup map for MongoID -> Member Details
+        const idMap: Record<string, { memberId: string; fullName: string }> =
+          {};
+        flattened.forEach((m) => {
+          if (m?._id) {
+            idMap[m._id] = { memberId: m.memberId, fullName: m.fullName };
+          }
+        });
+
+        // Enrich data with sponsor's human-readable info
+        const enriched = flattened.map((m) => {
+          const sponsorInfo =
+            typeof m.sponsorId === "string" ? idMap[m.sponsorId] : null;
+          return {
+            ...m,
+            sponsorMemberId: sponsorInfo
+              ? sponsorInfo.memberId
+              : typeof m.sponsorId === "object"
+                ? m.sponsorId?.memberId
+                : null,
+            sponsorFullName: sponsorInfo
+              ? sponsorInfo.fullName
+              : typeof m.sponsorId === "object"
+                ? m.sponsorId?.fullName
+                : "N/A",
+          };
+        });
+
+        // If the API returns a full list (not a tree), keep all rows.
+        // If the API returns a tree, exclude the root member from "My Team" list.
+        const resolvedRows = asArray ? enriched : enriched.slice(1);
+        setTeamData(resolvedRows);
       } catch (err: any) {
         setError(err.message || "An error occurred");
       } finally {
@@ -118,7 +156,7 @@ export default function MyTeam() {
 
   const totalBusiness = useMemo(() => {
     return teamData.reduce((acc, curr) => {
-      const pkg = parseFloat(curr.package) || 0;
+      const pkg = parseFloat(resolvePackage(curr) || "0") || 0;
       return acc + pkg;
     }, 0);
   }, [teamData]);
@@ -154,17 +192,19 @@ export default function MyTeam() {
     return teamData.filter((row) => {
       const sId = row.sponsorMemberId || "";
       const sName = row.sponsorFullName || "";
+      const pkg = resolvePackage(row);
 
       return (
         row.memberId.toLowerCase().includes(query) ||
         row.fullName.toLowerCase().includes(query) ||
-        (row.package || "").toLowerCase().includes(query) ||
+        (pkg || "").toLowerCase().includes(query) ||
         sId.toLowerCase().includes(query) ||
         sName.toLowerCase().includes(query) ||
         getMemberStatus(row).includes(query)
       );
     });
   }, [teamData, searchTerm]);
+
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
@@ -275,6 +315,9 @@ export default function MyTeam() {
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Member Name
                   </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">
+                    Package
+                  </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Join Date
                   </TableHead>
@@ -305,6 +348,9 @@ export default function MyTeam() {
                       </TableCell>
                       <TableCell className="text-xs font-bold text-foreground">
                         {row.fullName}
+                      </TableCell>
+                      <TableCell className="text-right text-xs font-black text-foreground">
+                        {resolvePackage(row)}
                       </TableCell>
 
                       <TableCell className="text-[10px] font-medium text-muted-foreground">
@@ -341,7 +387,7 @@ export default function MyTeam() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No team member found.

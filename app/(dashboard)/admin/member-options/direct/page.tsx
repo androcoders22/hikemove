@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Search, CheckCircle2, Clock, List, UserCheck, UserCircle2 } from "lucide-react";
+import { Search, CheckCircle2, Clock, List, UserCheck, UserCircle2, Wallet } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -50,6 +50,66 @@ export default function MyDirectPage() {
     });
 
     const [directData, setDirectData] = useState<DirectRow[]>([]);
+
+    const resolvePackage = (row: any) => {
+        const normalizePackageValue = (pkg: any) => {
+            if (pkg === null || pkg === undefined) return null;
+            if (typeof pkg === "object") {
+                return (
+                    pkg.amount ??
+                    pkg.packageAmount ??
+                    pkg.value ??
+                    pkg.package ??
+                    pkg.name
+                );
+            }
+            return pkg;
+        };
+
+        const activePackages = Array.isArray(row?.activePackages)
+            ? row.activePackages
+            : Array.isArray(row?.activePackagesList)
+                ? row.activePackagesList
+                : Array.isArray(row?.activePackage)
+                    ? row.activePackage
+                    : [];
+
+        if (activePackages.length > 0) {
+            const normalized = activePackages
+                .map(normalizePackageValue)
+                .filter((pkg: any) => pkg !== null && pkg !== undefined);
+
+            if (normalized.length > 0) {
+                return normalized.map((pkg: any) => String(pkg)).join(", ");
+            }
+        }
+
+        const activeTopup = Array.isArray(row?.topups)
+            ? row.topups.find((topup: any) => topup?.status === "active")
+            : null;
+
+        if (activeTopup) {
+            const topupValue = normalizePackageValue(activeTopup);
+            if (topupValue !== null && topupValue !== undefined) {
+                return String(topupValue);
+            }
+        }
+
+        const directValue =
+            row?.package ??
+            row?.packageAmount ??
+            row?.activePackageAmount ??
+            row?.currentPackage ??
+            row?.packageValue ??
+            row?.package_name ??
+            row?.packageName ??
+            row?.packageDetails?.amount ??
+            row?.packageDetails?.name;
+
+        return directValue !== undefined && directValue !== null
+            ? String(directValue)
+            : "N/A";
+    };
 
     const handleFetchDirect = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -155,7 +215,7 @@ export default function MyDirectPage() {
                                         placeholder="Enter Member Id"
                                         value={memberId}
                                         onChange={(e) => setMemberId(e.target.value)}
-                                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10 xl:w-[280px]"
+                                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-primary/40 focus:ring-2 focus:ring-primary/10 xl:w-70"
                                     />
                                 </div>
 
@@ -208,7 +268,7 @@ export default function MyDirectPage() {
 
                         {filteredData.length === 0 ? (
                             <div className="rounded-lg border border-[#dce8d3] shadow-sm">
-                                <div className="flex min-h-55 flex-col items-center justify-center px-4 text-center sm:min-h-[240px]">
+                                <div className="flex min-h-55 flex-col items-center justify-center px-4 text-center sm:min-h-60">
                                     <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 ring-1 ring-[#dce8d3]">
                                         <List className="h-6 w-6 text-[#a1a895]" />
                                     </div>
@@ -259,6 +319,7 @@ export default function MyDirectPage() {
 
                                             <div className="space-y-2 border-t border-[#e7efdf] pt-2">
                                                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                   
                                                     <div className="rounded-md bg-white p-2 text-center">
                                                         <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
                                                             Joining Date
@@ -266,6 +327,15 @@ export default function MyDirectPage() {
                                                         <div className="mt-1 flex items-center justify-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
                                                             <Clock className="h-3 w-3" />
                                                             <span>{formatDate(row.createdAt)}</span>
+                                                        </div>
+                                                    </div>
+                                                     <div className="rounded-md bg-white p-2 text-center">
+                                                        <p className="text-[9px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
+                                                            Package
+                                                        </p>
+                                                        <div className="mt-1 flex items-center justify-center gap-1.5 text-[10px] font-mono text-[#7b836f]">
+                                                            <Wallet className="h-3 w-3" />
+                                                            <span>{resolvePackage(row)}</span>
                                                         </div>
                                                     </div>
 
@@ -286,7 +356,7 @@ export default function MyDirectPage() {
 
                                 {/* Desktop Table View */}
                                 <div className="hidden overflow-x-auto rounded-lg border border-[#dce8d3] shadow-sm xl:block">
-                                    <div className="min-w-[920px]">
+                                    <div className="min-w-230">
                                         <Table>
                                             <TableHeader className="bg-[#f7fbf3]">
                                                 <TableRow className="border-b border-[#dce8d3] hover:bg-transparent">
@@ -298,6 +368,9 @@ export default function MyDirectPage() {
                                                     </TableHead>
                                                     <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
                                                         Member Name
+                                                    </TableHead>
+                                                    <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
+                                                        Package
                                                     </TableHead>
                                                     <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">
                                                         Joining Date
@@ -329,6 +402,9 @@ export default function MyDirectPage() {
 
                                                         <TableCell className="px-3 py-2.5 text-xs font-medium text-[#5f6851]">
                                                             {row.fullName}
+                                                        </TableCell>
+                                                        <TableCell className="px-3 py-2.5 text-xs font-semibold text-[#5f6851]">
+                                                            {resolvePackage(row)}
                                                         </TableCell>
                                                         <TableCell className="px-3 py-2.5">
                                                             <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#7b836f]">

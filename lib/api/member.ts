@@ -67,6 +67,10 @@ export const getMemberTreeAPI = async (memberId?: string) => {
   return await api.get(url);
 };
 
+export const getMemberMyTeamAPI = async () => {
+  return await api.get("/member/my-team");
+};
+
 export const getDirectMembersAPI = async () => {
   return await api.get("/member/direct-members/");
 };
