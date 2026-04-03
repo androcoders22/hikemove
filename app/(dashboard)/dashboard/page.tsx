@@ -287,17 +287,27 @@ export default function DashboardPage() {
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight whitespace-nowrap">
             Referral link:
           </span>
-          <div className="flex items-center bg-background border border-border px-2 py-1 sm:py-0.5 rounded gap-2 min-w-0 flex-1 sm:flex-initial">
-            <span className="text-[11px] font-mono text-foreground truncate select-all">
+          <div className="group relative flex items-center bg-background border border-border px-2 py-1 sm:py-0.5 rounded gap-2 min-w-0 flex-1 sm:flex-initial overflow-hidden transition-all hover:border-primary/50">
+            {/* Professional Shimmer Animation - Continuous */}
+            <div className="absolute inset-0 z-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+            
+            <span className="relative z-10 text-[11px] font-mono font-medium text-foreground truncate select-all">
               {referralLink}
             </span>
+            <style jsx global>{`
+              @keyframes shimmer {
+                100% {
+                  transform: translateX(100%);
+                }
+              }
+            `}</style>
             <Button
               size="icon"
               variant="ghost"
-              className="h-5 w-5 text-muted-foreground hover:text-primary shrink-0"
+              className="relative z-10 h-5 w-5 text-muted-foreground hover:text-primary shrink-0 transition-transform active:scale-95"
               onClick={() => {
                 navigator.clipboard.writeText(referralLink);
-                toast.success("Copied to clipboard");
+                toast.success("Referral link copied!");
               }}
             >
               <Copy className="h-3 w-3" />

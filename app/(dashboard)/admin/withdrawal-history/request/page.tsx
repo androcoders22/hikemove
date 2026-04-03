@@ -381,7 +381,7 @@ export default function WithdrawalRequestListPage() {
                                                         </TableCell>
 
                                                         <TableCell className="px-3 py-2.5">
-                                                            <div className="max-w-[180px] truncate rounded-md border border-[#e4eddc] bg-[#fafcf8] px-2 py-1 font-mono text-[10px] text-[#7b836f]">
+                                                            <div className="max-w-45 truncate rounded-md border border-[#e4eddc] bg-[#fafcf8] px-2 py-1 font-mono text-[10px] text-[#7b836f]">
                                                                 {row.walletAddress}
                                                             </div>
                                                         </TableCell>

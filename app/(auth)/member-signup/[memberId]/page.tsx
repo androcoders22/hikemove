@@ -89,10 +89,16 @@ export default function MemberSignupPage() {
   }, [params?.memberId]);
 
   useEffect(() => {
-    if (isReferralSignup && sponsorMemberId) {
-      checkSponsor(sponsorMemberId);
+    if (sponsorMemberId) {
+      const timeoutId = setTimeout(() => {
+        checkSponsor(sponsorMemberId);
+      }, 500); // 500ms debounce
+      return () => clearTimeout(timeoutId);
+    } else {
+      setSponsor(null);
+      setSponsorStatus("idle");
     }
-  }, [isReferralSignup, sponsorMemberId]);
+  }, [sponsorMemberId]);
 
   const checkSponsor = async (value: string) => {
     const memberId = value.trim();
@@ -181,7 +187,7 @@ export default function MemberSignupPage() {
     }
   };
 
-  if (sponsorLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -220,7 +226,6 @@ export default function MemberSignupPage() {
                   name="sponsorMemberId"
                   value={sponsorMemberId}
                   onChange={(e) => setSponsorMemberId(e.target.value.toUpperCase())}
-                  onBlur={(e) => checkSponsor(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -229,12 +234,17 @@ export default function MemberSignupPage() {
                   placeholder="Enter sponsor member ID"
                   required
                 />
-                {sponsorStatus === "valid" && (
+                {sponsorLoading && (
+                  <p className="text-xs font-semibold text-gray-400 flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Checking...
+                  </p>
+                )}
+                {sponsorStatus === "valid" && !sponsorLoading && (
                   <p className="text-xs font-semibold text-emerald-600">
                     ID is available
                   </p>
                 )}
-                {sponsorStatus === "invalid" && (
+                {sponsorStatus === "invalid" && !sponsorLoading && (
                   <p className="text-xs font-semibold text-red-500">
                     ID does not exist
                   </p>
