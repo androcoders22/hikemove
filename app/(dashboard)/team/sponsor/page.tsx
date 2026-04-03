@@ -281,12 +281,6 @@ export default function MySponsor() {
                     Member Name
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Sponsor Id
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
-                    Sponsor Name
-                  </TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Join Date
                   </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
@@ -314,20 +308,6 @@ export default function MySponsor() {
                       <TableCell className="text-xs font-bold text-foreground">
                         {row.fullName}
                       </TableCell>
-                      <TableCell className="text-xs font-bold text-primary/80">
-                        {(() => {
-                           let sponsorObj = row.sponsorId || row.sponsor;
-                           let sId = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.memberId : (typeof sponsorObj === 'string' ? sponsorObj : currentUser.memberId);
-                           return sId || "N/A";
-                        })()}
-                      </TableCell>
-                      <TableCell className="text-xs font-medium text-foreground/80">
-                        {(() => {
-                           let sponsorObj = row.sponsorId || row.sponsor;
-                           let sName = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.fullName : currentUser.fullName;
-                           return sName || "N/A";
-                        })()}
-                      </TableCell>
                       <TableCell className="text-[10px] font-medium text-muted-foreground">
                         {formatDate(row.createdAt)}
                       </TableCell>
@@ -354,7 +334,7 @@ export default function MySponsor() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={8}
+                      colSpan={6}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No members found.

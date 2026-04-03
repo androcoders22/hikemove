@@ -47,6 +47,7 @@ import { getCoinPaymentSettingsAPI } from "@/lib/api/configuration";
 const fundRequestSchema = z.object({
   amount: z.string().min(1, "Amount is required"),
   transactionHash: z.string().min(1, "Transaction hash is required"),
+  txnPassword: z.string().min(1, "Transaction PIN is required"),
   screenshot: z.any().optional(),
 });
 
@@ -88,6 +89,7 @@ export default function DepositActivity() {
     defaultValues: {
       amount: "",
       transactionHash: "",
+      txnPassword: "",
       screenshot: null,
     },
   });
@@ -179,6 +181,7 @@ export default function DepositActivity() {
       const payload = {
         amount: Number(data.amount),
         transactionHash: data.transactionHash,
+        txnPassword: data.txnPassword,
         screenshot: screenshotKey,
         status: "pending",
       };
@@ -332,6 +335,31 @@ export default function DepositActivity() {
                       </div>
 
                       <div className="space-y-1.5 md:space-y-2">
+                        <Label
+                          htmlFor="txnPassword"
+                          className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest ${
+                            errors.txnPassword ? "text-red-500" : "text-[#56684f]"
+                          }`}
+                        >
+                          Transaction PIN
+                        </Label>
+                        <Input
+                          id="txnPassword"
+                          type="password"
+                          placeholder="••••••"
+                          {...register("txnPassword")}
+                          className={`h-11 md:h-12 bg-white border-[#dcf0c5] text-[#42523d] font-semibold focus-visible:ring-[#62b01a]/30 ${
+                            errors.txnPassword ? "border-red-500" : ""
+                          }`}
+                        />
+                        {errors.txnPassword && (
+                          <p className="text-[10px] text-red-500">
+                            {errors.txnPassword.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5 md:space-y-2">
                         <Label className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-[#56684f]">
                           Transaction Screenshot
                         </Label>
@@ -459,7 +487,7 @@ export default function DepositActivity() {
 
                       <TableCell>
                         <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-                          <span className="truncate max-w-[80px]">
+                          <span className="truncate max-w-20">
                             {row.transactionHash || "-"}
                           </span>
                         </div>
