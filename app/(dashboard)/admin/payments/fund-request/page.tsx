@@ -50,7 +50,10 @@ interface FundRequest {
     amount: number;
     status: string;
     screenshot?: string;
-    createdAt: string;
+    member?: {
+        memberId: string;
+        fullName: string;
+    };
     user?: {
         memberId: string;
         memberName: string;
@@ -278,8 +281,9 @@ export default function FundRequestManagementPage() {
                                                         <UserCircle2 className="h-5 w-5 text-primary" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-bold text-[#4d553d]">{req.memberId || req.user?.memberId}</p>
-                                                        <p className="text-[10px] text-[#7a8270]">{new Date(req.createdAt).toLocaleDateString()}</p>
+                                                        <p className="text-xs font-bold text-[#4d553d]">{req.member?.memberId || req.memberId || req.user?.memberId || "N/A"}</p>
+                                                        <p className="text-[10px] font-medium text-[#5c634f]">{req.member?.fullName || req.user?.memberName || "N/A"}</p>
+                                                        
                                                     </div>
                                                 </div>
                                                 {getStatusBadge(req.status)}
@@ -332,7 +336,8 @@ export default function FundRequestManagementPage() {
                                     <Table>
                                         <TableHeader className="bg-[#f7fbf3]">
                                             <TableRow className="border-b border-[#dce8d3]">
-                                                <TableHead className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Member</TableHead>
+                                                <TableHead className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Member ID</TableHead>
+                                                <TableHead className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Full Name</TableHead>
                                                 <TableHead className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Amount</TableHead>
                                                 <TableHead className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Screenshot</TableHead>
                                                 <TableHead className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Status</TableHead>
@@ -348,12 +353,16 @@ export default function FundRequestManagementPage() {
                                                                 <UserCircle2 className="h-4 w-4 text-primary" />
                                                             </div>
                                                             <div>
-                                                                <div className="text-xs font-bold text-[#4d553d]">{req.memberId || req.user?.memberId}</div>
-                                                                <div className="text-[9px] font-medium text-[#8a927e] flex items-center gap-1">
-                                                                    <Clock className="h-2 w-2" />
-                                                                    {new Date(req.createdAt).toLocaleString()}
-                                                                </div>
+                                                                <div className="text-xs font-bold text-[#4d553d]">{req.member?.memberId || req.memberId || req.user?.memberId || "N/A"}</div>
                                                             </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-2">
+                                                        <div>
+                                                            <div className="text-xs font-bold text-[#4d553d] truncate max-w-[150px]">{req.member?.fullName || req.user?.memberName || "N/A"}</div>
+                                                            {/* <div className="text-[9px] font-medium text-[#8a927e] flex items-center gap-1">
+                                                                <Clock className="h-2 w-2" />
+                                                            </div> */}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-2 text-xs font-black text-emerald-600">

@@ -72,3 +72,7 @@ export const getActiveMembersAPI = async (params: MemberQueryParams = {}) => {
 export const getAdminDashboardAPI = async () => {
   return await api.get("/dashboard/admin");
 };
+
+export const getAllMemberTopupsAPI = async () => {
+  return await api.get("/member-topup");
+};
