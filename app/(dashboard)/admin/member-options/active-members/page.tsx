@@ -47,11 +47,12 @@ export default function ActiveMembersListPage() {
     );
   }, [members, searchTerm]);
 
-  const resolvePackage = (row: any) => {
+  const getPackages = (row: any) => {
     if (Array.isArray(row.activePackages) && row.activePackages.length > 0) {
-      return row.activePackages[0];
+      return row.activePackages;
     }
-    return row.packageAmount || row.currentPackage || "0";
+    const single = row.packageAmount || row.currentPackage || row.package || "0";
+    return [single];
   };
 
   return (
@@ -140,9 +141,13 @@ export default function ActiveMembersListPage() {
                             <TableCell className="px-3 py-2.5 text-xs font-semibold text-emerald-600">{member.memberId}</TableCell>
                             <TableCell className="px-3 py-2.5 text-xs font-medium text-[#5f6851] truncate max-w-40">{member.fullName}</TableCell>
                             <TableCell className="px-3 py-2.5">
-                              <span className="inline-flex items-center gap-1 rounded bg-emerald-500/5 px-2 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-500/10">
-                                ${resolvePackage(member)}
-                              </span>
+                              <div className="flex flex-wrap gap-1">
+                                {getPackages(member).map((pkg: string, pIdx: number) => (
+                                  <span key={pIdx} className="inline-flex items-center gap-1 rounded bg-emerald-500/5 px-2 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-500/10">
+                                    ${pkg}
+                                  </span>
+                                ))}
+                              </div>
                             </TableCell>
                             <TableCell className="px-3 py-2.5 text-xs font-medium text-[#7a8270]">
                               {typeof member.sponsorId === 'object' ? member.sponsorId?.memberId : (member.sponsorId || "N/A")}

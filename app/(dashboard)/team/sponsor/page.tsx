@@ -37,6 +37,7 @@ interface MemberRow {
   memberId: string;
   fullName: string;
   package: string;
+  activePackages?: string[];
   sponsorId?: {
     _id: string;
     fullName: string;
@@ -286,6 +287,9 @@ export default function MySponsor() {
                   <TableHead className="text-[10px] font-black uppercase tracking-widest">
                     Activation Date
                   </TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                    Package
+                  </TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-right">
                     Status
                   </TableHead>
@@ -314,6 +318,24 @@ export default function MySponsor() {
                       <TableCell className="text-[10px] font-medium text-muted-foreground">
                         {row.activationDate ? formatDate(row.activationDate) : "No Active"}
                       </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {row.activePackages && row.activePackages.length > 0 ? (
+                            row.activePackages.map((pkg, pIdx) => (
+                              <span 
+                                key={pIdx}
+                                className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase"
+                              >
+                                ${pkg}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-black uppercase">
+                              {row.package ? `$${row.package}` : "FREE"}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right">
                         {(() => {
                            const calculatedStatus = getMemberStatus(row);
@@ -334,7 +356,7 @@ export default function MySponsor() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className="text-center py-6 text-sm text-muted-foreground"
                     >
                       No members found.
