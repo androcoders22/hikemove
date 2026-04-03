@@ -101,12 +101,14 @@ api.interceptors.response.use(
 
     // Determine login path based on current window location or stored userType
     let loginPath = "/member-login";
+    let userType = "member";
     if (typeof window !== "undefined") {
       const isCurrentlyOnAdminRoute = window.location.pathname.startsWith("/admin");
       const storedUserType = localStorage.getItem("userType");
       
       if (isCurrentlyOnAdminRoute || storedUserType === "admin") {
         loginPath = "/admin-login";
+        userType = "admin";
       }
     }
 
