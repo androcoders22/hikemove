@@ -8,21 +8,32 @@ export const api = axios.create({
 });
 
 // Add token to requests
-api.interceptors.request.use((config) => {
-  const skipAuthPrefixes = [
-    "/admin/login",
-    "/admin/refresh",
-    "/admin/forgot-password",
-    "/admin/reset-password",
-    "/admin/verify-otp",
-    "/member/login",
-    "/member/refresh",
-    "/member/forgot-password",
-    "/member/reset-password",
-  ];
+const skipAuthPrefixes = [
+  "/admin/login",
+  "/admin/refresh",
+  "/admin/forgot-password",
+  "/admin/reset-password",
+  "/admin/verify-otp",
+  "/member/login",
+  "/member/refresh",
+  "/member/forgot-password",
+  "/member/reset-password",
+  "/member/check-member-id",
+];
 
+const skipAuthExact = ["/member"];
+
+const shouldSkipAuth = (requestUrl: string, method?: string) => {
+  const normalizedMethod = (method || "").toLowerCase();
+  if (skipAuthExact.includes(requestUrl) && normalizedMethod === "post") {
+    return true;
+  }
+  return skipAuthPrefixes.some((prefix) => requestUrl.startsWith(prefix));
+};
+
+api.interceptors.request.use((config) => {
   const requestUrl = config.url || "";
-  if (skipAuthPrefixes.some((prefix) => requestUrl.startsWith(prefix))) {
+  if (shouldSkipAuth(requestUrl, config.method)) {
     return config;
   }
 
@@ -119,9 +130,15 @@ api.interceptors.response.use(
       "/member/refresh",
       "/member/forgot-password",
       "/member/reset-password",
+      "/member/check-member-id",
     ];
+    const skipExactUrls = ["/member"];
     if (error.response?.status === 401 && !originalRequest._retry) {
       const originalUrl = originalRequest.url || "";
+      const originalMethod = (originalRequest.method || "").toLowerCase();
+      if (skipExactUrls.includes(originalUrl) && originalMethod === "post") {
+        return Promise.reject(error);
+      }
       if (skipUrls.some((prefix) => originalUrl.startsWith(prefix))) {
         return Promise.reject(error);
       }

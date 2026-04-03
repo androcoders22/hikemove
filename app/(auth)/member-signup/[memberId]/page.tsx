@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, UserPlus } from "lucide-react";
-import { getMember, memberSignup } from "@/lib/api/member";
+import { checkMemberIdAPI, memberSignup } from "@/lib/api/member";
 
 // List of countries
 const COUNTRIES = [
@@ -54,11 +54,18 @@ const COUNTRIES = [
 export default function MemberSignupPage() {
   const params = useParams();
   const router = useRouter();
-  const isReferralSignup = Boolean(params?.memberId);
+  const paramMemberId = (params?.memberId as string) || "";
+  const isReferralSignup = Boolean(paramMemberId && paramMemberId !== "default");
 
   const [loading, setLoading] = useState(false);
-  const [sponsorLoading, setSponsorLoading] = useState(true);
+  const [sponsorLoading, setSponsorLoading] = useState(false);
   const [sponsor, setSponsor] = useState<any>(null);
+  const [sponsorMemberId, setSponsorMemberId] = useState(
+    paramMemberId !== "default" ? paramMemberId : "",
+  );
+  const [sponsorStatus, setSponsorStatus] = useState<
+    "idle" | "checking" | "valid" | "invalid"
+  >("idle");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -71,37 +78,51 @@ export default function MemberSignupPage() {
   });
 
   useEffect(() => {
-    const fetchSponsor = async () => {
-      try {
-        setSponsorLoading(true);
-        // Fallback to "anything" if params.memberId is missing somehow
-        const memberIdToFetch = (params.memberId as string) || "anything";
-        const res = await getMember(memberIdToFetch);
-        if (res.status === true && res.data) {
-          setSponsor(res.data);
-        } else {
-          // Attempt default on failure
-          const fallbackRes = await getMember("anything");
-          if (fallbackRes.status === true && fallbackRes.data) {
-            setSponsor(fallbackRes.data);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch sponsor", err);
-        // Make another attempt with a fallback string if it fails
-        try {
-          const fallbackRes = await getMember("anything");
-          if (fallbackRes.status === true && fallbackRes.data) {
-            setSponsor(fallbackRes.data);
-          }
-        } catch (e) { }
-      } finally {
-        setSponsorLoading(false);
-      }
-    };
+    const incomingReferral = (params?.memberId as string) || "";
+    if (
+      incomingReferral &&
+      incomingReferral !== "default" &&
+      incomingReferral !== sponsorMemberId
+    ) {
+      setSponsorMemberId(incomingReferral);
+    }
+  }, [params?.memberId]);
 
-    fetchSponsor();
-  }, [params.memberId]);
+  useEffect(() => {
+    if (isReferralSignup && sponsorMemberId) {
+      checkSponsor(sponsorMemberId);
+    }
+  }, [isReferralSignup, sponsorMemberId]);
+
+  const checkSponsor = async (value: string) => {
+    const memberId = value.trim();
+
+    if (!memberId || memberId === "default") {
+      setSponsor(null);
+      setSponsorStatus("idle");
+      setSponsorLoading(false);
+      return;
+    }
+
+    try {
+      setSponsorLoading(true);
+      setSponsorStatus("checking");
+
+      const res = await checkMemberIdAPI(memberId);
+      if (res.data?.status && res.data?.data) {
+        setSponsor(res.data.data);
+        setSponsorStatus("valid");
+      } else {
+        setSponsor(null);
+        setSponsorStatus("invalid");
+      }
+    } catch (err) {
+      setSponsor(null);
+      setSponsorStatus("invalid");
+    } finally {
+      setSponsorLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -184,7 +205,7 @@ export default function MemberSignupPage() {
                   {sponsor.memberId})
                 </span>
               ) : (
-                <span className="text-red-500">Could not identify sponsor</span>
+                <span>Please enter a valid sponsor member ID to sign up.</span>
               )}
             </CardDescription>
           )}
@@ -192,6 +213,33 @@ export default function MemberSignupPage() {
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="sponsorMemberId">Member Id</Label>
+                <Input
+                  id="sponsorMemberId"
+                  name="sponsorMemberId"
+                  value={sponsorMemberId}
+                  onChange={(e) => setSponsorMemberId(e.target.value.toUpperCase())}
+                  onBlur={(e) => checkSponsor(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                    }
+                  }}
+                  placeholder="Enter sponsor member ID"
+                  required
+                />
+                {sponsorStatus === "valid" && (
+                  <p className="text-xs font-semibold text-emerald-600">
+                    ID is available
+                  </p>
+                )}
+                {sponsorStatus === "invalid" && (
+                  <p className="text-xs font-semibold text-red-500">
+                    ID does not exist
+                  </p>
+                )}
+              </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input

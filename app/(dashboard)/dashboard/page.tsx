@@ -63,7 +63,7 @@ export default function DashboardPage() {
     const stats = [
       {
         id: "total-package-amount",
-        label: "Total Package",
+        label: "Package Amount",
         value: payload.totalPackageAmount ?? 0,
         type: "currency",
         icon: "dollar-sign",
@@ -127,7 +127,7 @@ export default function DashboardPage() {
       },
       {
         id: "deposit-balance",
-        label: "Deposit Balance",
+        label: "Credit Wallet",
         value: payload.depositBalance ?? 0,
         type: "currency",
         icon: "wallet",
@@ -135,7 +135,7 @@ export default function DashboardPage() {
       },
       {
         id: "income-balance",
-        label: "Income Balance",
+        label: "Income Wallet",
         value: payload.incomeBalance ?? 0,
         type: "currency",
         icon: "wallet",

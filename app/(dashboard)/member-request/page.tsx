@@ -145,7 +145,7 @@ export default function MemberRequestPage() {
     <div>
       <PageHeader title="Withdrawal Request" />
       <div className="p-4 sm:p-8 grid gap-8">
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Income Balance</CardTitle>
           </CardHeader>
@@ -164,10 +164,16 @@ export default function MemberRequestPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
         <Card>
           <CardHeader>
-            <CardTitle>New Withdrawal Request</CardTitle>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>New Withdrawal Request</CardTitle>
+              <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                Income Balance
+                <span className="text-[11px] font-black text-emerald-900">$ {incomeBalance.toLocaleString()}</span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Form {...form}>

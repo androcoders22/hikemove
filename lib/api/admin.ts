@@ -60,12 +60,13 @@ type MemberQueryParams = {
 };
 
 export const getAllMembersAPI = async (params: MemberQueryParams = {}) => {
-  const { page = 1, limit = 1000 } = params;
-  return await api.get("/member/all/", { params: { page, limit } });
+  // Trying /member/ all lowercase with no params to fix 400
+  return await api.get("/member");
 };
 
 export const getActiveMembersAPI = async (params: MemberQueryParams = {}) => {
-  return await getAllMembersAPI(params);
+  // Trying /member/ all lowercase with no params to fix 400
+  return await api.get("/member?status=active");
 };
 
 export const getAdminDashboardAPI = async () => {
