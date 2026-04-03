@@ -17,7 +17,6 @@ import { api } from "@/lib/axios";
 
 export default function IncomeCheckPage() {
   const [memberId, setMemberId] = useState("");
-  const [date, setDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [walletData, setWalletData] = useState<any | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -78,6 +77,37 @@ export default function IncomeCheckPage() {
       ].filter((item) => item.value !== undefined && item.value !== null && item.value !== "")
     : [];
 
+  const fetchWalletData = async (value: string, showToast: boolean) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setWalletData(null);
+      setApiError(null);
+      return;
+    }
+
+    setIsLoading(true);
+
+    setApiError(null);
+
+    try {
+      const { data } = await api.get(`/wallet/${encodeURIComponent(trimmed)}`);
+      setWalletData(data);
+      if (showToast) {
+        toast.success("Income data retrieved successfully");
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        (error instanceof Error ? error.message : "Failed to fetch income data");
+      setApiError(message);
+      if (showToast) {
+        toast.error(message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -86,26 +116,12 @@ export default function IncomeCheckPage() {
       return;
     }
 
-    setIsLoading(true);
-    setWalletData(null);
-    setApiError(null);
-
-    try {
-      const { data } = await api.get(
-        `/wallet/${encodeURIComponent(memberId.trim())}`,
-      );
-      setWalletData(data);
-      toast.success("Income data retrieved successfully");
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message ||
-        (error instanceof Error ? error.message : "Failed to fetch income data");
-      setApiError(message);
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
+    await fetchWalletData(memberId, true);
   };
+
+  const resolvedUpdatedAt = walletDetails?.updatedAt
+    ? new Date(walletDetails.updatedAt).toLocaleString("en-GB")
+    : null;
 
   return (
     <div className="flex min-h-screen w-full min-w-0 flex-col bg-[#f6f8f4]">
@@ -130,7 +146,7 @@ export default function IncomeCheckPage() {
                   Income Check
                 </CardTitle>
                 <p className="mt-0.5 text-[11px] font-medium text-[#7a8270] sm:text-xs">
-                  Search income details by member ID and date.
+                  Enter a member ID and click search to load wallet details.
                 </p>
               </div>
             </div>
@@ -141,8 +157,8 @@ export default function IncomeCheckPage() {
               onSubmit={handleSubmit}
               className="rounded-md border border-[#dce8d3] bg-[#fafcf8] p-3"
             >
-              <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_180px_auto] xl:items-end">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+                <div className="grid grid-cols-1 gap-3">
                   <div className="min-w-0 space-y-1.5">
                     <Label
                       htmlFor="memberId"
@@ -156,14 +172,14 @@ export default function IncomeCheckPage() {
                         id="memberId"
                         placeholder="Enter Member ID"
                         value={memberId}
-                        onChange={(e) => setMemberId(e.target.value)}
-                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-8 pr-3 text-[13px] shadow-sm focus:border-primary/40 focus:ring-1 focus:ring-primary/10"
+                        onChange={(e) => setMemberId(e.target.value.toUpperCase())}
+                        className="h-9 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-8 pr-3 text-[13px] shadow-sm focus:border-primary/40 focus:ring-1 focus:ring-primary/10"
                       />
                       <Search className="absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-[#8a927e]" />
                     </div>
                   </div>
 
-                  <div className="min-w-0 space-y-1.5">
+                  {/* <div className="min-w-0 space-y-1.5">
                     <Label
                       htmlFor="date"
                       className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#5f6851]"
@@ -181,19 +197,19 @@ export default function IncomeCheckPage() {
                       />
                       <CalendarIcon className="absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-[#8a927e]" />
                     </div>
-                  </div>
+                  </div> */}
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="h-8 w-full rounded-md bg-primary px-3 text-[10px] font-bold uppercase tracking-[0.05em] text-white hover:bg-primary/90 sm:w-auto xl:justify-self-end"
+                  className="h-9 w-2xs rounded-md bg-primary px-4 text-[10px] font-bold uppercase tracking-[0.05em] text-white hover:bg-primary/90 sm:w-auto xl:justify-self-end"
                 >
                   {isLoading ? (
                     "Checking..."
                   ) : (
                     <>
-                      Submit
+                      Search
                       <ArrowRight className="ml-1.5 h-3 w-3" />
                     </>
                   )}
@@ -209,6 +225,19 @@ export default function IncomeCheckPage() {
 
             {walletDetails && (
               <div className="mt-4 space-y-4">
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[#dce8d3] bg-white px-3 py-2 text-[11px] font-semibold text-[#5f6851]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.05em] text-primary">
+                    Active
+                  </span>
+                  <span>Member:</span>
+                  <span className="font-black text-[#374151]">{memberIdFromPayload}</span>
+                  {packageName ? (
+                    <span className="text-[#8a927e]">Package {packageName}</span>
+                  ) : null}
+                  {resolvedUpdatedAt ? (
+                    <span className="ml-auto text-[#8a927e]">Updated {resolvedUpdatedAt}</span>
+                  ) : null}
+                </div>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {summaryItems.map((item) => (
                     <div
@@ -237,6 +266,12 @@ export default function IncomeCheckPage() {
                     {JSON.stringify(walletData, null, 2)}
                   </pre>
                 </div> */}
+              </div>
+            )}
+
+            {!walletDetails && !apiError && memberId.trim().length > 0 && !isLoading && (
+              <div className="mt-4 rounded-lg border border-[#dce8d3] bg-white p-4 text-sm font-semibold text-[#7a8270]">
+                No income data yet. Click search to see results.
               </div>
             )}
           </CardContent>

@@ -59,7 +59,7 @@ export default function WithdrawalApproveListPage() {
     const filteredData = historyData.filter((item) => {
         const memberId = getMemberStr(item.member, "memberId").toLowerCase();
         const fullName = getMemberStr(item.member, "fullName").toLowerCase();
-        const wallet = item.walletAddress.toLowerCase();
+        const wallet = (item.walletAddress || "").toLowerCase();
         const search = searchTerm.toLowerCase();
 
         return (
