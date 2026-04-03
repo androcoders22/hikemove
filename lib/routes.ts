@@ -118,6 +118,11 @@ export const adminPaths: NavGroup[] = [
         url: "/admin/payments/fund-request",
         icon: PiggyBank,
       },
+      {
+        title: "Member Topup",
+        url: "/admin/payments/member-topup",
+        icon: ArrowUpCircle,
+      },
     ],
   },
   {

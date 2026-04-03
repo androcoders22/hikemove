@@ -50,9 +50,6 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchDashboardStats();
-
-    const interval = setInterval(fetchDashboardStats, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   const stats = [
