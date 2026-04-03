@@ -208,7 +208,7 @@ export default function MyDirectPage() {
 
                         {filteredData.length === 0 ? (
                             <div className="rounded-lg border border-[#dce8d3] shadow-sm">
-                                <div className="flex min-h-[220px] flex-col items-center justify-center px-4 text-center sm:min-h-[240px]">
+                                <div className="flex min-h-55 flex-col items-center justify-center px-4 text-center sm:min-h-[240px]">
                                     <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 ring-1 ring-[#dce8d3]">
                                         <List className="h-6 w-6 text-[#a1a895]" />
                                     </div>
