@@ -180,7 +180,7 @@ export default function WithdrawalRequestListPage() {
                                         placeholder="Search Member ID, Name, Wallet..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-[#7db538]/40 focus:ring-2 focus:ring-[#7db538]/10 xl:w-[280px]"
+                                        className="h-8 w-full min-w-0 rounded-md border-[#dce8d3] bg-white pl-9 pr-3 text-[13px] shadow-sm transition-all placeholder:text-[#9aa190] focus:border-[#7db538]/40 focus:ring-2 focus:ring-[#7db538]/10 xl:w-70"
                                     />
                                 </div>
 
@@ -197,7 +197,7 @@ export default function WithdrawalRequestListPage() {
 
                     <CardContent className="p-0">
                         {isLoading ? (
-                            <div className="flex min-h-[220px] flex-col items-center justify-center px-4 text-center sm:min-h-[240px]">
+                            <div className="flex min-h-55 flex-col items-center justify-center px-4 text-center sm:min-h-60">
                                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#7db538]/10">
                                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#7db538]/30 border-t-[#7db538]" />
                                 </div>
@@ -206,7 +206,7 @@ export default function WithdrawalRequestListPage() {
                                 </p>
                             </div>
                         ) : filteredData.length === 0 ? (
-                            <div className="flex min-h-[220px] flex-col items-center justify-center px-4 text-center sm:min-h-[240px]">
+                            <div className="flex min-h-55 flex-col items-center justify-center px-4 text-center sm:min-h-60">
                                 <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#7db538]/8 ring-1 ring-[#dce8d3]">
                                     <Search className="h-6 w-6 text-[#a1a895]" />
                                 </div>
