@@ -330,7 +330,7 @@ export default function DashboardPage() {
                 Member ID: {user?.memberId || "---"}
               </span>
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">Active System</span>
+              <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">Active</span>
             </div>
           </div>
         </div>
