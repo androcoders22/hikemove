@@ -107,11 +107,6 @@ export default function MemberLoginPage() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="business">Business Value</TabsTrigger>
-            </TabsList>
-
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -162,30 +157,6 @@ export default function MemberLoginPage() {
                   </Link>
                 </div>
               </form>
-            </TabsContent>
-
-            <TabsContent value="business" className="mt-4 space-y-3">
-              <div className="rounded-lg border bg-muted/40 p-4 text-center">
-                <div className="flex items-center justify-center gap-2 text-sm font-medium">
-                  {isOpeningPdf && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <span>
-                    {isOpeningPdf
-                      ? "Opening Business Value PDF..."
-                      : "Business Value PDF opened in a new tab."}
-                  </span>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  If it did not open, use the button below to try again.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => window.open(businessPdfUrl, "_blank", "noopener,noreferrer")}
-              >
-                Open Business Value PDF
-              </Button>
             </TabsContent>
           </Tabs>
         </CardContent>
