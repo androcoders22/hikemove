@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   DollarSign,
   Users,
@@ -52,6 +54,7 @@ import { PageHeader } from "@/components/page-header";
 import { getMemberDashboardAPI } from "@/lib/api/dashboard";
 import { getWalletAPI } from "@/lib/api/wallet";
 import { getWithdrawalHistoryAPI } from "@/lib/api/withdrawal";
+import { getMemberMeAPI } from "@/lib/api/member";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -159,10 +162,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [dashboardRes, walletRes, withdrawalRes] = await Promise.all([
+        const [dashboardRes, walletRes, withdrawalRes, memberRes] = await Promise.all([
           getMemberDashboardAPI(),
           getWalletAPI().catch(() => null),
           getWithdrawalHistoryAPI().catch(() => null),
+          getMemberMeAPI().catch(() => null),
         ]);
 
         const dashboardPayload = dashboardRes?.data?.data ?? dashboardRes?.data;
@@ -210,6 +214,24 @@ export default function DashboardPage() {
 
         if (finalData?.referralLink) {
           setReferralLink(finalData.referralLink);
+        }
+
+        // Set user info from /member/me API response dynamically
+        const profileData = memberRes?.data?.data ?? memberRes?.data;
+        if (profileData) {
+          setUser({
+            fullName: profileData.fullName || profileData.full_name || profileData.name || "Member",
+            memberId: profileData.memberId || profileData.member_id || profileData._id || "---"
+          });
+        } else {
+          // Fallback extraction
+          const userData = finalData.user || finalData.member || finalData;
+          if (userData.fullName || userData.memberId || userData.user_name) {
+            setUser({
+              fullName: userData.fullName || userData.full_name || userData.user_name || "Member Name",
+              memberId: userData.memberId || userData.member_id || userData.id || userData._id || "ID-000000"
+            });
+          }
         }
 
         const weeklyIncomeHistory = Array.isArray(finalData?.weeklyIncomeHistory)
@@ -313,75 +335,82 @@ export default function DashboardPage() {
         breadcrumbs={[{ title: "App", href: "#" }, { title: "Dashboard" }]}
       />
 
-      {/* Member Identity Card */}
-      <div className="px-4 py-4 bg-background border-b border-border">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-foreground flex items-center justify-center text-background shadow-lg">
-            <span className="text-xl font-black">
-              {user?.fullName?.charAt(0) || "M"}
-            </span>
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-xl font-black tracking-tight text-foreground leading-tight lowercase first-letter:capitalize">
-              {user?.fullName || "Member Name"}
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
-                Member ID: {user?.memberId || "---"}
-              </span>
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">Active</span>
+      <div className="flex flex-col gap-0">
+        {/* Identity Hub Card */}
+        <div className="px-4 pt-5 pb-2">
+          <div className="relative overflow-hidden rounded-2xl bg-foreground text-background shadow-lg border border-primary/20 group transition-all duration-300 hover:shadow-primary/15 hover:shadow-xl">
+            {/* Theme-matched glow using primary token */}
+            <div className="absolute top-0 right-0 w-72 h-40 bg-primary/25 rounded-full blur-[70px] -mr-20 -mt-14 group-hover:bg-primary/35 transition-colors duration-700 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-primary/10 rounded-full blur-[50px] -ml-16 -mb-16 pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5 p-5 sm:p-6">
+              {/* Left: Avatar + Info */}
+              <div className="flex items-center gap-5">
+                {/* Avatar with theme ring */}
+                <div className="relative shrink-0">
+                  <div className="h-16 w-16 rounded-2xl bg-primary/15 border-2 border-primary/50 flex items-center justify-center shadow-inner">
+                    <span className="text-2xl font-black text-primary tracking-tight">
+                      {user?.fullName?.charAt(0)?.toUpperCase() || "M"}
+                    </span>
+                  </div>
+                  <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-40" />
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-primary border-2 border-foreground" />
+                  </span>
+                </div>
+
+                {/* Name + ID */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-primary">
+                    Verified Partner
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-none text-background">
+                    {user?.fullName || "Member Name"}
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                    <span className="text-[11px] font-mono font-bold text-background/70 bg-background/10 border border-background/15 px-2.5 py-0.5 rounded-md tracking-wider">
+                      ID: {user?.memberId || "---"}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-primary bg-primary/20 border border-primary/30 px-2.5 py-0.5 rounded-full">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block animate-pulse" />
+                      Active
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side: Referral Hub */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 ml-auto w-full sm:w-auto overflow-hidden">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/10 border border-primary/20 backdrop-blur-sm">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-primary whitespace-nowrap">
+                    Referral Link :
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-4 flex-1 bg-background/5 border border-white/10 rounded-xl pl-4 pr-1.5 py-1.5 backdrop-blur-md hover:border-primary/40 hover:bg-white/5 transition-all duration-300 min-w-0 sm:min-w-[320px]">
+                  <span className="flex-1 text-[12px] font-mono font-bold text-background/90 truncate select-all tracking-tight" title={referralLink}>
+                    {referralLink || "Generating link..."}
+                  </span>
+                  <Button
+                    size="sm"
+                    className="h-8 px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-[10px] uppercase rounded-lg shadow-[0_4px_12px_rgba(var(--primary),0.3)] transition-transform active:scale-95 shrink-0"
+                    onClick={() => {
+                      navigator.clipboard.writeText(referralLink);
+                      toast.success("Referral link copied!");
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5 mr-2" />
+                    Copy Link
+                  </Button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Referral Link & Actions Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-3 border-y border-border bg-muted/20 gap-2 sm:gap-0">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-3 overflow-hidden min-w-0 flex-1">
-          <span className="text-[11px] max-w-[200px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-            Referral link:
-          </span>
-          <div className="group relative flex items-center bg-background border border-border px-3 py-1.5 sm:py-1 rounded gap-2 min-w-0 flex-1 sm:flex-initial overflow-hidden transition-all hover:border-primary/50">
-            {/* Professional Shimmer Animation - Continuous */}
-            <div className="absolute inset-0 z-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
-
-            <span className="relative z-10 text-[13px] font-mono font-black text-foreground truncate select-all">
-              {referralLink}
-            </span>
-
-            <style jsx global>{`
-              @keyframes shimmer {
-                100% {
-                  transform: translateX(100%);
-                }
-              }
-            `}</style>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="relative z-10 h-5 w-5 text-muted-foreground hover:text-primary shrink-0 transition-transform active:scale-95"
-              onClick={() => {
-                navigator.clipboard.writeText(referralLink);
-                toast.success("Referral link copied!");
-              }}
-            >
-              <Copy className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-        {/* <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 text-[10px] font-bold flex-1 sm:flex-initial"
-          >
-            EXPORT
-          </Button>
-          <Button size="sm" className="h-7 text-[10px] font-bold px-3 flex-1 sm:flex-initial">
-            SHARE
-          </Button>
-        </div> */}
+        {/* Decorative Space */}
+        <div className="h-4" />
       </div>
 
       <div className="flex flex-col">

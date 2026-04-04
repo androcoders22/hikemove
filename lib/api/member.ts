@@ -79,6 +79,10 @@ export const checkMemberIdAPI = async (memberId: string) => {
   return await api.get(`/member/check-member-id/${memberId}/`);
 };
 
+export const getMemberMeAPI = async () => {
+  return await api.get("/member/me");
+};
+
 export const getMemberPackagesAPI = async () => {
   return await api.get("/member-topup/only-me/");
 };
