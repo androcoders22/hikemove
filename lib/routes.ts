@@ -23,6 +23,7 @@ import {
   LogOut,
   LayoutGrid,
   Package,
+  BookOpen,
 } from "lucide-react";
 
 export interface NavItem {
@@ -148,6 +149,7 @@ export const memberPaths: NavGroup[] = [
     title: "Overview",
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+      { title: "Business Plan", url: "/business-value", icon: BookOpen },
       { title: "Tree View", url: "/tree-view", icon: Workflow },
       { title: "View Profile", url: "/edit-profile", icon: User },
       { title: "Deposit Activity", url: "/deposit-activity", icon: PiggyBank },

@@ -51,11 +51,13 @@ const iconMap: Record<string, React.ElementType> = {
 import { PageHeader } from "@/components/page-header";
 import { getMemberDashboardAPI } from "@/lib/api/dashboard";
 import { getWalletAPI } from "@/lib/api/wallet";
+import { getWithdrawalHistoryAPI } from "@/lib/api/withdrawal";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [referralLink, setReferralLink] = useState("");
+  const [user, setUser] = useState<{ fullName?: string; memberId?: string } | null>(null);
 
   const buildStatsFromPayload = (payload: any) => {
     if (!payload) return [];
@@ -126,6 +128,14 @@ export default function DashboardPage() {
         color: "primary",
       },
       {
+        id: "paid-bonus",
+        label: "Paid Bonus",
+        value: payload.paidBonus ?? 0,
+        type: "currency",
+        icon: "dollar-sign",
+        color: "primary",
+      },
+      {
         id: "deposit-balance",
         label: "Credit Wallet",
         value: payload.depositBalance ?? 0,
@@ -149,9 +159,10 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [dashboardRes, walletRes] = await Promise.all([
+        const [dashboardRes, walletRes, withdrawalRes] = await Promise.all([
           getMemberDashboardAPI(),
           getWalletAPI().catch(() => null),
+          getWithdrawalHistoryAPI().catch(() => null),
         ]);
 
         const dashboardPayload = dashboardRes?.data?.data ?? dashboardRes?.data;
@@ -159,7 +170,21 @@ export default function DashboardPage() {
           throw new Error("Dashboard payload missing");
         }
 
-        let finalData = dashboardPayload;
+        // Calculate Paid Bonus from withdrawal history if not provided by dashboard API
+        let paidBonus = dashboardPayload.paidBonus ?? 0;
+        if (withdrawalRes?.data?.status && Array.isArray(withdrawalRes.data.data)) {
+          paidBonus = withdrawalRes.data.data
+            .filter((w: any) =>
+              w.status?.toLowerCase() === "paid" ||
+              w.status?.toLowerCase() === "approved"
+            )
+            .reduce((sum: number, w: any) => sum + (Number(w.amount) || 0), 0);
+        }
+
+        let finalData = {
+          ...dashboardPayload,
+          paidBonus: paidBonus
+        };
 
         const wallet = walletRes?.data?.data;
 
@@ -229,17 +254,23 @@ export default function DashboardPage() {
 
     // Build referral link on the client (localStorage only available after mount)
     try {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setUser({
+          fullName: userData.fullName || userData.full_name || userData.name || "Member",
+          memberId: userData.memberId || userData.member_id || localStorage.getItem("memberId") || "N/A"
+        });
+      }
+
       const directId = localStorage.getItem("memberId");
       if (directId) {
         setReferralLink(`${window.location.origin}/member-signup/${directId}`);
-      } else {
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          const user = JSON.parse(userStr);
-          const memberId = user.memberId || user.member_id || user.id || "";
-          if (memberId) {
-            setReferralLink(`${window.location.origin}/member-signup/${memberId}`);
-          }
+      } else if (userStr) {
+        const userData = JSON.parse(userStr);
+        const memberId = userData.memberId || userData.member_id || userData.id || "";
+        if (memberId) {
+          setReferralLink(`${window.location.origin}/member-signup/${memberId}`);
         }
       }
     } catch (e) { }
@@ -269,6 +300,7 @@ export default function DashboardPage() {
     "weekly-income-bonus": "/bonus/weekly-profit",
     "level-profit-bonus": "/bonus/level-profit",
     "total-bonus": "/withdrawal/wallet-history",
+    "paid-bonus": "/member-request",
     "deposit-balance": "/withdrawal/wallet-history",
     "income-balance": "/member-request",
   };
@@ -281,19 +313,43 @@ export default function DashboardPage() {
         breadcrumbs={[{ title: "App", href: "#" }, { title: "Dashboard" }]}
       />
 
+      {/* Member Identity Card */}
+      <div className="px-4 py-4 bg-background border-b border-border">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-full bg-foreground flex items-center justify-center text-background shadow-lg">
+            <span className="text-xl font-black">
+              {user?.fullName?.charAt(0) || "M"}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black tracking-tight text-foreground leading-tight lowercase first-letter:capitalize">
+              {user?.fullName || "Member Name"}
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
+                Member ID: {user?.memberId || "---"}
+              </span>
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter">Active System</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Referral Link & Actions Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-2 border-y border-border bg-muted/20 gap-2 sm:gap-0">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 overflow-hidden min-w-0 flex-1">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight whitespace-nowrap">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-3 border-y border-border bg-muted/20 gap-2 sm:gap-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-3 overflow-hidden min-w-0 flex-1">
+          <span className="text-[11px] max-w-[200px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
             Referral link:
           </span>
-          <div className="group relative flex items-center bg-background border border-border px-2 py-1 sm:py-0.5 rounded gap-2 min-w-0 flex-1 sm:flex-initial overflow-hidden transition-all hover:border-primary/50">
+          <div className="group relative flex items-center bg-background border border-border px-3 py-1.5 sm:py-1 rounded gap-2 min-w-0 flex-1 sm:flex-initial overflow-hidden transition-all hover:border-primary/50">
             {/* Professional Shimmer Animation - Continuous */}
             <div className="absolute inset-0 z-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
-            
-            <span className="relative z-10 text-[11px] font-mono font-medium text-foreground truncate select-all">
+
+            <span className="relative z-10 text-[13px] font-mono font-black text-foreground truncate select-all">
               {referralLink}
             </span>
+
             <style jsx global>{`
               @keyframes shimmer {
                 100% {
