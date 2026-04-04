@@ -83,3 +83,7 @@ export const getMemberMeAPI = async () => {
   return await api.get("/member/me");
 };
 
+export const getMemberPackagesAPI = async () => {
+  return await api.get("/member-topup/only-me/");
+};
+
