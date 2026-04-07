@@ -90,6 +90,7 @@ export default function AdminDashboardPage() {
       color: "text-purple-600",
       bgColor: "bg-purple-500/10",
       description: "Cumulative topups",
+      href: "/admin/payments/member-topup",
     },
     {
       title: "Today Joining",
@@ -114,6 +115,7 @@ export default function AdminDashboardPage() {
       color: "text-emerald-600",
       bgColor: "bg-emerald-500/10",
       description: "Total payouts issued",
+      href: "/admin/payments/paid-income",
     },
   ];
 

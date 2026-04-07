@@ -12,6 +12,7 @@ import {
   Ticket,
   Workflow,
   History,
+  DollarSign,
   Coins,
   Medal,
   Award,
@@ -113,6 +114,11 @@ export const adminPaths: NavGroup[] = [
         title: "Income Check",
         url: "/admin/payments/income-check",
         icon: LayoutGrid,
+      },
+      {
+        title: "Paid Income",
+        url: "/admin/payments/paid-income",
+        icon: DollarSign,
       },
       {
         title: "Fund Requests",

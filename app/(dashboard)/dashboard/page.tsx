@@ -303,14 +303,7 @@ export default function DashboardPage() {
   if (loading || !data) return null;
 
   const formatValue = (stat: any) => {
-    if (stat.type === "currency") {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-      }).format(stat.value);
-    }
-    return stat.value;
+    return stat.value ?? 0;
   };
 
   const statLinks: Record<string, string> = {
@@ -421,8 +414,8 @@ export default function DashboardPage() {
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">
                 Total Profits
               </p>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-                ${(data as any).totalBalance ? (data as any).totalBalance.toLocaleString() : "0.00"}
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+                ${(data as any).totalBalance ?? 0}
               </h2>
             </div>
             <div className="flex gap-1 flex-wrap">
