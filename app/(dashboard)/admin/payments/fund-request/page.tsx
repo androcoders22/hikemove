@@ -225,7 +225,7 @@ export default function FundRequestManagementPage() {
                             <Filter className="h-3.5 w-3.5 text-[#8a927e]" />
                             <span className="text-[11px] font-bold uppercase tracking-tight text-[#5c634f]">Filter Status:</span>
                             <Select value={filterStatus} onValueChange={handleFilterChange}>
-                                <SelectTrigger className="h-7 w-[110px] border-none bg-transparent p-0 text-xs font-bold focus:ring-0 shadow-none">
+                                <SelectTrigger className="h-7 w-27.5 border-none bg-transparent p-0 text-xs font-bold focus:ring-0 shadow-none">
                                     <SelectValue placeholder="All" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -249,7 +249,7 @@ export default function FundRequestManagementPage() {
                 <Card className="overflow-hidden rounded-xl border border-[#dce8d3] bg-white shadow-md py-0 gap-0">
                     <CardContent className="p-0">
                         {isLoading ? (
-                            <div className="flex min-h-[400px] items-center justify-center">
+                            <div className="flex min-h-100 items-center justify-center">
                                 <div className="flex flex-col items-center gap-3">
                                     <div className="relative h-12 w-12">
                                         <div className="absolute h-12 w-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin"></div>
@@ -258,7 +258,7 @@ export default function FundRequestManagementPage() {
                                 </div>
                             </div>
                         ) : filteredRequests.length === 0 ? (
-                            <div className="flex min-h-[400px] flex-col items-center justify-center text-center p-6">
+                            <div className="flex min-h-100 flex-col items-center justify-center text-center p-6">
                                 <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/5 ring-1 ring-[#dce8d3]">
                                     <Search className="h-10 w-10 text-[#a1a895]" />
                                 </div>
@@ -359,7 +359,7 @@ export default function FundRequestManagementPage() {
                                                     </TableCell>
                                                     <TableCell className="px-4 py-2">
                                                         <div>
-                                                            <div className="text-xs font-bold text-[#4d553d] truncate max-w-[150px]">{req.member?.fullName || req.user?.memberName || "N/A"}</div>
+                                                            <div className="text-xs font-bold text-[#4d553d] truncate max-w-37.5">{req.member?.fullName || req.user?.memberName || "N/A"}</div>
                                                             {/* <div className="text-[9px] font-medium text-[#8a927e] flex items-center gap-1">
                                                                 <Clock className="h-2 w-2" />
                                                             </div> */}
@@ -430,7 +430,7 @@ export default function FundRequestManagementPage() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="p-6 bg-white flex items-center justify-center min-h-[300px]">
+                    <div className="p-6 bg-white flex items-center justify-center min-h-75">
                         {isPreviewLoading ? (
                             <div className="flex flex-col items-center justify-center gap-3">
                                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -457,7 +457,7 @@ export default function FundRequestManagementPage() {
 
                     <DialogFooter className="p-4 bg-[#f7fbf3] border-t border-[#dce8d3]">
                         <Button
-                            className="w-full sm:w-auto min-w-[120px] rounded-xl bg-[#4d553d] text-xs font-bold uppercase text-white hover:bg-[#3a412e]"
+                            className="w-full sm:w-auto min-w-30 rounded-xl bg-[#4d553d] text-xs font-bold uppercase text-white hover:bg-[#3a412e]"
                             onClick={() => setIsScreenshotModalOpen(false)}
                         >
                             Close Preview
