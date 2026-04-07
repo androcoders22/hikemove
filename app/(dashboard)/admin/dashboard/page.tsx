@@ -103,6 +103,7 @@ export default function AdminDashboardPage() {
       color: "text-orange-600",
       bgColor: "bg-orange-500/10",
       description: "New users today",
+      href: "/admin/member-options/all-members",
     },
     {
       title: "Paid Income",
