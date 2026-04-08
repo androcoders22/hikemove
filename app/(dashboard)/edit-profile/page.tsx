@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import toast from "react-hot-toast";
 import { api } from "@/lib/axios";
 import { getMemberStatus } from "@/lib/utils/member-status";
+import { getMyMemberTopupsAPI } from "@/lib/api/member-topup";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ interface UserProfile {
   country: string;
   memberId: string;
   package?: string;
+  packages?: Array<{ amount: number; endDate?: string; status: string }>;
   sponsorId: {
     _id: string;
     fullName: string;
@@ -69,17 +71,40 @@ export default function EditProfile() {
   const [formData, setFormData] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    api.get("/member/me")
-      .then((res) => {
-        if (res.data?.status && res.data.data) {
-          const rawData = res.data.data;
+    const fetchData = async () => {
+      try {
+        const [meRes, topupRes] = await Promise.all([
+          api.get("/member/me"),
+          getMyMemberTopupsAPI().catch(() => null)
+        ]);
+
+        if (meRes.data?.status && meRes.data.data) {
+          const rawData = meRes.data.data;
+          
+          let packageAmount = rawData.package || rawData.packageName || rawData.packageAmount || "";
+          let userPackages: Array<{ amount: number; endDate?: string; status: string }> = [];
+          
+          if (topupRes?.data?.status && Array.isArray(topupRes.data.data) && topupRes.data.data.length > 0) {
+            userPackages = topupRes.data.data.map((topup: any) => ({
+              amount: topup.amount,
+              endDate: topup.endDate,
+              status: topup.status
+            }));
+            
+            // Still set primary package for backward compatibility/other UI parts
+            const activeTopup = topupRes.data.data.find((t: any) => t.status === "active") || topupRes.data.data[0];
+            if (activeTopup && activeTopup.amount) {
+              packageAmount = activeTopup.amount.toString();
+            }
+          }
+
           const userData: UserProfile = {
             ...rawData,
             avatar: rawData.avatar || (rawData.gender === "female" ? femaleAvatar : maleAvatar),
             sponsorName: rawData.sponsorId?.fullName || "N/A",
-            // For display purposes, we'll store the memberId string if it's an object
             sponsorId: typeof rawData.sponsorId === 'object' ? rawData.sponsorId?.memberId : rawData.sponsorId,
-            package: rawData.package || rawData.packageName || rawData.packageAmount || "",
+            package: packageAmount,
+            packages: userPackages,
             joiningDate: rawData.createdAt ? new Date(rawData.createdAt).toLocaleDateString('en-GB', {
               day: 'numeric',
               month: 'short',
@@ -95,12 +120,14 @@ export default function EditProfile() {
           setProfile(userData);
           setFormData(userData);
         }
+      } catch (err) {
+        console.error("Error fetching profile data:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching profile:", err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   const copyToClipboard = (text: string, label: string) => {
@@ -237,11 +264,37 @@ export default function EditProfile() {
             value={profile.activationDate}
             icon={<CheckCircle2 className="h-3.5 w-3.5" />}
           />
-          <InfoRow
-            label="Package"
-            value={profile.package || "N/A"}
-            icon={<Wallet className="h-3.5 w-3.5" />}
-          />
+          {profile.packages && profile.packages.length > 0 ? (
+            <>
+              <InfoRow
+                label="Expiration Date"
+                value={profile.packages.map(pkg => pkg.endDate ? new Date(pkg.endDate).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                }) : "N/A").join(", ")}
+                icon={<Calendar className="h-3.5 w-3.5" />}
+              />
+              <InfoRow
+                label="Package"
+                value={profile.packages.map(pkg => `$${pkg.amount}`).join(", ")}
+                icon={<Wallet className="h-3.5 w-3.5" />}
+              />
+            </>
+          ) : (
+            <>
+              <InfoRow
+                label="Expiration Date"
+                value="N/A"
+                icon={<Calendar className="h-3.5 w-3.5" />}
+              />
+              <InfoRow
+                label="Package"
+                value={profile.package ? `$${profile.package}` : "0"}
+                icon={<Wallet className="h-3.5 w-3.5" />}
+              />
+            </>
+          )}
 
           <SectionHeading title="Contact Information" />
           <InfoRow

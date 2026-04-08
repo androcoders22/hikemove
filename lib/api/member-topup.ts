@@ -25,3 +25,7 @@ export const createMemberTopupAPI = async (data: {
 export const getMemberTopupsAPI = async () => {
   return await api.get("/member-topup/me");
 };
+
+export const getMyMemberTopupsAPI = async () => {
+  return await api.get("/member-topup/only-me/");
+};
