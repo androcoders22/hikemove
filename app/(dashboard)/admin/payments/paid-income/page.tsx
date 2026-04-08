@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { getPaidIncomeAPI } from "@/lib/api/ledger";
 
 interface LedgerRow {
@@ -29,10 +30,12 @@ interface LedgerRow {
 }
 
 export default function PaidIncomePage() {
+  const ITEMS_PER_PAGE = 15;
   const [ledgerData, setLedgerData] = useState<LedgerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,6 +80,23 @@ export default function PaidIncomePage() {
       );
     });
   }, [ledgerData, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredData.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredData, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "N/A";
@@ -162,14 +182,14 @@ export default function PaidIncomePage() {
                 </TableHeader>
 
                 <TableBody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map((row, idx) => (
+                  {paginatedData.length > 0 ? (
+                    paginatedData.map((row, idx) => (
                       <TableRow
                         key={row._id || idx}
                         className="border-border hover:bg-muted/20 transition-colors group"
                       >
                         <TableCell className="text-xs font-bold text-muted-foreground">
-                          {idx + 1}
+                          {(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}
                         </TableCell>
 
                         <TableCell className="text-xs font-black text-primary tracking-tight">
@@ -225,6 +245,53 @@ export default function PaidIncomePage() {
               </Table>
             )}
           </div>
+
+          {!loading && filteredData.length > 0 && (
+            <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs font-medium text-muted-foreground">
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)} of {filteredData.length} records
+              </p>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                >
+                  Previous
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      type="button"
+                      size="sm"
+                      variant={page === currentPage ? "default" : "outline"}
+                      className="h-8 min-w-8 px-2"
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
-import { Download, FileText, ChevronUp, ChevronDown, Monitor } from "lucide-react";
+import { Download, FileText, ChevronUp, ChevronDown, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 
 // Memoized PDF Page Component for smooth rendering
@@ -96,6 +98,21 @@ export default function BusinessValuePage() {
         </div>
       </div>
 
+      {/* Mobile Navigation Controls: lets users open sidebar or jump to dashboard */}
+      <div className="sm:hidden fixed top-4 left-4 z-50 flex items-center gap-2">
+        <SidebarTrigger className="size-9 rounded-lg bg-background/90 border border-border/70 shadow-md backdrop-blur-md" />
+        <Button
+          asChild
+          size="icon"
+          variant="outline"
+          className="size-9 rounded-lg bg-background/90 border-border/70 shadow-md backdrop-blur-md"
+        >
+          <Link href="/dashboard" aria-label="Go to dashboard">
+            <LayoutDashboard className="h-4.5 w-4.5" />
+          </Link>
+        </Button>
+      </div>
+
       {/* Premium Vertical Page Indicator / Scroll Dots */}
       {/* <div className="absolute right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
         {pages.slice(0, 8).map((_, idx) => (
@@ -123,18 +140,6 @@ export default function BusinessValuePage() {
         </Button>
       </div>
 
-
-
-      {/* Header Badge */}
-      <div className="absolute top-6 left-6 z-50">
-        <div className="rounded-full bg-background/40 backdrop-blur-2xl border border-border/50 px-5 py-2.5 flex items-center gap-3 shadow-lg">
-          <Monitor className="h-3.5 w-3.5 text-primary" />
-          <div className="h-4 w-[1px] bg-border/50" />
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white">
-            HikeMove • Premium Plan
-          </span>
-        </div>
-      </div>
     </div>
   );
 }
