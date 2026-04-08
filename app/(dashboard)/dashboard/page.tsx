@@ -373,28 +373,67 @@ export default function DashboardPage() {
               </div>
 
               {/* Right Side: Referral Hub */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 ml-auto w-full sm:w-auto overflow-hidden">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-foreground/10 border border-primary/20 backdrop-blur-sm">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary whitespace-nowrap">
+              <div className="ml-auto w-full sm:w-140">
+                {/* Desktop View: Stacked Card Style */}
+                <div className="hidden sm:flex items-center gap-3 rounded-xl border border-white/10 bg-background/5 p-2.5 backdrop-blur-md transition-all hover:border-primary/40">
+                  <p className="shrink-0 rounded-md bg-primary/10 px-3 py-2.5 text-[11px] font-black uppercase tracking-[0.12em] text-primary">
                     Referral Link :
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-4 flex-1 bg-background/5 border border-white/10 rounded-xl pl-4 pr-1.5 py-1.5 backdrop-blur-md hover:border-primary/40 hover:bg-white/5 transition-all duration-300 min-w-0 sm:min-w-[320px]">
-                  <span className="flex-1 text-[12px] font-mono font-bold text-background/90 truncate select-all tracking-tight" title={referralLink}>
-                    {referralLink || "Generating link..."}
-                  </span>
-                  <Button
-                    size="sm"
-                    className="h-8 px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-[10px] uppercase rounded-lg shadow-[0_4px_12px_rgba(var(--primary),0.3)] transition-transform active:scale-95 shrink-0"
+                  </p>
+                  <button
+                    type="button"
+                    className="min-w-0 flex-1 rounded-lg bg-background/10 px-4 py-2.5 text-left transition-colors hover:bg-background/15"
                     onClick={() => {
                       navigator.clipboard.writeText(referralLink);
                       toast.success("Referral link copied!");
                     }}
                   >
-                    <Copy className="h-3.5 w-3.5 mr-2" />
+                    <span className="block truncate font-mono text-[12px] font-bold tracking-tight text-background/90">
+                      {referralLink || "Generating link..."}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 text-[11px] font-black uppercase text-primary-foreground shadow-lg hover:brightness-105 active:scale-95"
+                    onClick={() => {
+                      navigator.clipboard.writeText(referralLink);
+                      toast.success("Referral link copied!");
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
                     Copy Link
-                  </Button>
+                  </button>
+                </div>
+
+                {/* Mobile View: Row Style (Requested for Mobile Only) */}
+                <div className="sm:hidden space-y-2">
+                  <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-background/5 p-2 backdrop-blur-md">
+                    {/* Keep copy action first on mobile */}
+                    <button
+                      type="button"
+                      className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 text-[10px] font-black uppercase text-primary-foreground shadow-lg active:scale-95"
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralLink);
+                        toast.success("Referral link copied!");
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      COPY LINK
+                    </button>
+
+                    {/* Link comes after copy button on mobile */}
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 rounded-lg bg-background/10 px-3 py-2 text-left transition-colors"
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralLink);
+                        toast.success("Referral link copied!");
+                      }}
+                    >
+                      <span className="block truncate font-mono text-[10px] font-bold text-background/90">
+                        {referralLink || "---"}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -507,7 +546,7 @@ export default function DashboardPage() {
             return (
               <Link
                 key={stat.id}
-                href={href || "#"}
+                href={(href ?? "/dashboard") as any}
                 className="p-3 sm:p-4 group hover:bg-accent transition-colors border-r border-border last:border-r-0"
               >
                 <div className="flex items-center justify-between mb-2 sm:mb-3">
