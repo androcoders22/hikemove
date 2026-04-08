@@ -32,6 +32,10 @@ export const getLevelProfitBonusAPI = async () => {
   return await api.get(`/ledger/me?type=${LedgerType.ROI_LEVEL_BONUS}`);
 };
 
+export const getPaidIncomeAPI = async (page: number = 1, limit: number = 30) => {
+  return await api.get(`/ledger/paid-income?page=${page}&limit=${limit}`);
+};
+
 export const getLedgerMeAPI = async () => {
   return await api.get("/ledger/me");
 };

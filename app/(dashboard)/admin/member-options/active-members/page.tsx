@@ -55,6 +55,15 @@ export default function ActiveMembersListPage() {
     return [single];
   };
 
+  const formatDate = (date: string | null) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="flex min-h-screen w-full min-w-0 flex-col bg-[#f6f8f4]">
       <PageHeader
@@ -122,6 +131,8 @@ export default function ActiveMembersListPage() {
                         <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">Password</TableHead>
                         <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">Txn Pin</TableHead>
                         <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">Mobile</TableHead>
+                        <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">Creation Date</TableHead>
+                        <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f]">Activation Date</TableHead>
                         <TableHead className="px-3 py-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#5c634f] text-right">Status</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -129,7 +140,7 @@ export default function ActiveMembersListPage() {
                       {loading ? (
                         Array.from({ length: 5 }).map((_, i) => (
                           <TableRow key={i} className="border-b border-[#edf3e7]">
-                            <TableCell colSpan={10} className="h-12 text-center text-[10px] text-muted-foreground italic">
+                            <TableCell colSpan={12} className="h-12 text-center text-[10px] text-muted-foreground italic">
                               Loading data...
                             </TableCell>
                           </TableRow>
@@ -158,6 +169,12 @@ export default function ActiveMembersListPage() {
                             <TableCell className="px-3 py-2.5 font-mono text-[10px] text-[#8a927e]">{member.password || "********"}</TableCell>
                             <TableCell className="px-3 py-2.5 font-mono text-[10px] text-[#8a927e]">{member.transactionPassword || member.txnPassword || "********"}</TableCell>
                             <TableCell className="px-3 py-2.5 text-[11px] font-medium text-[#5f6851]">{member.phone || member.mobile || "N/A"}</TableCell>
+                            <TableCell className="px-3 py-2.5 text-[10px] font-medium text-[#7a8270]">
+                              {formatDate(member.createdAt || (typeof member.fromMember === 'object' ? member.fromMember?.createdAt : null))}
+                            </TableCell>
+                            <TableCell className="px-3 py-2.5 text-[10px] font-medium text-[#7a8270]">
+                              {formatDate(member.activationDate || (typeof member.fromMember === 'object' ? member.fromMember?.activationDate : null))}
+                            </TableCell>
                             <TableCell className="px-3 py-2.5 text-right">
                               <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] text-emerald-700">
                                 active

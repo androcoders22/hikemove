@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/axios";
+import { getPaidIncomeAPI } from "@/lib/api/ledger";
 
 interface LedgerRow {
   _id: string;
@@ -28,14 +28,6 @@ interface LedgerRow {
   status?: string;
 }
 
-const POSSIBLE_PAID_INCOME_TYPES = [
-  "commission",
-  "paidIncome",
-  "paid-income",
-  "paid_income",
-  "income",
-];
-
 export default function PaidIncomePage() {
   const [ledgerData, setLedgerData] = useState<LedgerRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,42 +40,12 @@ export default function PaidIncomePage() {
       setError(null);
 
       try {
-        const responses = await Promise.all(
-          POSSIBLE_PAID_INCOME_TYPES.map((type) =>
-            api.get(`/ledger/me?type=${encodeURIComponent(type)}`).catch(() => null),
-          ),
-        );
-
-        const mergedData = responses.flatMap((response) =>
-          response?.data?.status && Array.isArray(response.data.data)
-            ? response.data.data
-            : [],
-        );
-
-        if (mergedData.length > 0) {
-          setLedgerData(mergedData);
-          return;
+        const response = await getPaidIncomeAPI(1, 100);
+        if (response.data?.status && Array.isArray(response.data.data)) {
+          setLedgerData(response.data.data);
+        } else {
+          setLedgerData([]);
         }
-
-        const fallbackResponse = await api.get("/ledger/me");
-        const allRows =
-          fallbackResponse.data?.status && Array.isArray(fallbackResponse.data.data)
-            ? fallbackResponse.data.data
-            : [];
-
-        setLedgerData(
-          allRows.filter((row: LedgerRow) => {
-            const ledgerType = (row.ledgerType || "").toLowerCase();
-            const remarks = (row.remarks || row.description || "").toLowerCase();
-            return (
-              row.entryType?.toLowerCase() === "credit" &&
-              (ledgerType.includes("commission") ||
-                ledgerType.includes("income") ||
-                remarks.includes("commission") ||
-                remarks.includes("income"))
-            );
-          }),
-        );
       } catch (err: any) {
         setError(err.message || "An error occurred");
       } finally {
