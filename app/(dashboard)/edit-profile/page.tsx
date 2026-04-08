@@ -268,11 +268,11 @@ export default function EditProfile() {
             <>
               <InfoRow
                 label="Expiration Date"
-                value={profile.packages.map(pkg => pkg.endDate ? new Date(pkg.endDate).toLocaleDateString('en-GB', {
+                value={profile.packages[0].endDate ? new Date(profile.packages[0].endDate).toLocaleDateString('en-GB', {
                   day: 'numeric',
                   month: 'short',
                   year: 'numeric'
-                }) : "N/A").join(", ")}
+                }) : "N/A"}
                 icon={<Calendar className="h-3.5 w-3.5" />}
               />
               <InfoRow
