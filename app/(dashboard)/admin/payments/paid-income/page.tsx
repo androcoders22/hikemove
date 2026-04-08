@@ -29,13 +29,32 @@ interface LedgerRow {
   status?: string;
 }
 
+interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+const DEFAULT_PAGINATION: PaginationMeta = {
+  page: 1,
+  pageSize: 15,
+  totalItems: 0,
+  totalPages: 1,
+  hasNextPage: false,
+  hasPreviousPage: false,
+};
+
 export default function PaidIncomePage() {
-  const ITEMS_PER_PAGE = 15;
   const [ledgerData, setLedgerData] = useState<LedgerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] =
+    useState<PaginationMeta>(DEFAULT_PAGINATION);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,21 +62,33 @@ export default function PaidIncomePage() {
       setError(null);
 
       try {
-        const response = await getPaidIncomeAPI(1, 100);
+        const response = await getPaidIncomeAPI(currentPage, DEFAULT_PAGINATION.pageSize);
         if (response.data?.status && Array.isArray(response.data.data)) {
           setLedgerData(response.data.data);
         } else {
           setLedgerData([]);
         }
+
+        const apiMeta = response.data?.metaData;
+        setPagination({
+          page: Number(apiMeta?.page) || currentPage,
+          pageSize: Number(apiMeta?.pageSize) || DEFAULT_PAGINATION.pageSize,
+          totalItems: Number(apiMeta?.totalItems) || 0,
+          totalPages: Math.max(1, Number(apiMeta?.totalPages) || 1),
+          hasNextPage: Boolean(apiMeta?.hasNextPage),
+          hasPreviousPage: Boolean(apiMeta?.hasPreviousPage),
+        });
       } catch (err: any) {
         setError(err.message || "An error occurred");
+        setLedgerData([]);
+        setPagination(DEFAULT_PAGINATION);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   const filteredData = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
@@ -81,12 +112,7 @@ export default function PaidIncomePage() {
     });
   }, [ledgerData, searchTerm]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
-
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredData.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredData, currentPage]);
+  const totalPages = Math.max(1, pagination.totalPages || 1);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -182,14 +208,14 @@ export default function PaidIncomePage() {
                 </TableHeader>
 
                 <TableBody>
-                  {paginatedData.length > 0 ? (
-                    paginatedData.map((row, idx) => (
+                  {filteredData.length > 0 ? (
+                    filteredData.map((row, idx) => (
                       <TableRow
                         key={row._id || idx}
                         className="border-border hover:bg-muted/20 transition-colors group"
                       >
                         <TableCell className="text-xs font-bold text-muted-foreground">
-                          {(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}
+                          {(pagination.page - 1) * pagination.pageSize + idx + 1}
                         </TableCell>
 
                         <TableCell className="text-xs font-black text-primary tracking-tight">
@@ -246,10 +272,10 @@ export default function PaidIncomePage() {
             )}
           </div>
 
-          {!loading && filteredData.length > 0 && (
+          {!loading && ledgerData.length > 0 && (
             <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs font-medium text-muted-foreground">
-                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredData.length)} of {filteredData.length} records
+                Showing {pagination.totalItems > 0 ? (pagination.page - 1) * pagination.pageSize + 1 : 0} to {Math.min(pagination.page * pagination.pageSize, pagination.totalItems)} of {pagination.totalItems} records
               </p>
 
               <div className="flex items-center gap-2">
@@ -257,7 +283,7 @@ export default function PaidIncomePage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={currentPage === 1}
+                  disabled={!pagination.hasPreviousPage || currentPage === 1}
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 >
                   Previous
@@ -282,7 +308,7 @@ export default function PaidIncomePage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={currentPage === totalPages}
+                  disabled={!pagination.hasNextPage || currentPage === totalPages}
                   onClick={() =>
                     setCurrentPage((prev) => Math.min(totalPages, prev + 1))
                   }
