@@ -12,32 +12,32 @@ export enum LedgerType {
   ROI_LEVEL_BONUS = 'roiLevelBonus',
 }
 
-export const getLedgerAPI = async (type: string) => {
-  return await api.get(`/ledger/me?type=${type}`);
+export const getLedgerAPI = async (type: string, page: number = 1, limit: number = 10) => {
+  return await api.get(`/ledger/me?type=${type}&page=${page}&limit=${limit}`);
 };
 
-export const getSponsorBonusAPI = async () => {
-  return await api.get(`/ledger/me?type=${LedgerType.SPONSOR_BONUS}`);
+export const getSponsorBonusAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/ledger/me?type=${LedgerType.SPONSOR_BONUS}&page=${page}&limit=${limit}`);
 };
 
-export const getTeamLevelBonusAPI = async () => {
-  return await api.get(`/ledger/me?type=${LedgerType.TEAM_LEVEL_BONUS}`);
+export const getTeamLevelBonusAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/ledger/me?type=${LedgerType.TEAM_LEVEL_BONUS}&page=${page}&limit=${limit}`);
 };
 
-export const getWeeklyProfitBonusAPI = async () => {
-  return await api.get(`/ledger/me?type=${LedgerType.WEEKLY_BONUS}`);
+export const getWeeklyProfitBonusAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/ledger/me?type=${LedgerType.WEEKLY_BONUS}&page=${page}&limit=${limit}`);
 };
 
-export const getLevelProfitBonusAPI = async () => {
-  return await api.get(`/ledger/me?type=${LedgerType.ROI_LEVEL_BONUS}`);
+export const getLevelProfitBonusAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/ledger/me?type=${LedgerType.ROI_LEVEL_BONUS}&page=${page}&limit=${limit}`);
 };
 
-export const getPaidIncomeAPI = async (page: number = 1, limit: number = 30) => {
+export const getPaidIncomeAPI = async (page: number = 1, limit: number = 10) => {
   return await api.get(`/ledger/paid-income?page=${page}&limit=${limit}`);
 };
 
-export const getLedgerMeAPI = async () => {
-  return await api.get("/ledger/me");
+export const getLedgerMeAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/ledger/me?page=${page}&limit=${limit}`);
 };
 
 export const getLedgerByMemberIdAPI = async (memberId: string) => {

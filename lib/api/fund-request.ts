@@ -1,15 +1,15 @@
 import { api } from "../axios";
 
-export const getFundRequestsMeAPI = async () => {
-  return await api.get("/fund-request/me");
+export const getFundRequestsMeAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/fund-request/me?page=${page}&limit=${limit}`);
 };
 
 export const createFundRequestAPI = async (payload: any) => {
   return await api.post("/fund-request", payload);
 };
 
-export const getAllFundRequestsAPI = async () => {
-  return await api.get("/fund-request");
+export const getAllFundRequestsAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/fund-request?page=${page}&limit=${limit}`);
 };
 
 export const approveFundRequestAPI = async (id: string) => {

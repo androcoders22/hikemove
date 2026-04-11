@@ -16,16 +16,45 @@ import { Input } from "@/components/ui/input";
 import { Search, Users, Shield, Key, Smartphone, UserCircle2, List, Clock, CheckCircle2, Wallet, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getMemberStatus } from "@/lib/utils/member-status";
+import { Button } from "@/components/ui/button";
 
 export default function AllMembersListPage() {
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
 
-  const fetchMembers = async () => {
+  const fetchMembers = async (page: number = 1) => {
+    setLoading(true);
     try {
-      const res = await getAllMembersAPI();
-      setMembers(res.data?.data || res.data || []);
+      const res = await getAllMembersAPI(page, limit);
+      const d = res.data;
+      if (d?.status && d?.data) {
+        let dataArray = [];
+        let totalP = 1;
+
+        const meta = d.metaData;
+        if (meta?.totalPages) {
+          totalP = Number(meta.totalPages);
+        }
+
+        if (Array.isArray(d.data)) {
+          dataArray = d.data;
+          if (!meta) totalP = d.totalPages || (d.total ? Math.ceil(d.total / limit) : 1);
+        } else if (typeof d.data === "object") {
+          dataArray =
+            d.data.docs || d.data.list || d.data.records || d.data.data || [];
+          if (!meta) totalP = d.data.totalPages || d.data.pages || d.totalPages || (d.data.total ? Math.ceil(d.data.total / limit) : 1);
+        }
+        setMembers(dataArray);
+        const calcTotalPages = totalP > 0 ? totalP : (dataArray.length > 0 ? 1 : 0);
+        setTotalPages(calcTotalPages);
+        setCurrentPage(page);
+      } else {
+        setMembers([]);
+      }
     } catch (err) {
       console.error("Failed to fetch members", err);
     } finally {
@@ -34,7 +63,7 @@ export default function AllMembersListPage() {
   };
 
   useEffect(() => {
-    fetchMembers();
+    fetchMembers(1);
   }, []);
 
   const filteredMembers = useMemo(() => {
@@ -145,7 +174,7 @@ export default function AllMembersListPage() {
                       ) : (
                         filteredMembers.map((member, index) => (
                           <TableRow key={member._id || index} className="border-b border-[#edf3e7] transition-colors hover:bg-[#fbfdf8]">
-                            <TableCell className="px-3 py-2.5 text-xs font-medium text-[#8a927e]">{index + 1}</TableCell>
+                            <TableCell className="px-3 py-2.5 text-xs font-medium text-[#8a927e]">{(currentPage - 1) * limit + index + 1}</TableCell>
                             <TableCell className="px-3 py-2.5 text-xs font-semibold text-primary">{member.memberId}</TableCell>
                             <TableCell className="px-3 py-2.5 text-xs font-medium text-[#5f6851] truncate max-w-40">{member.fullName}</TableCell>
                             <TableCell className="px-3 py-2.5">
@@ -173,11 +202,10 @@ export default function AllMembersListPage() {
                               {formatDate(member.activationDate || (typeof member.fromMember === 'object' ? member.fromMember?.activationDate : null))}
                             </TableCell>
                             <TableCell className="px-3 py-2.5 text-right">
-                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${
-                                getMemberStatus(member) === "active"
+                              <span className={`inline-flex rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.05em] ${getMemberStatus(member) === "active"
                                   ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                                   : "border-amber-200 bg-amber-50 text-amber-700"
-                              }`}>
+                                }`}>
                                 {getMemberStatus(member)}
                               </span>
                             </TableCell>
@@ -186,6 +214,91 @@ export default function AllMembersListPage() {
                       )}
                     </TableBody>
                   </Table>
+                </div>
+              </div>
+            )}
+            {totalPages > 0 && (
+              <div className="p-4 border-t border-[#dce8d3] flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 bg-[#fbfdf8] rounded-lg border">
+                <p className="text-[10px] font-black text-[#8a927e] uppercase tracking-widest order-2 sm:order-1">
+                  Page {currentPage} of {totalPages}
+                </p>
+
+                <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage <= 1 || loading}
+                    onClick={() => fetchMembers(1)}
+                    className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                  >
+                    First
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage <= 1 || loading}
+                    onClick={() => fetchMembers(currentPage - 1)}
+                    className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                  >
+                    Prev
+                  </Button>
+
+                  <div className="flex items-center gap-1 mx-1">
+                    {(() => {
+                      const pages = [];
+                      if (totalPages > 0) {
+                        pages.push(currentPage);
+                        if (currentPage < totalPages) {
+                          pages.push(currentPage + 1);
+                          if (currentPage + 1 < totalPages) {
+                            pages.push("...");
+                          }
+                        }
+                      }
+
+                      return pages.map((page, idx) => (
+                        <React.Fragment key={idx}>
+                          {page === "..." ? (
+                            <span className="w-8 h-8 flex items-center justify-center text-[#8a927e]">...</span>
+                          ) : (
+                            <Button
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="icon"
+                              disabled={loading}
+                              onClick={() => fetchMembers(page as number)}
+                              className={`h-8 w-8 text-[11px] font-bold transition-all ${currentPage === page
+                                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary"
+                                  : "border-[#dce8d3] bg-white hover:bg-[#f3f7ef]"
+                                }`}
+                            >
+                              {page}
+                            </Button>
+                          )}
+                        </React.Fragment>
+                      ));
+                    })()}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage >= totalPages || loading}
+                    onClick={() => fetchMembers(currentPage + 1)}
+                    className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                  >
+                    Next
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage >= totalPages || loading}
+                    onClick={() => fetchMembers(totalPages)}
+                    className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                  >
+                    Last
+                  </Button>
                 </div>
               </div>
             )}

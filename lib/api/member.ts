@@ -18,10 +18,10 @@ export const requestMemberPasswordOtp = async (data: {
   const payload = data.email ? { email: data.email } : undefined;
   const config = data.email
     ? {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
     : undefined;
 
   const response = await api.post(
@@ -67,12 +67,12 @@ export const getMemberTreeAPI = async (memberId?: string) => {
   return await api.get(url);
 };
 
-export const getMemberMyTeamAPI = async () => {
-  return await api.get("/member/my-team");
+export const getMemberMyTeamAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/member/my-team?page=${page}&limit=${limit}`);
 };
 
-export const getDirectMembersAPI = async () => {
-  return await api.get("/member/direct-members/");
+export const getDirectMembersAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/member/direct-members/?page=${page}&limit=${limit}`);
 };
 
 export const checkMemberIdAPI = async (memberId: string) => {
@@ -83,7 +83,7 @@ export const getMemberMeAPI = async () => {
   return await api.get("/member/me");
 };
 
-export const getMemberPackagesAPI = async () => {
-  return await api.get("/member-topup/only-me/");
+export const getMemberPackagesAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/member-topup/only-me/?page=${page}&limit=${limit}`);
 };
 

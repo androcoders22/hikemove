@@ -50,6 +50,8 @@ export default function MyDirectPage() {
     });
 
     const [directData, setDirectData] = useState<DirectRow[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [limit] = useState(10);
 
     const resolvePackage = (row: any) => {
         const normalizePackageValue = (pkg: any) => {
@@ -128,6 +130,7 @@ export default function MyDirectPage() {
             if (response.data?.status && Array.isArray(response.data.data)) {
                 const results = response.data.data;
                 setDirectData(results);
+                setCurrentPage(1);
                 if (results.length === 0) {
                     toast("No direct members found for this ID", { icon: "ℹ️" });
                 } else {
@@ -170,6 +173,13 @@ export default function MyDirectPage() {
             );
         });
     }, [directData, filters]);
+
+    const paginatedFilteredData = useMemo(() => {
+        const start = (currentPage - 1) * limit;
+        return filteredData.slice(start, start + limit);
+    }, [filteredData, currentPage, limit]);
+
+    const totalFilteredPages = filteredData.length > 0 ? Math.max(1, Math.ceil(filteredData.length / limit)) : 0;
 
     const handleFilterChange = (key: keyof typeof filters, value: string) => {
         setFilters((prev) => ({ ...prev, [key]: value }));
@@ -284,7 +294,7 @@ export default function MyDirectPage() {
                             <>
                                 {/* Mobile + Tablet Card View */}
                                 <div className="space-y-3 xl:hidden">
-                                    {filteredData.map((row, index) => (
+                                    {paginatedFilteredData.map((row, index) => (
                                         <div
                                             key={row._id || index}
                                             className="rounded-lg border border-[#dce8d3] bg-[#fafcf8] p-3 shadow-sm"
@@ -292,7 +302,7 @@ export default function MyDirectPage() {
                                             <div className="mb-2 flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
                                                     <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#8a927e]">
-                                                        Sr. No. {index + 1}
+                                                        Sr. No. {(currentPage - 1) * limit + index + 1}
                                                     </p>
 
                                                     <div className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#4d553d]">
@@ -385,13 +395,13 @@ export default function MyDirectPage() {
                                             </TableHeader>
 
                                             <TableBody>
-                                                {filteredData.map((row, index) => (
+                                                {paginatedFilteredData.map((row, index) => (
                                                     <TableRow
                                                         key={row._id || index}
                                                         className="border-b border-[#edf3e7] transition-colors hover:bg-[#fbfdf8]"
                                                     >
                                                         <TableCell className="px-3 py-2.5 text-xs font-medium text-[#8a927e]">
-                                                            {index + 1}
+                                                            {(currentPage - 1) * limit + index + 1}
                                                         </TableCell>
 
                                                         <TableCell className="px-3 py-2.5">
@@ -438,6 +448,92 @@ export default function MyDirectPage() {
                                         </Table>
                                     </div>
                                 </div>
+                                {totalFilteredPages > 0 && (
+                                    <div className="p-4 border-t border-[#dce8d3] flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 bg-[#fbfdf8] rounded-lg border">
+                                        <p className="text-[10px] font-black text-[#8a927e] uppercase tracking-widest order-2 sm:order-1">
+                                            Page {currentPage} of {totalFilteredPages}
+                                        </p>
+                                        
+                                        <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                disabled={currentPage <= 1 || isLoading}
+                                                onClick={() => setCurrentPage(1)}
+                                                className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                            >
+                                                First
+                                            </Button>
+
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                disabled={currentPage <= 1 || isLoading}
+                                                onClick={() => setCurrentPage(currentPage - 1)}
+                                                className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                            >
+                                                Prev
+                                            </Button>
+
+                                            <div className="flex items-center gap-1 mx-1">
+                                                {(() => {
+                                                    const pages = [];
+                                                    if (totalFilteredPages > 0) {
+                                                        pages.push(currentPage);
+                                                        if (currentPage < totalFilteredPages) {
+                                                            pages.push(currentPage + 1);
+                                                            if (currentPage + 1 < totalFilteredPages) {
+                                                                pages.push("...");
+                                                            }
+                                                        }
+                                                    }
+
+                                                    return pages.map((page, idx) => (
+                                                        <React.Fragment key={idx}>
+                                                            {page === "..." ? (
+                                                                <span className="w-8 h-8 flex items-center justify-center text-[#8a927e]">...</span>
+                                                            ) : (
+                                                                <Button
+                                                                    variant={currentPage === page ? "default" : "outline"}
+                                                                    size="icon"
+                                                                    disabled={isLoading}
+                                                                    onClick={() => setCurrentPage(page as number)}
+                                                                    className={`h-8 w-8 text-[11px] font-bold transition-all ${
+                                                                        currentPage === page 
+                                                                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary" 
+                                                                            : "border-[#dce8d3] bg-white hover:bg-[#f3f7ef]"
+                                                                    }`}
+                                                                >
+                                                                    {page}
+                                                                </Button>
+                                                            )}
+                                                        </React.Fragment>
+                                                    ));
+                                                })()}
+                                            </div>
+
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                disabled={currentPage >= totalFilteredPages || isLoading}
+                                                onClick={() => setCurrentPage(currentPage + 1)}
+                                                className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                            >
+                                                Next
+                                            </Button>
+
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                disabled={currentPage >= totalFilteredPages || isLoading}
+                                                onClick={() => setCurrentPage(totalFilteredPages)}
+                                                className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                            >
+                                                Last
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
                     </CardContent>

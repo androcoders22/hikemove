@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
 import { Gift, Search, Loader2 } from "lucide-react";
 import {
@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { getSponsorBonusAPI } from "@/lib/api/ledger";
 
 interface LedgerRow {
@@ -33,14 +34,39 @@ export default function SponsorBonus() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(
+    async (page: number = 1) => {
       setLoading(true);
       try {
-        const response = await getSponsorBonusAPI();
-        if (response.data?.status && Array.isArray(response.data.data)) {
-          setLedgerData(response.data.data);
+        const response = await getSponsorBonusAPI(page, limit);
+        const d = response.data;
+        console.log("[SponsorBonus API] Full response.data:", JSON.stringify(d, null, 2));
+        if (d?.status && d?.data) {
+          let dataArray = [];
+          let totalP = 1;
+
+          // Check metaData first (NestJS paginated response format)
+          const meta = d.metaData;
+          if (meta?.totalPages) {
+            totalP = Number(meta.totalPages);
+          }
+
+          if (Array.isArray(d.data)) {
+            dataArray = d.data;
+            if (!meta) totalP = d.totalPages || (d.total ? Math.ceil(d.total / limit) : 1);
+          } else if (typeof d.data === "object") {
+            dataArray =
+              d.data.docs || d.data.list || d.data.records || d.data.data || [];
+            if (!meta) totalP = d.data.totalPages || d.data.pages || d.totalPages || (d.data.total ? Math.ceil(d.data.total / limit) : 1);
+          }
+          setLedgerData(dataArray);
+          const calcTotalPages = totalP > 0 ? totalP : (dataArray.length > 0 ? 1 : 0);
+          setTotalPages(calcTotalPages);
+          setCurrentPage(page);
         } else {
           setLedgerData([]);
         }
@@ -49,9 +75,13 @@ export default function SponsorBonus() {
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
-  }, []);
+    },
+    [limit],
+  );
+
+  useEffect(() => {
+    fetchData(1);
+  }, [fetchData]);
 
   const filteredData = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
@@ -165,7 +195,7 @@ export default function SponsorBonus() {
                         className="border-border hover:bg-muted/20 transition-colors group"
                       >
                         <TableCell className="text-xs font-bold text-muted-foreground">
-                          {idx + 1}
+                          {(currentPage - 1) * limit + idx + 1}
                         </TableCell>
                         <TableCell className="text-xs font-black text-primary tracking-tight">
                           {row.ledgerType || "N/A"}
@@ -211,6 +241,92 @@ export default function SponsorBonus() {
               </Table>
             )}
           </div>
+          {totalPages > 0 && (
+            <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest order-2 sm:order-1">
+                Page {currentPage} of {totalPages}
+              </p>
+              
+              <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => fetchData(1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter transition-all hover:bg-primary hover:text-primary-foreground"
+                >
+                  First
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => fetchData(currentPage - 1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Prev
+                </Button>
+
+                <div className="flex items-center gap-1 mx-1">
+                  {(() => {
+                    const pages = [];
+                    if (totalPages > 0) {
+                      pages.push(currentPage);
+                      if (currentPage < totalPages) {
+                        pages.push(currentPage + 1);
+                        if (currentPage + 1 < totalPages) {
+                          pages.push("...");
+                        }
+                      }
+                    }
+
+                    return pages.map((page, idx) => (
+                      <React.Fragment key={idx}>
+                        {page === "..." ? (
+                          <span className="w-8 h-8 flex items-center justify-center text-muted-foreground">...</span>
+                        ) : (
+                          <Button
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="icon"
+                            disabled={loading}
+                            onClick={() => fetchData(page as number)}
+                            className={`h-8 w-8 text-[11px] font-bold transition-all ${
+                              currentPage === page 
+                               ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary" 
+                               : "hover:bg-primary/5"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        )}
+                      </React.Fragment>
+                    ));
+                  })()}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => fetchData(currentPage + 1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Next
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => fetchData(totalPages)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter transition-all hover:bg-primary hover:text-primary-foreground"
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

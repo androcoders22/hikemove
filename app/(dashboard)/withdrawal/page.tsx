@@ -54,6 +54,8 @@ interface WithdrawalData {
 
 export default function WithdrawalPage() {
   const [historyData, setHistoryData] = useState<WithdrawalData[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [memberInfo, setMemberInfo] = useState({ id: "", balance: 0 });
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -82,14 +84,23 @@ export default function WithdrawalPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const fetchHistory = async () => {
+  const fetchHistory = async (page = 1) => {
     try {
-      const res = await getWithdrawalHistoryAPI();
-      if (res.data?.status && res.data?.data) {
-        setHistoryData(res.data.data);
+      setIsLoading(true);
+      const res = await getWithdrawalHistoryAPI(page, 10);
+      const d = res.data;
+      if (d?.status && d?.data) {
+        setHistoryData(d.data);
+        const meta = d.metaData;
+        if (meta) {
+          setTotalPages(meta.totalPages || 1);
+          setCurrentPage(meta.currentPage || page);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch history", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,9 +119,9 @@ export default function WithdrawalPage() {
   };
 
   useEffect(() => {
-    fetchHistory();
+    fetchHistory(currentPage);
     fetchWallet();
-  }, []);
+  }, [currentPage]);
 
   const filteredData = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
@@ -366,7 +377,7 @@ export default function WithdrawalPage() {
                         className="border-border hover:bg-muted/20 transition-colors group"
                       >
                         <TableCell className="text-sm font-bold text-muted-foreground py-2 px-3">
-                          {index + 1}
+                          {(currentPage - 1) * 10 + index + 1}
                         </TableCell>
 
                         <TableCell className="text-xs font-bold text-foreground py-2 px-3">
@@ -441,6 +452,94 @@ export default function WithdrawalPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination */}
+          {totalPages > 0 && (
+            <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest order-2 sm:order-1">
+                Page {currentPage} of {totalPages}
+              </p>
+              
+              <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || isLoading}
+                  onClick={() => setCurrentPage(1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  First
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Prev
+                </Button>
+
+                <div className="flex items-center gap-1 mx-1">
+                  {(() => {
+                    const pages = [];
+                    if (totalPages > 0) {
+                      pages.push(currentPage);
+                      if (currentPage < totalPages) {
+                        pages.push(currentPage + 1);
+                        if (currentPage + 1 < totalPages) {
+                          pages.push("...");
+                        }
+                      }
+                    }
+
+                    return pages.map((page, idx) => (
+                      <React.Fragment key={idx}>
+                        {page === "..." ? (
+                          <span className="w-8 h-8 flex items-center justify-center text-muted-foreground">...</span>
+                        ) : (
+                          <Button
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="icon"
+                            disabled={isLoading}
+                            onClick={() => setCurrentPage(page as number)}
+                            className={`h-8 w-8 text-[11px] font-bold transition-all ${
+                              currentPage === page 
+                               ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary" 
+                               : "hover:bg-primary/5"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        )}
+                      </React.Fragment>
+                    ));
+                  })()}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || isLoading}
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Next
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || isLoading}
+                  onClick={() => setCurrentPage(totalPages)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

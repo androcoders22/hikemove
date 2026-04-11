@@ -18,12 +18,13 @@ export const createMemberTopupAPI = async (data: {
   fromMember: string;
   toMember: string;
   amount: number;
+  transactionPassword: string;
 }) => {
   return await api.post("/member-topup", data);
 };
 
-export const getMemberTopupsAPI = async () => {
-  return await api.get("/member-topup/me");
+export const getMemberTopupsAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/member-topup/me?page=${page}&limit=${limit}`);
 };
 
 export const getMyMemberTopupsAPI = async () => {
