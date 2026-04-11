@@ -45,13 +45,39 @@ export default function AdminMemberTopupPage() {
     const [topups, setTopups] = useState<TopupData[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [limit] = useState(10);
 
-    const fetchTopups = async (silent = false) => {
+    const fetchTopups = async (page: number = 1, silent = false) => {
         if (!silent) setIsLoading(true);
         try {
-            const res = await getAllMemberTopupsAPI();
-            const data = res.data?.data || res.data || [];
-            setTopups(data);
+            const res = await getAllMemberTopupsAPI(page, limit);
+            const d = res.data;
+            if (d?.status && d?.data) {
+                let dataArray = [];
+                let totalP = 1;
+
+                const meta = d.metaData;
+                if (meta?.totalPages) {
+                    totalP = Number(meta.totalPages);
+                }
+
+                if (Array.isArray(d.data)) {
+                    dataArray = d.data;
+                    if (!meta) totalP = d.totalPages || (d.total ? Math.ceil(d.total / limit) : 1);
+                } else if (typeof d.data === "object") {
+                    dataArray =
+                        d.data.docs || d.data.list || d.data.records || d.data.data || [];
+                    if (!meta) totalP = d.data.totalPages || d.data.pages || d.totalPages || (d.data.total ? Math.ceil(d.data.total / limit) : 1);
+                }
+                setTopups(dataArray);
+                const calcTotalPages = totalP > 0 ? totalP : (dataArray.length > 0 ? 1 : 0);
+                setTotalPages(calcTotalPages);
+                setCurrentPage(page);
+            } else {
+                setTopups([]);
+            }
         } catch (error) {
             console.error("Failed to fetch topups", error);
             toast.error("Failed to load topup history");
@@ -61,7 +87,7 @@ export default function AdminMemberTopupPage() {
     };
 
     useEffect(() => {
-        fetchTopups();
+        fetchTopups(1);
     }, []);
 
     const getMemberId = (member: any) => {
@@ -131,7 +157,7 @@ export default function AdminMemberTopupPage() {
                         </div>
                         <Button
                             variant="outline"
-                            onClick={() => fetchTopups(false)}
+                            onClick={() => fetchTopups(currentPage, false)}
                             className="h-9 border-[#dce8d3] bg-white text-xs font-bold uppercase transition-all hover:bg-[#f3f7ef] shadow-sm rounded-lg"
                         >
                             <RefreshCcw className="mr-2 h-3.5 w-3.5" />
@@ -162,6 +188,7 @@ export default function AdminMemberTopupPage() {
                                 <Table>
                                     <TableHeader className="bg-[#f7fbf3]">
                                         <TableRow className="border-b border-[#dce8d3]">
+                                            <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Sr. No.</TableHead>
                                             <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Source (From)</TableHead>
                                             <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Receiver (To)</TableHead>
                                             <TableHead className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#5c634f]">Amount</TableHead>
@@ -170,8 +197,11 @@ export default function AdminMemberTopupPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredData.map((row) => (
+                                        {filteredData.map((row, idx) => (
                                             <TableRow key={row._id} className="border-b border-[#edf3e7] transition-all hover:bg-[#fbfdf8]">
+                                                <TableCell className="px-4 py-3 text-xs font-bold text-[#8a927e]">
+                                                    {(currentPage - 1) * limit + idx + 1}
+                                                </TableCell>
                                                 <TableCell className="px-4 py-3">
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-blue-100">
@@ -215,6 +245,91 @@ export default function AdminMemberTopupPage() {
                                         ))}
                                     </TableBody>
                                 </Table>
+                            </div>
+                        )}
+                        {totalPages > 0 && (
+                            <div className="p-4 border-t border-[#dce8d3] flex flex-col sm:flex-row items-center justify-between gap-4 mt-2 bg-[#fbfdf8]">
+                                <p className="text-[10px] font-black text-[#8a927e] uppercase tracking-widest order-2 sm:order-1">
+                                    Page {currentPage} of {totalPages}
+                                </p>
+
+                                <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage <= 1 || isLoading}
+                                        onClick={() => fetchTopups(1)}
+                                        className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    >
+                                        First
+                                    </Button>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage <= 1 || isLoading}
+                                        onClick={() => fetchTopups(currentPage - 1)}
+                                        className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    >
+                                        Prev
+                                    </Button>
+
+                                    <div className="flex items-center gap-1 mx-1">
+                                        {(() => {
+                                            const pages = [];
+                                            if (totalPages > 0) {
+                                                pages.push(currentPage);
+                                                if (currentPage < totalPages) {
+                                                    pages.push(currentPage + 1);
+                                                    if (currentPage + 1 < totalPages) {
+                                                        pages.push("...");
+                                                    }
+                                                }
+                                            }
+
+                                            return pages.map((page, idx) => (
+                                                <React.Fragment key={idx}>
+                                                    {page === "..." ? (
+                                                        <span className="w-8 h-8 flex items-center justify-center text-[#8a927e]">...</span>
+                                                    ) : (
+                                                        <Button
+                                                            variant={currentPage === page ? "default" : "outline"}
+                                                            size="icon"
+                                                            disabled={isLoading}
+                                                            onClick={() => fetchTopups(page as number)}
+                                                            className={`h-8 w-8 text-[11px] font-bold transition-all ${currentPage === page
+                                                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary"
+                                                                    : "border-[#dce8d3] bg-white hover:bg-[#f3f7ef]"
+                                                                }`}
+                                                        >
+                                                            {page}
+                                                        </Button>
+                                                    )}
+                                                </React.Fragment>
+                                            ));
+                                        })()}
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage >= totalPages || isLoading}
+                                        onClick={() => fetchTopups(currentPage + 1)}
+                                        className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    >
+                                        Next
+                                    </Button>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage >= totalPages || isLoading}
+                                        onClick={() => fetchTopups(totalPages)}
+                                        className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    >
+                                        Last
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </CardContent>

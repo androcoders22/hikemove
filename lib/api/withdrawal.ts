@@ -1,19 +1,19 @@
 import { api } from "../axios";
 
-export const getWithdrawalHistoryAPI = async () => {
-  return await api.get("/withdrawal/me");
+export const getWithdrawalHistoryAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/withdrawal/me?page=${page}&limit=${limit}`);
 };
 
 export const createWithdrawalAPI = async (payload: any) => {
   return await api.post("/withdrawal", payload);
 };
 
-export const getAllWithdrawalsAPI = async () => {
-  return await api.get("/withdrawal");
+export const getAllWithdrawalsAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/withdrawal?page=${page}&limit=${limit}`);
 };
 
-export const getMemberRequestsAPI = async () => {
-  return await api.get("/withdrawal/me");
+export const getMemberRequestsAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/withdrawal/me?page=${page}&limit=${limit}`);
 };
 
 export const approveWithdrawalAPI = async (id: string) => {

@@ -59,20 +59,18 @@ type MemberQueryParams = {
   limit?: number;
 };
 
-export const getAllMembersAPI = async (params: MemberQueryParams = {}) => {
-  // Trying /member/ all lowercase with no params to fix 400
-  return await api.get("/member");
+export const getAllMembersAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/member?page=${page}&limit=${limit}`);
 };
 
-export const getActiveMembersAPI = async (params: MemberQueryParams = {}) => {
-  // Trying /member/ all lowercase with no params to fix 400
-  return await api.get("/member?status=active");
+export const getActiveMembersAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/member?status=active&page=${page}&limit=${limit}`);
 };
 
 export const getAdminDashboardAPI = async () => {
   return await api.get("/dashboard/admin");
 };
 
-export const getAllMemberTopupsAPI = async () => {
-  return await api.get("/member-topup");
+export const getAllMemberTopupsAPI = async (page: number = 1, limit: number = 10) => {
+  return await api.get(`/member-topup?page=${page}&limit=${limit}`);
 };

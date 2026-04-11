@@ -67,6 +67,8 @@ interface TopUpRecord {
 
 export default function MemberTopUp() {
   const [records, setRecords] = useState<TopUpRecord[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [isActivationOpen, setIsActivationOpen] = useState(false);
   const [incomeBalance, setIncomeBalance] = useState<number>(0);
   const [depositBalance, setDepositBalance] = useState<number>(0);
@@ -76,6 +78,7 @@ export default function MemberTopUp() {
   const [isLoadingRecords, setIsLoadingRecords] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [myMemberId, setMyMemberId] = useState("");
+  const [rawApiResponse, setRawApiResponse] = useState<any>(null);
 
   // Fetch wallet balance
   useEffect(() => {
@@ -95,35 +98,35 @@ export default function MemberTopUp() {
     fetchWallet();
   }, []);
 
-  const [rawApiResponse, setRawApiResponse] = useState<any>(null);
-
   // Fetch topup records
-  const fetchRecords = useCallback(async () => {
+  const fetchRecords = useCallback(async (page = 1) => {
     setIsLoadingRecords(true);
     try {
-      const res = await getMemberTopupsAPI();
+      const res = await getMemberTopupsAPI(page, 10);
       const d = res.data;
       setRawApiResponse(d); // store raw for debug
-      console.log("[TopUp Records API] Full response:", JSON.stringify(d, null, 2));
 
-      // Try to find an array anywhere in the response
-      const extractArray = (obj: any): any[] => {
-        if (Array.isArray(obj)) return obj;
-        if (obj && typeof obj === "object") {
-          // check common keys in order
-          for (const key of ["data", "records", "items", "result", "topups", "list"]) {
-            if (Array.isArray(obj[key])) return obj[key];
-            if (obj[key] && typeof obj[key] === "object") {
-              const nested = extractArray(obj[key]);
-              if (nested.length > 0) return nested;
-            }
-          }
+      // Extract array
+      let dataArray: any[] = [];
+
+      if (d?.status && d?.data) {
+        if (Array.isArray(d.data)) {
+          dataArray = d.data;
+        } else if (typeof d.data === "object") {
+          // Check for nested docs/list
+          dataArray = d.data.docs || d.data.list || d.data.records || d.data.data || [];
         }
-        return [];
-      };
 
-      const arr = extractArray(d);
-      setRecords(arr);
+        const meta = d.metaData;
+        if (meta) {
+          setTotalPages(meta.totalPages || 1);
+          setCurrentPage(meta.currentPage || page);
+        }
+      } else if (Array.isArray(d)) {
+        dataArray = d;
+      }
+
+      setRecords(dataArray);
     } catch (err) {
       console.error("Failed to fetch topup records", err);
       setRecords([]);
@@ -133,8 +136,8 @@ export default function MemberTopUp() {
   }, []);
 
   useEffect(() => {
-    fetchRecords();
-  }, [fetchRecords]);
+    fetchRecords(currentPage);
+  }, [fetchRecords, currentPage]);
 
   const formSchema = useMemo(
     () =>
@@ -146,13 +149,14 @@ export default function MemberTopUp() {
             message: `Amount exceeds deposit balance ($${depositBalance})`,
           }),
         memberId: z.string().min(1, { message: "Member Id is required" }),
+        transactionPassword: z.string().min(1, { message: "Transaction password is required" }),
       }),
     [depositBalance],
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { package: "", memberId: "" },
+    defaultValues: { package: "", memberId: "", transactionPassword: "" },
   });
 
   const watchedMemberId = form.watch("memberId");
@@ -218,6 +222,7 @@ export default function MemberTopUp() {
         fromMember,
         toMember: memberObjectId,
         amount: Number(values.package),
+        transactionPassword: values.transactionPassword,
       });
 
       if (res.data?.status) {
@@ -231,7 +236,7 @@ export default function MemberTopUp() {
         toast.error(res.data?.message || "Activation failed");
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Something went wrong");
+      // Error toast is already shown by the global Axios interceptor
     } finally {
       setIsSubmitting(false);
     }
@@ -283,7 +288,7 @@ export default function MemberTopUp() {
                     New Activation
                   </DialogTitle>
                 </div>
-                
+
                 <button
                   type="button"
                   onClick={() => setIsActivationOpen(false)}
@@ -371,6 +376,27 @@ export default function MemberTopUp() {
                       />
                     </div>
 
+                    <FormField
+                      control={form.control}
+                      name="transactionPassword"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1.5">
+                          <FormLabel className="text-[10px] m-0 font-black uppercase tracking-widest text-muted-foreground">
+                            Transaction Password
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="••••••••"
+                              className="h-9 font-bold border-border bg-muted/30 focus:ring-0 rounded-lg"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="text-[10px]" />
+                        </FormItem>
+                      )}
+                    />
+
                     <div className="space-y-1.5 bg-muted/30 p-3 rounded-xl border border-border/50">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                         Validated Name
@@ -407,15 +433,15 @@ export default function MemberTopUp() {
                     onClick={form.handleSubmit(onSubmit)}
                     className="w-full h-11 font-black text-sm uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 "
                   >
-                  {isSubmitting ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : null}
-                  {isSubmitting ? "Processing..." : "Confirm Transaction"}
-                  {!isSubmitting && <ArrowRight className="h-4 w-4 ml-2" />}
-                </Button>
+                    {isSubmitting ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : null}
+                    {isSubmitting ? "Processing..." : "Confirm Transaction"}
+                    {!isSubmitting && <ArrowRight className="h-4 w-4 ml-2" />}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </DialogContent>
+            </DialogContent>
           </Dialog>
         </div>
 
@@ -465,7 +491,7 @@ export default function MemberTopUp() {
                       className="border-border hover:bg-muted/20 transition-colors group"
                     >
                       <TableCell className="text-[11px] font-bold text-muted-foreground">
-                        {index + 1}
+                        {(currentPage - 1) * 10 + index + 1}
                       </TableCell>
                       <TableCell>
                         <span className="inline-flex items-center font-mono text-[11px] font-black bg-primary/5 text-primary px-2 py-0.5 rounded-md border border-primary/10">
@@ -517,6 +543,93 @@ export default function MemberTopUp() {
               </TableBody>
             </Table>
           </div>
+          {/* Pagination
+          {!isLoadingRecords && totalPages > 0 && (
+            <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest order-2 sm:order-1">
+                Page {currentPage} of {totalPages}
+              </p>
+              
+              <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || isLoadingRecords}
+                  onClick={() => setCurrentPage(1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  First
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || isLoadingRecords}
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Prev
+                </Button>
+
+                <div className="flex items-center gap-1 mx-1">
+                  {(() => {
+                    const pages = [];
+                    if (totalPages > 0) {
+                      pages.push(currentPage);
+                      if (currentPage < totalPages) {
+                        pages.push(currentPage + 1);
+                        if (currentPage + 1 < totalPages) {
+                          pages.push("...");
+                        }
+                      }
+                    }
+
+                    return pages.map((page, idx) => (
+                      <React.Fragment key={idx}>
+                        {page === "..." ? (
+                          <span className="w-8 h-8 flex items-center justify-center text-muted-foreground">...</span>
+                        ) : (
+                          <Button
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="icon"
+                            disabled={isLoadingRecords}
+                            onClick={() => setCurrentPage(page as number)}
+                            className={`h-8 w-8 text-[11px] font-bold transition-all ${
+                              currentPage === page 
+                               ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary" 
+                               : "hover:bg-primary/5"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        )}
+                      </React.Fragment>
+                    ));
+                  })()}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || isLoadingRecords}
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Next
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || isLoadingRecords}
+                  onClick={() => setCurrentPage(totalPages)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )} */}
         </div>
       </div>
     </div>

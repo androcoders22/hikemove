@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
 import {
   Users,
@@ -10,6 +10,10 @@ import {
   UserCheck,
   UserMinus,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import {
   Table,
@@ -45,6 +49,9 @@ export default function MyTeam() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
 
   const resolvePackage = (row: any) => {
     const activePackages = Array.isArray(row?.activePackages)
@@ -78,22 +85,51 @@ export default function MyTeam() {
       : "0";
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(
+    async (page: number = 1) => {
+      setLoading(true);
       try {
-        const response = await getMemberMyTeamAPI();
+        const response = await getMemberMyTeamAPI(page, limit);
+        console.log("[MyTeam API] Full response.data:", JSON.stringify(response.data, null, 2));
         const payload = response.data?.data ?? response.data;
         if (!payload) {
           setError("Failed to load team data");
           return;
         }
 
-        const asArray = Array.isArray(payload) ? payload : null;
-        const flattened = asArray ? asArray : flattenTree(payload);
+        let dataArray: any[] = [];
+        let totalP = 1;
+
+        // Extract totalPages from metaData if available (NestJS paginated response format)
+        const meta = response.data?.metaData;
+        if (meta?.totalPages) {
+          totalP = Number(meta.totalPages);
+        }
+
+        if (Array.isArray(payload)) {
+          dataArray = payload;
+          if (!meta) totalP = response.data?.totalPages || response.data?.total ? Math.ceil((response.data?.total || dataArray.length) / limit) : 1;
+        } else if (typeof payload === "object") {
+          dataArray =
+            payload.docs ||
+            payload.list ||
+            payload.records ||
+            payload.data ||
+            [];
+          if (!meta) totalP =
+            payload.totalPages ||
+            payload.pages ||
+            response.data?.totalPages ||
+            (payload.total ? Math.ceil(payload.total / limit) : 1);
+        }
+
+        // Enrich data with sponsor info if needed (skipping full flatten logic for brevity if it's already a list)
+        const flattened = Array.isArray(dataArray)
+          ? dataArray
+          : flattenTree(dataArray);
 
         // Create a lookup map for MongoID -> Member Details
-        const idMap: Record<string, { memberId: string; fullName: string }> =
-          {};
+        const idMap: Record<string, { memberId: string; fullName: string }> = {};
         flattened.forEach((m) => {
           if (m?._id) {
             idMap[m._id] = { memberId: m.memberId, fullName: m.fullName };
@@ -119,18 +155,23 @@ export default function MyTeam() {
           };
         });
 
-        // If the API returns a full list (not a tree), keep all rows.
-        // If the API returns a tree, exclude the root member from "My Team" list.
-        const resolvedRows = asArray ? enriched : enriched.slice(1);
+        const resolvedRows = Array.isArray(payload) ? enriched : enriched.slice(1);
         setTeamData(resolvedRows);
+        const calcTotalPages = totalP > 0 ? totalP : (resolvedRows.length > 0 ? 1 : 0);
+        setTotalPages(calcTotalPages);
+        setCurrentPage(page);
       } catch (err: any) {
         setError(err.message || "An error occurred");
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
-  }, []);
+    },
+    [limit],
+  );
+
+  useEffect(() => {
+    fetchData(1);
+  }, [fetchData]);
 
   const flattenTree = (node: any, currentLevel: number = 0): any[] => {
     const resolvedLevel =
@@ -215,22 +256,7 @@ export default function MyTeam() {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col min-h-screen bg-background">
-        <PageHeader
-          title="My Team"
-          breadcrumbs={[
-            { title: "My Team", href: "#" },
-            { title: "Team List" },
-          ]}
-        />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -334,14 +360,23 @@ export default function MyTeam() {
               </TableHeader>
 
               <TableBody>
-                {filteredData.length > 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-10">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <p className="text-xs font-bold text-muted-foreground">Loading records...</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredData.length > 0 ? (
                   filteredData.map((row, idx) => (
                     <TableRow
                       key={row._id}
                       className="border-border hover:bg-muted/20 transition-colors group"
                     >
                       <TableCell className="text-xs font-bold text-muted-foreground">
-                        {idx + 1}
+                        {(currentPage - 1) * limit + idx + 1}
                       </TableCell>
                       <TableCell className="text-xs font-black text-primary">
                         {row.memberId}
@@ -397,6 +432,97 @@ export default function MyTeam() {
               </TableBody>
             </Table>
           </div>
+          {totalPages > 0 && (
+            <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest order-2 sm:order-1">
+                Page {currentPage} of {totalPages}
+              </p>
+              
+              <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                {/* First Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => fetchData(1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  First
+                </Button>
+
+                {/* Previous Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => fetchData(currentPage - 1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Prev
+                </Button>
+
+                {/* Numbered Pages */}
+                <div className="flex items-center gap-1 mx-1">
+                  {(() => {
+                    const pages = [];
+                    if (totalPages > 0) {
+                      pages.push(currentPage);
+                      if (currentPage < totalPages) {
+                        pages.push(currentPage + 1);
+                        if (currentPage + 1 < totalPages) {
+                          pages.push("...");
+                        }
+                      }
+                    }
+
+                    return pages.map((page, idx) => (
+                      <React.Fragment key={idx}>
+                        {page === "..." ? (
+                          <span className="w-8 h-8 flex items-center justify-center text-muted-foreground">...</span>
+                        ) : (
+                          <Button
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="icon"
+                            disabled={loading}
+                            onClick={() => fetchData(page as number)}
+                            className={`h-8 w-8 text-[11px] font-bold transition-all ${
+                              currentPage === page 
+                               ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary" 
+                               : "hover:bg-primary/5 border-border"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        )}
+                      </React.Fragment>
+                    ));
+                  })()}
+                </div>
+
+                {/* Next Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => fetchData(currentPage + 1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Next
+                </Button>
+
+                {/* Last Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => fetchData(totalPages)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
 import {
   Users,
@@ -57,24 +57,48 @@ export default function MySponsor() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+
+  const fetchData = useCallback(async (page = 1) => {
+    setLoading(true);
+    try {
+      const response = await getDirectMembersAPI(page, limit);
+      const d = response.data;
+      if (d?.status && d?.data) {
+        let dataArray = [];
+        let totalP = 1;
+
+        const meta = d.metaData;
+        if (meta?.totalPages) {
+          totalP = Number(meta.totalPages);
+        }
+
+        if (Array.isArray(d.data)) {
+          dataArray = d.data;
+          if (!meta) totalP = d.totalPages || (d.total ? Math.ceil(d.total / limit) : 1);
+        } else if (typeof d.data === "object") {
+          dataArray =
+            d.data.docs || d.data.list || d.data.records || d.data.data || [];
+          if (!meta) totalP = d.data.totalPages || d.data.pages || d.totalPages || (d.data.total ? Math.ceil(d.data.total / limit) : 1);
+        }
+        setMemberData(dataArray);
+        setTotalPages(totalP);
+        setCurrentPage(page);
+      } else {
+        setError("Failed to load members data");
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  }, [limit]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getDirectMembersAPI();
-        if (response.data?.status && Array.isArray(response.data.data)) {
-          setMemberData(response.data.data);
-        } else {
-          setError("Failed to load members data");
-        }
-      } catch (err: any) {
-        setError(err.message || "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-    
+    fetchData(1);
+
     // Fallback: Since these are direct members, the sponsor is the current user
     if (typeof window !== "undefined") {
       try {
@@ -90,7 +114,7 @@ export default function MySponsor() {
         // ignore
       }
     }
-  }, []);
+  }, [fetchData]);
 
   const activeCount = useMemo(() =>
     memberData.filter(m => getMemberStatus(m) === "active").length,
@@ -139,7 +163,7 @@ export default function MySponsor() {
       let sponsorObj = row.sponsorId || row.sponsor;
       let sId = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.memberId : (typeof sponsorObj === 'string' ? sponsorObj : currentUser.memberId);
       let sName = typeof sponsorObj === 'object' && sponsorObj ? sponsorObj.fullName : currentUser.fullName;
-      
+
       sId = sId || "";
       sName = sName || "";
 
@@ -245,19 +269,19 @@ export default function MySponsor() {
                 <DropdownMenuContent align="end" className="w-[160px]">
                   <DropdownMenuLabel className="text-xs font-black uppercase text-muted-foreground">Status</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => setStatusFilter("all")}
                     className={statusFilter === "all" ? "bg-muted font-bold" : ""}
                   >
                     All Members
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => setStatusFilter("active")}
                     className={statusFilter === "active" ? "bg-muted font-bold text-emerald-600" : "text-emerald-600"}
                   >
                     Active
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => setStatusFilter("inactive")}
                     className={statusFilter === "inactive" ? "bg-muted font-bold text-rose-600" : "text-rose-600"}
                   >
@@ -304,7 +328,7 @@ export default function MySponsor() {
                       className="border-border hover:bg-muted/20 transition-colors group"
                     >
                       <TableCell className="text-xs font-bold text-muted-foreground">
-                        {idx + 1}
+                        {(currentPage - 1) * limit + idx + 1}
                       </TableCell>
                       <TableCell className="text-xs font-black text-primary">
                         {row.memberId}
@@ -322,7 +346,7 @@ export default function MySponsor() {
                         <div className="flex flex-wrap gap-1">
                           {row.activePackages && row.activePackages.length > 0 ? (
                             row.activePackages.map((pkg, pIdx) => (
-                              <span 
+                              <span
                                 key={pIdx}
                                 className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase"
                               >
@@ -338,17 +362,17 @@ export default function MySponsor() {
                       </TableCell>
                       <TableCell className="text-right">
                         {(() => {
-                           const calculatedStatus = getMemberStatus(row);
-                           return (
+                          const calculatedStatus = getMemberStatus(row);
+                          return (
                             <span
                               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tight ${calculatedStatus === "active"
-                                  ? "bg-emerald-500/10 text-emerald-500"
-                                  : "bg-rose-500/10 text-rose-500"
+                                ? "bg-emerald-500/10 text-emerald-500"
+                                : "bg-rose-500/10 text-rose-500"
                                 }`}
                             >
                               {calculatedStatus}
                             </span>
-                           );
+                          );
                         })()}
                       </TableCell>
                     </TableRow>
@@ -366,6 +390,92 @@ export default function MySponsor() {
               </TableBody>
             </Table>
           </div>
+          {/* Pagination
+          {totalPages > 0 && (
+            <div className="p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest order-2 sm:order-1">
+                Page {currentPage} of {totalPages}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center gap-1.5 order-1 sm:order-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => fetchData(1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter transition-all hover:bg-primary hover:text-primary-foreground"
+                >
+                  First
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => fetchData(currentPage - 1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Prev
+                </Button>
+
+                <div className="flex items-center gap-1 mx-1">
+                  {(() => {
+                    const pages = [];
+                    if (totalPages > 0) {
+                      pages.push(currentPage);
+                      if (currentPage < totalPages) {
+                        pages.push(currentPage + 1);
+                        if (currentPage + 1 < totalPages) {
+                          pages.push("...");
+                        }
+                      }
+                    }
+
+                    return pages.map((page, idx) => (
+                      <React.Fragment key={idx}>
+                        {page === "..." ? (
+                          <span className="w-8 h-8 flex items-center justify-center text-muted-foreground">...</span>
+                        ) : (
+                          <Button
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="icon"
+                            disabled={loading}
+                            onClick={() => fetchData(page as number)}
+                            className={`h-8 w-8 text-[11px] font-bold transition-all ${currentPage === page
+                              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 border-primary"
+                              : "hover:bg-primary/5"
+                              }`}
+                          >
+                            {page}
+                          </Button>
+                        )}
+                      </React.Fragment>
+                    ));
+                  })()}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => fetchData(currentPage + 1)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter"
+                >
+                  Next
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => fetchData(totalPages)}
+                  className="h-8 px-2 text-[10px] font-black uppercase tracking-tighter transition-all hover:bg-primary hover:text-primary-foreground"
+                >
+                  Last
+                </Button>
+              </div>
+            </div>
+          )} */}
         </div>
       </div>
     </div>
