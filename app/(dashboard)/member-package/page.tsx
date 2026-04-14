@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
-import { Package, Loader2, Calendar, DollarSign, Repeat } from "lucide-react";
+import { Package, Loader2, Calendar, Repeat } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -84,6 +84,15 @@ export default function MemberPackagePage() {
     });
   };
 
+  const formatCreatedAt = (dateStr: string | null) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <PageHeader
@@ -127,6 +136,9 @@ export default function MemberPackagePage() {
                       Amount
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
+                      Created At
+                    </TableHead>
+                    <TableHead className="text-[10px] font-black uppercase tracking-widest">
                       Released
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase tracking-widest">
@@ -160,7 +172,7 @@ export default function MemberPackagePage() {
                             <span className="text-xs font-black text-primary uppercase tracking-tight">
                               {pkg.fromMember?.memberId || "N/A"}
                             </span>
-                            <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[120px]">
+                            <span className="text-[10px] font-bold text-muted-foreground truncate max-w-30">
                               {pkg.fromMember?.fullName || ""}
                             </span>
                           </div>
@@ -173,6 +185,10 @@ export default function MemberPackagePage() {
                             </div>
                             <span>$ {pkg.amount}</span>
                           </div>
+                        </TableCell>
+
+                        <TableCell className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">
+                          {formatCreatedAt(pkg.createdAt)}
                         </TableCell>
 
                         <TableCell>
@@ -227,7 +243,7 @@ export default function MemberPackagePage() {
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
+                        colSpan={9}
                         className="text-center py-12 text-muted-foreground"
                       >
                         <div className="flex flex-col items-center gap-2">

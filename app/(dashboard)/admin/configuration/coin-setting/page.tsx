@@ -225,7 +225,7 @@ export default function CoinSettingPage() {
             />
 
             <div className="flex-1 min-w-0 p-3 pt-0 sm:p-4 sm:pt-0 lg:p-5 lg:pt-0">
-                <div className="w-full max-w-[980px] min-w-0 space-y-4">
+                <div className="w-full max-w-245 min-w-0 space-y-4">
                 <Card className="w-full min-w-0 overflow-hidden rounded-lg border border-[#dce8d3] bg-white shadow-sm pt-0">
                     <CardHeader className="border-b border-[#dce8d3] bg-[#fafcf8] px-3 py-3 sm:px-4 sm:py-4">
                         <div className="flex items-center gap-2.5">
